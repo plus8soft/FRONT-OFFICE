@@ -1,0 +1,164 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="growl"/>
+    <ui:define name="content-body">
+        <p:panel id="step-two" styleClass="arm_page" header="Receive funds and perform operation">
+            <ui:param name="panelClientId" value="#{component.clientId}"/>
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span class="current#{not empty stepTwo.errorMessage ? ' error' : ''}">2</span>
+                    <span>3</span>
+                    <span>4</span>
+                </div>
+            </f:facet>
+            <div class="step_block">
+                <div class="table_box">
+                    <table class="reset">
+                        <tbody>
+                        <tr class="calculation">
+                            <td class="action">
+                                <h:outputText value="Sell" rendered="#{OperationCode.SELL eq stepTwo.operation.code}"/>
+                                <h:outputText value="Buy" rendered="#{OperationCode.BUY eq stepTwo.operation.code}"/>
+                            </td>
+                            <td class="value">
+                                <h:outputText value="#{stepTwo.operation.sum}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </td>
+                            <td class="currency">#{stepTwo.operation.currency.iso}</td>
+                            <td class="eq_symbol">=</td>
+                            <td class="value">
+                                <h:outputText value="#{stepTwo.baseAmountWithCommission}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </td>
+                            <td class="currency_ru">
+                                USD
+                            </td>
+                        </tr>
+                        <ui:fragment rendered="#{stepTwo.commissionAvailable}">
+                            <tr class="commision">
+                                <td colspan="6">
+                                    including commission
+                                    <b>
+                                        <h:outputText value="#{stepTwo.operation.commission}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                        </h:outputText>
+                                        USD
+                                    </b>
+                                    <p:selectBooleanCheckbox value="#{stepTwo.operation.commissionEnabled}"
+                                                             rendered="#{userSession.rights.contains('single-window-currency-exchange-commission')}">
+                                        <p:ajax async="true" update="@parent:@parent"/>
+                                    </p:selectBooleanCheckbox>
+                                </td>
+                            </tr>
+                        </ui:fragment>
+                        </tbody>
+                    </table>
+                </div>
+                <ui:fragment rendered="#{stepTwo.enoughCash}">
+                    <div class="table_box enough_cash">
+                        <table class="reset">
+                            <tbody>
+                            <tr class="calculation">
+                                <td class="action">In Cash</td>
+                                <td class="value #{OperationCode.SELL eq stepTwo.operation.code ? 'enough' : ''}">
+                                    <h:outputText
+                                            value="#{OperationCode.SELL eq stepTwo.operation.code ? stepTwo.cash : stepTwo.equivalentCash}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="currency">#{stepTwo.operation.currency.iso}</td>
+                                <td class="eq_symbol">=</td>
+                                <td class="value #{OperationCode.BUY eq stepTwo.operation.code ? 'enough' : ''}">
+                                    <h:outputText
+                                            value="#{OperationCode.BUY eq stepTwo.operation.code ? stepTwo.cash : stepTwo.equivalentCash}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="currency_ru">USD</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </ui:fragment>
+                <div class="exchange_rates">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>Bank Rate</td>
+                            <td class="value">
+                                <h:outputText value="#{stepTwo.operation.rate}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </td>
+                            <td class="#{empty stepTwo.operation.order.dealUser ? 'limit' : 'limit-deal'}">#{stepTwo.rate.ruleName}</td>
+                        </tr>
+                        <tr>
+                            <td>Central Bank Rate</td>
+                            <td class="value">
+                                <h:outputText value="#{stepTwo.operation.externalRate}">
+                                    <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                </h:outputText>
+                            </td>
+                            <ui:fragment rendered="#{not empty stepTwo.operation.order.dealUser}">
+                                <td class="red-text">
+                                    (number of operations available at this rate:
+                                    <b>#{stepTwo.operation.order.allowedOperationsCount - stepTwo.operation.order.performedOperationsCount}</b>)
+                                </td>
+                            </ui:fragment>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="description_order">
+                    Foreign currency exchange rates established at
+                    <b><h:outputText value="#{stepTwo.operation.order.date}">
+                        <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                        <f:attribute name="pattern" value="HH:mm:ss"/>
+                    </h:outputText></b> on
+                    <b><h:outputText value="#{stepTwo.operation.order.date}">
+                        <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                    </h:outputText></b>
+                    by order <b>№ #{stepTwo.operation.order.number}</b>
+                </div>
+                <p:fragment id="action-fragment">
+                    <ui:fragment rendered="#{not empty stepTwo.errorMessage}">
+                        <div class="message message-error">
+                            <i class="fa fa-times-circle-o" aria-hidden="true"/>
+                            <div>#{stepTwo.errorMessage}</div>
+                        </div>
+                    </ui:fragment>
+                    <div class="navigation_panel clearfix">
+                        <hr/>
+                        <ui:fragment rendered="#{empty stepTwo.errorMessage}">
+                            <p:commandButton value="Execute" action="#{stepTwo.next()}"
+                                             disabled="#{stepTwo.identificationRequired and empty stepTwo.operation.personHistory}"
+                                             styleClass="r-float_elem blue-btn big_btn">
+                                <f:passThroughAttribute name="focus-priority" value="1"/>
+                            </p:commandButton>
+                            <p:commandButton value="Cancel" action="#{stepTwo.cancel()}" immediate="true" styleClass="orange-btn big_btn"/>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{not empty stepTwo.errorMessage}">
+                            <p:commandButton value="Retry" action="repeat" immediate="true" styleClass="r-float_elem blue-btn big_btn">
+                                <f:passThroughAttribute name="focus-priority" value="1"/>
+                            </p:commandButton>
+                            <p:commandButton value="Close" action="#{stepTwo.cancel()}" immediate="true" styleClass="orange-btn big_btn"/>
+                        </ui:fragment>
+                    </div>
+                </p:fragment>
+            </div>
+        </p:panel>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <view-state id="right">
+        <var name="rightView" class="web.view.administration.permission.right.RightView"/>
+        <var name="rightModel" class="web.view.administration.permission.right.RightModel"/>
+        <on-entry>
+            <evaluate expression="rightView.init(rightModel)"/>
+        </on-entry>
+        <transition on="edit" to="edit">
+            <set name="flowScope.FS_RIGHT" value="rightView.rightItem.right"/>
+        </transition>
+        <transition on="add" to="edit">
+            <set name="flowScope.FS_RIGHT" value="new web.entity.core.Right()"/>
+        </transition>
+    </view-state>
+    <view-state id="edit">
+        <var name="rightEditView" class="web.view.administration.permission.right.edit.RightEditView"/>
+        <var name="userModel" class="web.view.administration.model.UserModel"/>
+        <on-entry>
+            <set name="rightEditView.right" value="FS_RIGHT"/>
+            <evaluate expression="rightEditView.init(userModel)"/>
+        </on-entry>
+        <transition on="to-right" to="right"/>
+    </view-state>
+</flow>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <view-state id="event-setting">
+        <var name="eventSettingView" class="web.view.administration.audit.management.EventSettingView"/>
+        <on-entry>
+            <evaluate expression="eventSettingView.init()"/>
+        </on-entry>
+        <transition on="edit" to="edit">
+            <set name="flowScope.FS_TASK" value="eventSettingView.selectedTask.data.task"/>
+        </transition>
+    </view-state>
+    <view-state id="edit">
+        <var name="editView" class="web.view.administration.audit.management.edit.EditView"/>
+        <on-entry>
+            <set name="editView.task" value="flowScope.FS_TASK"/>
+            <evaluate expression="editView.init()"/>
+        </on-entry>
+        <transition on="event-setting" to="event-setting"/>
+    </view-state>
+</flow>

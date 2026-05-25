@@ -1,0 +1,29 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template/template.xhtml">
+    <ui:define name="menu">
+        <p:commandLink value="Client Search" action="menu-single-window-client-search" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-single-window-client-search')}"/>
+        <p:commandLink value="Currency Exchange" action="menu-single-window-currency-exchange" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-single-window-currency-exchange')}"/>
+        <p:commandLink value="Transfers" action="menu-single-window-transfer" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-single-window-transfer')}"/>
+        <p:commandLink value="WOA Payments" action="menu-single-window-payments-woa" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-single-window-payments-woa')}"/>
+        <p:commandLink value="Operation Log" action="menu-single-window-operation-log" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-single-window-operation-log')}"/>
+    </ui:define>
+    <ui:define name="content">
+        <section><ui:insert name="content-body"/></section>
+    </ui:define>
+</ui:composition>

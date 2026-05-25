@@ -1,0 +1,73 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{payActionEditView.dictionary.group} > #{payActionEditView.dictionary.name}">
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel value="Type" for="@next"/>
+                </div>
+                <div class="grid_cell w_20">
+                    <div class="icon_box">
+                        <p:importEnum type="web.entity.dict.PayActionType"/>
+                        <p:selectOneMenu value="#{payActionEditView.payAction.type}" autoWidth="false" required="true" styleClass="w_100">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItem itemValue="#{PayActionType.PUBLIC_SECTOR}" itemLabel="Public Sector"/>
+                            <f:selectItem itemValue="#{PayActionType.TAX}" itemLabel="Tax"/>
+                            <f:selectItem itemValue="#{PayActionType.COMPANY}" itemLabel="Legal Entity"/>
+                        </p:selectOneMenu>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel value="Name" for="@next"/>
+                </div>
+                <div class="grid_cell w_80">
+                    <div class="icon_box">
+                        <p:inputText value="#{payActionEditView.payAction.name}" required="true" styleClass="w_100">
+                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon"/>
+                        <script>focusByPriority();</script>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel value="Cash Symbol" for="@next"/>
+                </div>
+                <div class="grid_cell w_80">
+                    <div class="icon_box">
+                        <p:selectOneMenu value="#{payActionEditView.payAction.cashSymbol}" required="true" filter="true" filterMatchMode="contains"
+                                         autoWidth="false" styleClass="w_100" panelStyle="width: 50%;">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{cashSymbolDictionary.findAll()}" var="unit" itemLabel="#{unit.code} #{unit.value}"
+                                           itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                        </p:selectOneMenu>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel value="Operation not used" for="@next"/>
+                </div>
+                <div class="grid_cell w_80">
+                    <p:selectBooleanCheckbox value="#{payActionEditView.payAction.disabled}"/>
+                </div>
+            </div>
+        </p:panel>
+        <div class="navigation_panel clearfix bottom">
+            <p:commandButton value="Save" action="#{payActionEditView.save()}" update="@form" styleClass="r-float_elem blue-btn big_btn"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" process="@this" styleClass="orange-btn big_btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

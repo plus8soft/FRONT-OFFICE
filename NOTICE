@@ -1,0 +1,111 @@
+Plus8Soft Front Office (Community Edition)
+Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+
+This product includes software developed by AxiomaSoft LLC and the
+Plus8Soft Front Office contributors.
+
+This software is licensed under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance with the
+License. You may obtain a copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+================================================================================
+
+The names "Plus8Soft", "Plus8Soft Front Office", "Plus8Soft Front Office
+Enterprise", "Plus8Soft BankOps Suite", the Plus8Soft logo, and any
+associated marks are trademarks of AxiomaSoft LLC.
+
+The Apache License 2.0 does not grant any rights to use these trademarks.
+Use of the trademarks is governed by a separate trademark policy, available
+in the TRADEMARK.md file in this repository.
+
+================================================================================
+
+Plus8Soft Front Office — Enterprise Edition (separately distributed)
+
+The Enterprise Edition of Plus8Soft Front Office is NOT included in this
+distribution. It is distributed separately under the Plus8Soft Commercial
+License to subscription customers.
+
+The Enterprise Edition includes additional proprietary modules including
+but not limited to:
+
+  - Multi-tenant / multi-branch deployment with strict data isolation
+  - Active Directory / LDAP / SSO (SAML, OIDC) integration
+  - Advanced role-based access control (RBAC) and attribute-based access
+    control (ABAC), including segregation-of-duties policies
+  - 7-year regulator-grade immutable audit logging
+  - E-signature integrations: DocuSign, Adobe Sign, native PKI / qualified
+    e-signature support (eIDAS-compliant)
+  - Production-grade AI-assisted video identification (KYC) module
+  - Sanctions screening: OFAC SDN, EU consolidated, UN, UK HMT
+  - Premium core-banking connectors: Temenos T24, Finastra (Fusion / Phoenix /
+    Equation), Finacle, FIS Profile / Horizon, Fiserv DNA / Premier, Mambu,
+    Oracle FLEXCUBE
+  - SWIFT MT / MX, ISO 20022 message integration
+  - Card-management-system integrations (Way4, TranzWare, OpenWay, Compass
+    Plus TranzAxis)
+  - Multi-jurisdictional regulatory packs (EU PSD2, EU 6AMLD, US BSA, UK MLR,
+    GCC AML, CIS jurisdictions)
+  - Advanced workflow engine with BPMN-style process design
+  - High-availability clustering and disaster recovery
+  - Mobile companion application for managers
+  - Cross-platform PDF generation (replaces the disabled MsReportService)
+  - Power BI / Tableau / Qlik / Looker connectors
+  - Native integration with Plus8Soft AML (real-time transaction screening
+    of operations entered through the front office)
+  - Native integration with Plus8Soft RAG (in-app knowledge assistance for
+    staff: policy lookup, KYC procedure guidance, compliance Q&A)
+  - Long-term support (LTS) branches with security backports
+  - Air-gapped deployment
+
+The combination of Plus8Soft Front Office Enterprise + Plus8Soft AML
+Enterprise + Plus8Soft RAG Enterprise is offered as the
+"Plus8Soft BankOps Suite."
+
+For information about the Enterprise Edition or BankOps Suite, contact:
+    sales@plus8soft.com
+
+================================================================================
+
+Important regulatory and security notice
+
+This software handles personally identifiable information (PII), customer
+financial data, and biometric data (where webcam / video identification is
+used). The operator is responsible for compliance with applicable laws and
+regulations in their jurisdiction(s), including but not limited to:
+
+  - General Data Protection Regulation (GDPR) and biometric-data
+    classifications under Article 9 GDPR
+  - California Consumer Privacy Act (CCPA) and related US state laws
+  - Bank Secrecy Act (BSA) and related US regulations
+  - 6th EU Anti-Money Laundering Directive (6AMLD)
+  - EU Payment Services Directive 2 (PSD2) Strong Customer Authentication
+  - UK Money Laundering Regulations (MLR)
+  - Banking secrecy laws applicable in the operator's jurisdiction
+  - Cybersecurity regulations applicable to financial institutions
+    (e.g., NIS2, NYDFS Part 500, EBA Guidelines on ICT Risk)
+
+The Community Edition is provided "AS IS" without any warranty of regulatory
+compliance, security hardening, or fitness for production financial-services
+use. Demo credentials and demo seed data are NOT suitable for production.
+
+================================================================================
+
+Third-party software
+
+This product includes third-party software components (Spring Framework,
+Spring Security, Spring Data JPA, Spring Web Flow, JSF / Jakarta Faces,
+PrimeFaces, Liquibase, Microsoft SQL Server JDBC driver, Apache Tomcat
+runtime dependencies, COM4J on Windows-only paths, and others). Each
+component is distributed under its own license as declared in its published
+artifact (for example, the Maven POM). For a machine-readable inventory or
+license report, generate one from the Gradle build (dependency tree / SBOM
+tooling) if your process requires it.
+
+PrimeFaces is licensed under the Apache License 2.0 (PrimeFaces Community)
+or a commercial license (PrimeFaces PRO). The Community Edition of
+Plus8Soft Front Office uses only the Apache-licensed PrimeFaces Community
+release. The Plus8Soft Front Office Enterprise Edition may include
+PrimeFaces PRO under a separate commercial sublicensing arrangement.

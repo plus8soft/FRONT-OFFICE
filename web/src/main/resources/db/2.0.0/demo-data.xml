@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  ~ Community Edition demo reference data for Transfer and WOA Payment UI.
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="demo-regions-table" author="2.0.0-demo" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="DICT" tableName="REGIONS"/></not>
+        </preConditions>
+        <comment>Regions table for Transfer payment points</comment>
+        <createTable schemaName="DICT" tableName="REGIONS" remarks="Regions">
+            <column name="REGIONS_ID" type="INT" remarks="Region ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="REGIONS_ID_PK"/>
+            </column>
+            <column name="COUNTRIES_ISO" type="VARCHAR(10)" remarks="Country ISO">
+                <constraints nullable="false" foreignKeyName="REGIONS_COUNTRIES_ISO_FK" references="DICT.COUNTRIES(COUNTRIES_ISO)"/>
+            </column>
+            <column name="NAME" type="VARCHAR(200)" remarks="Name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CODE" type="VARCHAR(50)" remarks="Code"/>
+            <column name="ENABLE" type="BIT" defaultValueBoolean="true" remarks="Enabled">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="REGIONS_ID_SEQ" startValue="1" incrementBy="20"/>
+    </changeSet>
+
+    <changeSet id="demo-pay-actions-table" author="2.0.0-demo" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="DICT" tableName="PAY_ACTIONS"/></not>
+        </preConditions>
+        <createTable schemaName="DICT" tableName="PAY_ACTIONS" remarks="Payment action types">
+            <column name="PAY_ACTIONS_ID" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PAY_ACTIONS_ID_PK"/>
+            </column>
+            <column name="NAME" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CASH_SYMBOL" type="VARCHAR(50)"/>
+            <column name="DISABLED" type="BIT" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TYPE" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="PAY_ACTIONS_ID_SEQ" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="demo-counteragents-table" author="2.0.0-demo" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="DICT" tableName="COUNTERAGENTS"/></not>
+        </preConditions>
+        <createTable schemaName="DICT" tableName="COUNTERAGENTS" remarks="WOA counteragents">
+            <column name="COUNTERAGENTS_ID" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="COUNTERAGENTS_ID_PK"/>
+            </column>
+            <column name="USERS_ID" type="INT">
+                <constraints foreignKeyName="COUNTERAGENTS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="CDATE" type="DATETIME2"/>
+            <column name="VERSION" type="BIGINT"/>
+            <column name="EIN" type="VARCHAR(20)"/>
+            <column name="NAME" type="VARCHAR(200)"/>
+            <column name="ADDRESS" type="VARCHAR(500)"/>
+            <column name="BANK_ROUTING_NUMBER" type="VARCHAR(9)"/>
+            <column name="CONTRACT" type="BIT" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DISABLED" type="BIT" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PURPOSE_TEMPLATE" type="VARCHAR(2000)"/>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="COUNTERAGENTS_ID_SEQ" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="demo-counteragent-pay-actions-table" author="2.0.0-demo" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="DICT" tableName="COUNTERAGENT_PAY_ACTIONS"/></not>
+        </preConditions>
+        <createTable schemaName="DICT" tableName="COUNTERAGENT_PAY_ACTIONS" remarks="Counteragent payment actions">
+            <column name="COUNTERAGENT_PAY_ACTIONS_ID" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="COUNTERAGENT_PAY_ACTIONS_ID_PK"/>
+            </column>
+            <column name="COUNTERAGENTS_ID" type="INT">
+                <constraints nullable="false" foreignKeyName="COUNTERAGENT_PAY_ACTIONS_COUNTERAGENTS_ID_FK"
+                             references="DICT.COUNTERAGENTS(COUNTERAGENTS_ID)"/>
+            </column>
+            <column name="NAME" type="VARCHAR(200)"/>
+            <column name="CASH_SYMBOL" type="VARCHAR(50)"/>
+            <column name="ACCOUNT" type="VARCHAR(50)">
+                <constraints foreignKeyName="COUNTERAGENT_PAY_ACTIONS_ACCOUNT_FK" references="DICT.ACCOUNTS(ACCOUNT)"/>
+            </column>
+            <column name="VAT" type="INT"/>
+            <column name="MAIN" type="BIT"/>
+            <column name="TYPE" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="COUNTERAGENT_PAY_ACTIONS_ID_SEQ" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="demo-identification-rules-table" author="2.0.0-demo" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="DICT" tableName="IDENTIFICATION_RULES"/></not>
+        </preConditions>
+        <createTable schemaName="DICT" tableName="IDENTIFICATION_RULES" remarks="Identification amount rules">
+            <column name="IDENTIFICATION_RULES_ID" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="IDENTIFICATION_RULES_ID_PK"/>
+            </column>
+            <column name="TASKS_ID" type="INT">
+                <constraints foreignKeyName="IDENTIFICATION_RULES_TASKS_ID_FK" references="CORE.TASKS(TASKS_ID)"/>
+            </column>
+            <column name="NAME" type="VARCHAR(200)"/>
+            <column name="SYSTEM_NAME" type="VARCHAR(100)"/>
+            <column name="MIN_VAL" type="DECIMAL(18,2)"/>
+            <column name="MAX_VAL" type="DECIMAL(18,2)"/>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="IDENTIFICATION_RULES_ID_SEQ" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="demo-transfer-data" author="2.0.0-demo" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM DICT.REGIONS</sqlCheck>
+        </preConditions>
+        <comment>Demo regions, payment points and cash account for Transfer Send</comment>
+        <insert schemaName="DICT" tableName="REGIONS">
+            <column name="REGIONS_ID" valueNumeric="1"/>
+            <column name="COUNTRIES_ISO" value="US"/>
+            <column name="NAME" value="New York"/>
+            <column name="CODE" value="NY"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+        <insert schemaName="DICT" tableName="PS_POINTS">
+            <column name="POINTS_ID" valueNumeric="1"/>
+            <column name="SYSTEMS_NAME" value="WESTERN_UNION"/>
+            <column name="CODE" value="NY-WU-001"/>
+            <column name="NAME" value="Western Union New York"/>
+            <column name="ADDRESS" value="350 5th Ave, New York, NY"/>
+            <column name="COUNTRIES_ISO" value="US"/>
+            <column name="REGIONS_ID" valueNumeric="1"/>
+        </insert>
+        <insert schemaName="DICT" tableName="PS_POINTS">
+            <column name="POINTS_ID" valueNumeric="2"/>
+            <column name="SYSTEMS_NAME" value="MONEYGRAM"/>
+            <column name="CODE" value="NY-MG-001"/>
+            <column name="NAME" value="MoneyGram New York"/>
+            <column name="ADDRESS" value="100 Broadway, New York, NY"/>
+            <column name="COUNTRIES_ISO" value="US"/>
+            <column name="REGIONS_ID" valueNumeric="1"/>
+        </insert>
+        <insert schemaName="DICT" tableName="PS_POINTS_CURRENCYS">
+            <column name="POINTS_ID" valueNumeric="1"/>
+            <column name="CURRENCIES_KD" value="USD"/>
+        </insert>
+        <insert schemaName="DICT" tableName="PS_POINTS_CURRENCYS">
+            <column name="POINTS_ID" valueNumeric="1"/>
+            <column name="CURRENCIES_KD" value="EUR"/>
+        </insert>
+        <insert schemaName="DICT" tableName="PS_POINTS_CURRENCYS">
+            <column name="POINTS_ID" valueNumeric="2"/>
+            <column name="CURRENCIES_KD" value="USD"/>
+        </insert>
+        <insert schemaName="DICT" tableName="PS_POINTS_CURRENCYS">
+            <column name="POINTS_ID" valueNumeric="2"/>
+            <column name="CURRENCIES_KD" value="EUR"/>
+        </insert>
+        <insert schemaName="DICT" tableName="ACCOUNTS">
+            <column name="ACCOUNT" value="CASH-USD-001"/>
+            <column name="CURRENCY" value="USD"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="NAME" value="Demo cash USD"/>
+            <column name="STATUS" valueBoolean="true"/>
+        </insert>
+        <insert schemaName="DICT" tableName="ACCOUNT_LINKS">
+            <column name="ACCOUNT_LINKS_ID" valueComputed="NEXT VALUE FOR DICT.ACCOUNT_LINKS_ID_SEQ"/>
+            <column name="ACCOUNT" value="CASH-USD-001"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="OBJ_TYPE" value="DEPARTMENT"/>
+            <column name="TYPE" value="CURRENCY_EXCHANGE"/>
+            <column name="NIGHTLY" valueBoolean="false"/>
+            <column name="OPEN_DATE" valueComputed="GETUTCDATE()"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="demo-woa-data" author="2.0.0-demo" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM DICT.BANKS</sqlCheck>
+        </preConditions>
+        <comment>Demo bank, counteragent, pay actions and identification rule for WOA</comment>
+        <insert schemaName="DICT" tableName="BANKS">
+            <column name="BANK_ID" valueComputed="NEXT VALUE FOR DICT.BANK_ID_SEQ"/>
+            <column name="FULL_NAME" value="Demo Community Bank"/>
+            <column name="SHORT_NAME" value="Demo Bank"/>
+            <column name="ROUTING_NUMBER" value="021000021"/>
+            <column name="CORR_ACCOUNT" value="30101810400000000225"/>
+            <column name="ADDRESS" value="100 Main St, New York, NY"/>
+            <column name="CREATE_DATE" valueComputed="CAST(GETUTCDATE() AS DATE)"/>
+            <column name="ACTUAL_DATE" valueComputed="CAST(GETUTCDATE() AS DATE)"/>
+        </insert>
+        <insert schemaName="DICT" tableName="ACCOUNTS">
+            <column name="ACCOUNT" value="40911000000000000000"/>
+            <column name="CURRENCY" value="USD"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="NAME" value="Demo WOA settlement account"/>
+            <column name="STATUS" valueBoolean="true"/>
+        </insert>
+        <insert schemaName="DICT" tableName="PAY_ACTIONS">
+            <column name="PAY_ACTIONS_ID" valueComputed="NEXT VALUE FOR DICT.PAY_ACTIONS_ID_SEQ"/>
+            <column name="NAME" value="Company payment"/>
+            <column name="CASH_SYMBOL" value="01"/>
+            <column name="DISABLED" valueBoolean="false"/>
+            <column name="TYPE" valueNumeric="2"/>
+        </insert>
+        <insert schemaName="DICT" tableName="PAY_ACTIONS">
+            <column name="PAY_ACTIONS_ID" valueComputed="NEXT VALUE FOR DICT.PAY_ACTIONS_ID_SEQ"/>
+            <column name="NAME" value="Public sector payment"/>
+            <column name="CASH_SYMBOL" value="02"/>
+            <column name="DISABLED" valueBoolean="false"/>
+            <column name="TYPE" valueNumeric="0"/>
+        </insert>
+        <insert schemaName="DICT" tableName="PAY_ACTIONS">
+            <column name="PAY_ACTIONS_ID" valueComputed="NEXT VALUE FOR DICT.PAY_ACTIONS_ID_SEQ"/>
+            <column name="NAME" value="Tax payment"/>
+            <column name="CASH_SYMBOL" value="03"/>
+            <column name="DISABLED" valueBoolean="false"/>
+            <column name="TYPE" valueNumeric="1"/>
+        </insert>
+        <insert schemaName="DICT" tableName="COUNTERAGENTS">
+            <column name="COUNTERAGENTS_ID" valueComputed="NEXT VALUE FOR DICT.COUNTERAGENTS_ID_SEQ"/>
+            <column name="EIN" value="123456789"/>
+            <column name="NAME" value="Demo Services LLC"/>
+            <column name="ADDRESS" value="200 Business Rd, New York, NY"/>
+            <column name="BANK_ROUTING_NUMBER" value="021000021"/>
+            <column name="CONTRACT" valueBoolean="false"/>
+            <column name="DISABLED" valueBoolean="false"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="CDATE" valueComputed="GETUTCDATE()"/>
+        </insert>
+        <sql>
+            INSERT INTO DICT.COUNTERAGENT_PAY_ACTIONS (COUNTERAGENT_PAY_ACTIONS_ID, COUNTERAGENTS_ID, NAME, CASH_SYMBOL, ACCOUNT, VAT, MAIN, TYPE)
+            SELECT NEXT VALUE FOR DICT.COUNTERAGENT_PAY_ACTIONS_ID_SEQ, c.COUNTERAGENTS_ID, 'Company payment', '01',
+                   '40911000000000000000', 0, 1, 2
+            FROM DICT.COUNTERAGENTS c WHERE c.EIN = '123456789';
+        </sql>
+        <sql>
+            INSERT INTO DICT.IDENTIFICATION_RULES (IDENTIFICATION_RULES_ID, TASKS_ID, NAME, SYSTEM_NAME, MIN_VAL, MAX_VAL)
+            SELECT NEXT VALUE FOR DICT.IDENTIFICATION_RULES_ID_SEQ, t.TASKS_ID, 'WOA payer identification', 'PAY_PERS_IDENT', 0, 999999999
+            FROM CORE.TASKS t WHERE t.SYSTEM_NAME = 'menu-single-window-payments-woa';
+        </sql>
+    </changeSet>
+
+    <changeSet id="demo-woa-vat-dictionary" author="2.0.0-demo" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM CORE.DICTIONARIES WHERE DICT_NAME = 'NDS'</sqlCheck>
+        </preConditions>
+        <insert schemaName="CORE" tableName="DICTIONARIES">
+            <column name="DICT_NAME" value="NDS"/>
+            <column name="NAME" value="VAT rates"/>
+            <column name="GROUP_NAME" value="PAY"/>
+            <column name="UPD_DATE" valueComputed="GETUTCDATE()"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="DESCRIPTION" value="VAT rates for WOA payments"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="NDS"/>
+            <column name="CODE" value="0"/>
+            <column name="VALUE" value="0%"/>
+            <column name="SHORT_VALUE" value="0%"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="NDS"/>
+            <column name="CODE" value="10"/>
+            <column name="VALUE" value="10%"/>
+            <column name="SHORT_VALUE" value="10%"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="NDS"/>
+            <column name="CODE" value="20"/>
+            <column name="VALUE" value="20%"/>
+            <column name="SHORT_VALUE" value="20%"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

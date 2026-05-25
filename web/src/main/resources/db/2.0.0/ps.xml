@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="2.0.0" failOnError="true">
+        <sql>CREATE SCHEMA PS</sql>
+        
+        <!-- RECIPIENTS table based on Recipient entity -->
+        <createTable schemaName="PS" tableName="RECIPIENTS" remarks="Recipients">
+            <column name="RECIPIENTS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="RECIPIENTS_ID_PK"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints nullable="false" foreignKeyName="RECIPIENTS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="RESCOUNTRY" type="VARCHAR(50)" remarks="Resident country">
+                <constraints nullable="false"/>
+            </column>
+            <column name="GENDER" type="INT" remarks="Gender">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CITIZENSHIP" type="VARCHAR(100)" remarks="Citizenship">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LASTNAME" type="VARCHAR(100)" remarks="Last name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FIRSTNAME" type="VARCHAR(100)" remarks="First name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PATRONYMIC" type="VARCHAR(100)" remarks="Middle name"/>
+            <column name="DATEOFBIRTH" type="DATE" remarks="Date of birth"/>
+            <column name="PLACEOFBTXT" type="VARCHAR(1000)" remarks="Place of birth (string)"/>
+            <column name="COUNTRYOFB" type="BIGINT" remarks="Country of birth">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DOC_TYPE" type="VARCHAR(5)" remarks="Document type"/>
+            <column name="DOC_SERIES" type="VARCHAR(20)" remarks="Document series"/>
+            <column name="DOC_NUMBER" type="VARCHAR(100)" remarks="Document number"/>
+            <column name="DOC_ISSUANCEUNIT" type="VARCHAR(255)" remarks="Issuing authority"/>
+            <column name="DOC_ISSUANCEDATE" type="DATE" remarks="Issue date"/>
+            <column name="DOC_ISSUANCEUNITID" type="VARCHAR(50)" remarks="Department code"/>
+            <column name="DOC_VALIDTODATE" type="DATE" remarks="Valid until date"/>
+            <column name="ADR_ADDRESS_CODE" type="VARCHAR(19)" remarks="Address code"/>
+            <column name="ADR_POSTALCODE" type="VARCHAR(6)" remarks="Postal code"/>
+            <column name="ADR_COUNTRY" type="VARCHAR(10)" remarks="Country"/>
+            <column name="ADR_REGIONTYPE" type="VARCHAR(10)" remarks="Region type"/>
+            <column name="ADR_REGION" type="VARCHAR(40)" remarks="Region"/>
+            <column name="ADR_DISTRICTTYPE" type="VARCHAR(10)" remarks="District type"/>
+            <column name="ADR_DISTRICT" type="VARCHAR(40)" remarks="District"/>
+            <column name="ADR_CITYTYPE" type="VARCHAR(10)" remarks="City type"/>
+            <column name="ADR_CITY" type="VARCHAR(40)" remarks="City"/>
+            <column name="ADR_LOCALITYTYPE" type="VARCHAR(10)" remarks="Locality type"/>
+            <column name="ADR_LOCALITY" type="VARCHAR(255)" remarks="Locality"/>
+            <column name="ADR_STREETTYPE" type="VARCHAR(10)" remarks="Street type"/>
+            <column name="ADR_STREET" type="VARCHAR(255)" remarks="Street"/>
+            <column name="ADR_HOUSE" type="VARCHAR(50)" remarks="House"/>
+            <column name="ADR_HOUSING" type="VARCHAR(50)" remarks="Building"/>
+            <column name="ADR_STRUCTURE" type="VARCHAR(50)" remarks="Structure"/>
+            <column name="ADR_FLAT" type="VARCHAR(50)" remarks="Apartment"/>
+            <column name="CONTACT_MOB_TEL" type="VARCHAR(15)" remarks="Mobile phone"/>
+            <column name="CONTACT_HOUSE_TEL" type="VARCHAR(15)" remarks="Home phone"/>
+            <column name="CONTACT_EMAIL" type="VARCHAR(100)" remarks="EMAIL"/>
+        </createTable>
+        <createSequence schemaName="PS" sequenceName="RECIPIENTS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex schemaName="PS" tableName="RECIPIENTS" indexName="USERS_ID_IDX">
+            <column name="USERS_ID"/>
+        </createIndex>
+        
+        <!-- TRANSFER_OPERATIONS table based on TransferOperation entity -->
+        <createTable schemaName="PS" tableName="TRANSFER_OPERATIONS" remarks="Transfer Journal">
+            <column name="TRANSFER_OPERATIONS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="TRANSFER_OPERATIONS_ID_IDX"
+                             foreignKeyName="OPERATIONS_OPERATIONS_ID_FK" references="LOG.OPERATIONS(OPERATIONS_ID)"/>
+            </column>
+            <column name="PS_SYSTEMS_NAME" type="VARCHAR(50)" remarks="Payment system system name">
+                <constraints nullable="false" foreignKeyName="TRANSFERS_PS_SYSTEMS_NAME_FK" references="DICT.PS_SYSTEMS(SYSTEMS_NAME)"/>
+            </column>
+            <column name="RECIPIENTS_ID" type="INT" remarks="Recipient ID">
+                <constraints foreignKeyName="TRANSFERS_RECIPIENTS_ID_FK" references="PS.RECIPIENTS(RECIPIENTS_ID)"/>
+            </column>
+            <column name="AMOUNT" type="DECIMAL(9, 2)" remarks="Transfer amount">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CURRENCY" type="VARCHAR(3)" remarks="Send/disburse (payment) currency">
+                <constraints nullable="false" foreignKeyName="TRANSFERS_ACCEPTED_CURRENCY_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="TRANSFER_AMOUNT" type="DECIMAL(9, 2)" remarks="Disbursement amount"/>
+            <column name="TRANSFER_CURRENCY" type="VARCHAR(3)" remarks="Transfer (disbursement) currency">
+                <constraints foreignKeyName="TRANSFERS_TRANSFER_CURRENCY_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="DESTINATION_COUNTRY" type="VARCHAR(10)" remarks="Country"/>
+            <column name="DESTINATION_REGION" type="VARCHAR(40)" remarks="Region"/>
+            <column name="DESTINATION_CITY" type="VARCHAR(40)" remarks="City"/>
+            <column name="DESTINATION_POINT" type="VARCHAR(50)" remarks="Destination point code"/>
+            <column name="BANK_COMMISSION_CURRENCY" type="VARCHAR(3)" remarks="Bank commission currency">
+                <constraints foreignKeyName="TRANSFERS_CLIENT_COMMISSION_CURRENCY_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="BANK_COMMISSION_AMOUNT" type="DECIMAL(9, 2)" remarks="Bank commission amount"/>
+            <column name="SYSTEM_COMMISSION_CURRENCY" type="VARCHAR(3)" remarks="Payment system commission currency">
+                <constraints foreignKeyName="TRANSFERS_SYSTEM_COMMISSION_CURRENCY_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="SYSTEM_COMMISSION_AMOUNT" type="DECIMAL(9, 2)" remarks="Payment system commission amount"/>
+            <column name="EXC_RATIO" type="INT" remarks="Currency units per base currency"/>
+            <column name="EXC_RATE" type="DECIMAL(9, 4)" remarks="Exchange rate"/>
+            <column name="TRANSFER_NUMBER" type="VARCHAR(100)" remarks="Unique transfer number in payment system"/>
+        </createTable>
+        <createIndex schemaName="PS" tableName="TRANSFER_OPERATIONS" indexName="PS_SYSTEMS_NAME_IDX">
+            <column name="PS_SYSTEMS_NAME"/>
+        </createIndex>
+        <createIndex schemaName="PS" tableName="TRANSFER_OPERATIONS" indexName="RECIPIENTS_ID_IDX">
+            <column name="RECIPIENTS_ID"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

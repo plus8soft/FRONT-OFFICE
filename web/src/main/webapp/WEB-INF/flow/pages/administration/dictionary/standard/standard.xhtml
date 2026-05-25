@@ -1,0 +1,114 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Standard Dictionaries</h1>
+        <p:panel header="Select a dictionary and perform the necessary actions">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel box_big_subpanel clearfix">
+                <div class="search_box">
+                    <p:outputLabel for="@next" value="Search:"/>
+                    <p:inputText value="#{dictionaryView.filter.name}" placeholder="Search by name"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}"/>
+                    <p:remoteCommand name="updateTable" action="#{dictionaryView.fastSearch()}" update="@form"/>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                </div>
+            </div>
+            <p:panel toggleable="true" collapsed="#{not dictionaryView.filter.extendedSearch}" header="Advanced Search" styleClass="subpanel">
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel for="@next" value="Group Name"/>
+                    </div>
+                    <div class="grid_cell w_35">
+                        <p:autoComplete value="#{dictionaryView.filter.group}" styleClass="w_100" completeMethod="#{dictionaryView.completeGroup}"
+                                        dropdown="true"/>
+                    </div>
+                    <div class="grid_cell w_10 r-label">
+                        <p:outputLabel for="@next" value="Updated From"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:calendar value="#{dictionaryView.filter.updateDateWith}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                        showOn="button" placeholder="dd.mm.yyyy hh:mm" mask="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_5 r-label">
+                        <p:outputLabel for="@next" value="To"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:calendar value="#{dictionaryView.filter.updateDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                        showOn="button" placeholder="dd.mm.yyyy hh:mm" mask="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Dictionary Values</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_5">
+                        <p:outputLabel for="@next" value="Code"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <p:inputText value="#{dictionaryView.filter.code}" styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_20 r-label">
+                        <p:outputLabel for="@next" value="Short Value"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{dictionaryView.filter.shortValue}" styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_20 r-label">
+                        <p:outputLabel for="@next" value="Extended Value"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{dictionaryView.filter.value}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="btn_box align-right">
+                    <p:commandButton value="Find" action="#{dictionaryView.extendedSearch()}" update="@form"
+                                     styleClass="blue-btn action-button"/>
+                </div>
+            </p:panel>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Edit" action="editDictionary" disabled="#{empty dictionaryModel.selected}"
+                                 styleClass="blue-btn action-button"/>
+                <p:commandButton value="Elements" action="elements" disabled="#{empty dictionaryModel.selected}"
+                                 styleClass="action-button btn_group green-btn"/>
+            </div>
+            <p:dataTable id="dictionaries" value="#{dictionaryModel}" var="dictionaryItem" lazy="true" rows="100" scrollRows="50"
+                         scrollable="#{dictionaryModel.rowCount gt 10}" virtualScroll="true" selectionMode="single" sortMode="multiple"
+                         scrollHeight="#{dictionaryModel.rowCount gt 10 ? 400 : null}"
+                         selection="#{dictionaryModel.selected}" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.action-button)"/>
+                <p:ajax event="rowUnselect" update="@(.action-button)"/>
+                <p:ajax event="page" update="@(.action-button)" listener="#{dictionaryModel.setSelected(null)}"/>
+                <p:column headerText="Name">
+                    #{dictionaryItem.dictionary.name}
+                </p:column>
+                <p:column headerText="Type" width="105">
+                    #{dictionaryItem.dictionary.system ? "Fixed" : "Editable"}
+                </p:column>
+                <p:column headerText="Update Date" width="120">
+                    <h:outputText value="#{dictionaryItem.dictionary.updateDate}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Number of Elements" width="140">
+                    <span class="fix_row align-right">#{dictionaryItem.count}</span>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,51 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" xmlns:h="http://java.sun.com/jsf/html"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Audit</h1>
+        <p:panel header="Select a task and perform the necessary actions">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Edit" action="edit"
+                                 disabled="#{empty eventSettingView.selectedTask or eventSettingView.selectedTask.data.eventsCount eq 0}"
+                                 styleClass="blue-btn"/>
+            </div>
+            <p:treeTable value="#{eventSettingView.treeTask}" var="event" nodeVar="treeNode" selectionMode="single"
+                         selection="#{eventSettingView.selectedTask}" emptyMessage="No data">
+                <p:ajax event="select" update="@(.ui-button)"/>
+                <p:columnGroup type="header">
+                    <p:row>
+                        <p:column rowspan="2" headerText="Task Name"/>
+                        <p:column colspan="2" headerText="Events"/>
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="Total"/>
+                        <p:column headerText="Fixed"/>
+                    </p:row>
+                </p:columnGroup>
+                <p:column>
+                    <p:treeNode type="group" rendered="#{treeNode.type eq 'group'}">
+                        #{event.name}
+                    </p:treeNode>
+                    <p:treeNode rendered="#{treeNode.type eq 'default'}">
+                        #{event.task.name}
+                    </p:treeNode>
+                </p:column>
+                <p:column>
+                    <h:outputText value="#{event.eventsCount}" rendered="#{event.eventsCount ne 0}"/>
+                </p:column>
+                <p:column>
+                    <h:outputText value="#{event.aviableEventsCount}" rendered="#{event.aviableEventsCount ne 0}"/>
+                </p:column>
+            </p:treeTable>
+        </p:panel>
+    </ui:define>
+</ui:composition>

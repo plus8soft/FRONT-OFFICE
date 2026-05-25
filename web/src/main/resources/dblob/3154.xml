@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="2" author="3154" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(schema_id) FROM sys.schemas WHERE NAME = 'CRM'</sqlCheck>
+        </preConditions>
+        <sql>
+            CREATE SCHEMA CRM;
+        </sql>
+    </changeSet>
+    <changeSet id="3" author="3154" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="CRM" tableName="PERSON_PHOTO_DATA"/>
+            </not>
+        </preConditions>
+        <createTable schemaName="CRM" tableName="PERSON_PHOTO_DATA" remarks="Photo (binary data)">
+            <column name="PERSON_PHOTO_ID" type="INT" remarks="ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA" type="VARBINARY(MAX)" remarks="Data">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="4" author="3154" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="CRM" tableName="DOC_COPIES_DATA"/>
+            </not>
+        </preConditions>
+        <createTable schemaName="CRM" tableName="DOC_COPIES_DATA" remarks="Document copies (binary data)">
+            <column name="DOC_COPIES_ID" type="INT" remarks="ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA" type="VARBINARY(MAX)" remarks="Data">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

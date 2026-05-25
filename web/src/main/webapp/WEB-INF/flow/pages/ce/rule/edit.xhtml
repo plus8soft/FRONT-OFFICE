@@ -1,0 +1,63 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../ce-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Define Rule Parameters">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <ui:fragment rendered="#{not ruleEditView.rule.system}">
+                <div class="row grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Rule Active"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <p:selectBooleanCheckbox value="#{ruleEditView.rule.enabled}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="row grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Rule Description"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <div class="icon_box">
+                            <p:inputText value="#{ruleEditView.rule.name}" required="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+            </ui:fragment>
+            <div class="row grid_row">
+                <div class="grid_cell w_15">
+                    <p:outputLabel for="@next" value="Minimum Amount"/>
+                </div>
+                <div class="grid_cell w_25">
+                    <div class="icon_box">
+                        <p:inputNumber value="#{ruleEditView.rule.min}" required="true" minValue="0" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row grid_row">
+                <div class="grid_cell w_15">
+                    <p:outputLabel for="@next" value="Maximum Amount"/>
+                </div>
+                <div class="grid_cell w_25">
+                    <p:inputNumber value="#{ruleEditView.rule.max}" styleClass="w_100" emptyValue="sign" minValue="0"/>
+                </div>
+            </div>
+        </p:panel>
+        <div class="navigation_panel clearfix bottom">
+            <p:commandButton value="Save" action="#{ruleEditView.save()}" update="@form" styleClass="blue-btn big_btn r-float_elem"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" update="@form" styleClass="orange-btn big_btn">
+                <p:resetInput target="@form"/>
+            </p:commandButton>
+        </div>
+    </ui:define>
+</ui:composition>

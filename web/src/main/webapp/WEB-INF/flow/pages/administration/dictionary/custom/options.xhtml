@@ -1,0 +1,60 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:importEnum type="web.entity.dict.UpdateType"/>
+        <p:panel header="Dictionary Options > #{customDictionaryEdit.dictionaryParameter.name}">
+            <div class="multiline">
+                <p>Scheduled update time is represented in the following format:</p>
+                <p>
+                    second(range 0-59); minute(range 0-59); hour(range 0-23); day of month(range 1-31); month(range 1-12);
+                    day of week(range 0-6, 0=Sunday).
+                </p>
+                <p>The '*' symbol means - any value. The '?' symbol is used if a specific day of week(month) is not important.</p>
+                <p>Update frequency options:</p>
+                <p>"* * * * * *" = every second.</p>
+                <p>"0 0 * * * *" = every day at the start of every hour.</p>
+                <p>"0 0 8-10 * * *" = every day at 8, 9 and 10 o'clock.</p>
+                <p>"0 0/30 8-10 * * *" = every day at 8:00, 8:30, 9:00, 9:30 and 10 o'clock.</p>
+                <p>"0 0 9-17 * * MON-FRI" = every weekday from 9:00 to 17:00</p>
+                <p>"0 0 0 25 12 ?" = every December 25 at midnight</p>
+                <p>
+                    Time is specified in GMT+0, i.e. the launch will be performed at the specified hour + time zone. For example, for Moscow, if the
+                    "hour" value is "0", then the launch will be performed at 3:00.
+                </p>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_15">
+                    <p:outputLabel value="Schedule Active" for="@next"/>
+                </div>
+                <div class="grid_cell w_5">
+                    <p:selectBooleanCheckbox value="#{customDictionaryEdit.dictionaryParameter.enabled}">
+                        <p:ajax listener="#{customDictionaryEdit.setChangeParameters(true)}" update="@(.ui-button:first)"/>
+                    </p:selectBooleanCheckbox>
+                </div>
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Schedule" for="@next"/>
+                </div>
+                <div class="grid_cell w_15">
+                    <p:inputText value="#{customDictionaryEdit.dictionaryParameter.schedule}" required="true" styleClass="w_100">
+                        <p:ajax listener="#{customDictionaryEdit.setChangeParameters(true)}" immediate="true" update="@(.ui-button:first)"/>
+                        <p:keyFilter regEx="/[0-9 \,\-\*/\?ABCDEFGJLMNOPRSTUVY]/" preventPaste="false"/>
+                        <f:validator binding="#{cronValidator}"/>
+                    </p:inputText>
+                    <p:message for="@previous" display="icon"/>
+                </div>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Save" action="#{customDictionaryEdit.save()}" update="@form"
+                             disabled="#{not customDictionaryEdit.changeParameters}" styleClass="big_btn blue-btn r-float_elem"/>
+            <p:commandButton value="Cancel" action="cancel" process="@this" styleClass="big_btn orange-btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="2.0.0" failOnError="true">
+        <!-- Accept checksum from previously deployed WAR builds (do not edit changeSet body after release) -->
+        <validCheckSum>8:eb23768f530ab464223398e1474cff0d</validCheckSum>
+        <!-- Insert initial department -->
+        <insert schemaName="CORE" tableName="DEPARTMENTS">
+            <column name="DEPARTMENTS_ID" valueComputed="NEXT VALUE FOR CORE.DEPARTMENTS_ID_SEQ"/>
+            <column name="EXT_DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="POSITION" value="0"/>
+            <column name="STATUS" valueBoolean="true"/>
+            <column name="TYPE" valueNumeric="0"/>
+            <column name="CODE" value="1"/>
+            <column name="SHORT_NAME" value="New York Branch"/>
+            <column name="FULL_NAME" value="New York Branch"/>
+            <column name="WORK_PHONE" value="12125551234"/>
+            <column name="TIME_ZONE" value="America/New_York"/>
+            <column name="START_OPERATION_DAY" valueDate="09:00:00"/>
+            <column name="END_OPERATION_DAY" valueDate="18:00:00"/>
+            <column name="NIGHTLY_CASH" valueBoolean="false"/>
+        </insert>
+        
+        <!-- Insert initial security profile -->
+        <insert schemaName="CORE" tableName="SECURITY_PROFILES">
+            <column name="SECURITY_PROFILES_ID" valueComputed="NEXT VALUE FOR CORE.SECURITY_PROFILES_ID_SEQ"/>
+            <column name="NAME" value="Standard"/>
+            <column name="DESCRIPTION" value="Standard"/>
+            <column name="PASS_UCASE_AND_LCASE" valueBoolean="false"/>
+            <column name="PASS_CONTAINS_NUMBERS" valueBoolean="false"/>
+            <column name="PASS_CONTAINS_SPEC_CHARACTERS" valueBoolean="false"/>
+            <column name="PASS_NOT_USE_USERDATA" valueBoolean="false"/>
+            <column name="PASS_NOT_USE_COMMON_WORDS" valueBoolean="false"/>
+            <column name="PASS_MIN_LEN" value="10"/>
+            <column name="PASS_EXP_TERM_TYPE" value="DAYS"/>
+            <column name="PASS_EXP_TERM" valueNumeric="999999"/>
+            <column name="BLOCK_ACCOUNT_INACTIVE" valueBoolean="false"/>
+            <column name="BLOCK_ACCOUNT_INACTIVE_TERM_TYPE" value="DAYS"/>
+            <column name="BLOCK_ACCOUNT_INACTIVE_TERM" valueNumeric="10"/>
+            <column name="BLOCK_ACCOUNT_FAIL_LOGIN" valueBoolean="false"/>
+            <column name="BLOCK_ACCOUNT_FAIL_LOGIN_ATTEMPS" value="10"/>
+            <column name="TEMPORARY_BLOCK_ACCOUNT" valueBoolean="false"/>
+            <column name="TEMPORARY_BLOCK_ACCOUNT_FAIL_ATTEMPS" value="1"/>
+            <column name="TEMPORARY_BLOCK_ACCOUNT_TERM_TYPE" value="DAYS"/>
+            <column name="TEMPORARY_BLOCK_ACCOUNT_TERM" valueNumeric="10"/>
+            <column name="MAX_SESSIONS" value="1"/>
+            <column name="SESSION_TIMEOUT" valueNumeric="30"/>
+            <column name="CONNECT_ONLY_FROM_TRUST_ZONE" valueBoolean="false"/>
+        </insert>
+        
+        <!-- Insert initial user -->
+        <insert schemaName="CORE" tableName="USERS">
+            <column name="USERS_ID" valueComputed="NEXT VALUE FOR CORE.USERS_ID_SEQ"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="LOGIN" value="admin"/>
+            <column name="PASS" value="$2a$10$VGPKTDQX6tyqmu9jzROFSOIZJH7iCY43i3lKnN.AJYlX.Bz8Gpy.C"/>
+            <column name="PASS_CHANGE_ON_LOGIN" valueBoolean="false"/>
+            <column name="FIRSTNAME" value="John"/>
+            <column name="LASTNAME" value="Smith"/>
+            <column name="PATRONYMIC" value=""/>
+            <column name="USE_DEPARTMENT_TIME_ZONE" valueBoolean="false"/>
+            <column name="TIME_ZONE" value="America/New_York"/>
+            <column name="JOB_POSITION" value="0"/>
+            <column name="JOB_POSITION_TXT" value="Administrator"/>
+            <column name="WORK_PHONE" value="12125551234"/>
+            <column name="EMAIL" value="test@test.com"/>
+            <column name="SECURITY_PROFILES_ID" valueNumeric="1"/>
+            <column name="STATUS" value="ACTIVE"/>
+            <column name="AUTH_TYPE" value="LOGIN_PASS"/>
+        </insert>
+
+        <!-- Link test department (ID = 1) with test payment systems -->
+        <insert schemaName="CORE" tableName="DEPARTMENT_PS_SYSTEMS">
+            <column name="DEPARTMENT_PS_SYSTEMS_ID" valueComputed="NEXT VALUE FOR CORE.DEPARTMENT_PS_SYSTEMS_PK_SEQ"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="PS_SYSTEMS_NAME" value="WESTERN_UNION"/>
+            <column name="CODE" value="NY-BR-001"/>
+            <column name="CAN_SEND" valueBoolean="true"/>
+            <column name="CAN_PAYOUT" valueBoolean="true"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DEPARTMENT_PS_SYSTEMS">
+            <column name="DEPARTMENT_PS_SYSTEMS_ID" valueComputed="NEXT VALUE FOR CORE.DEPARTMENT_PS_SYSTEMS_PK_SEQ"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="PS_SYSTEMS_NAME" value="MONEYGRAM"/>
+            <column name="CODE" value="NY-BR-002"/>
+            <column name="CAN_SEND" valueBoolean="true"/>
+            <column name="CAN_PAYOUT" valueBoolean="true"/>
+        </insert>
+        
+        <!-- Insert projects -->
+        <insert schemaName="CORE" tableName="PROJECTS">
+            <column name="PROJECTS_ID" valueComputed="NEXT VALUE FOR CORE.PROJECTS_ID_SEQ"/>
+            <column name="SYSTEM_NAME" value="menu-single-window"/>
+            <column name="NAME" value="Single Window"/>
+        </insert>
+        <insert schemaName="CORE" tableName="PROJECTS">
+            <column name="PROJECTS_ID" valueComputed="NEXT VALUE FOR CORE.PROJECTS_ID_SEQ"/>
+            <column name="SYSTEM_NAME" value="menu-ce"/>
+            <column name="NAME" value="Currency Exchange"/>
+        </insert>
+        <insert schemaName="CORE" tableName="PROJECTS">
+            <column name="PROJECTS_ID" valueComputed="NEXT VALUE FOR CORE.PROJECTS_ID_SEQ"/>
+            <column name="SYSTEM_NAME" value="menu-administration"/>
+            <column name="NAME" value="Administration"/>
+        </insert>
+        
+        <!-- Insert tasks -->
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="1"/>
+            <column name="SYSTEM_NAME" value="menu-single-window-currency-exchange"/>
+            <column name="NAME" value="Currency Exchange"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="2"/>
+            <column name="SYSTEM_NAME" value="menu-ce-currency"/>
+            <column name="NAME" value="Currencies"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="2"/>
+            <column name="SYSTEM_NAME" value="menu-ce-department-currency"/>
+            <column name="NAME" value="Department Currencies"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="2"/>
+            <column name="SYSTEM_NAME" value="menu-ce-rule"/>
+            <column name="NAME" value="Rules"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="2"/>
+            <column name="SYSTEM_NAME" value="menu-ce-commission"/>
+            <column name="NAME" value="Commission Rules"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="2"/>
+            <column name="SYSTEM_NAME" value="menu-ce-convertion"/>
+            <column name="NAME" value="Conversion Rules"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="2"/>
+            <column name="SYSTEM_NAME" value="menu-ce-rate"/>
+            <column name="NAME" value="Exchange Rates"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="2"/>
+            <column name="SYSTEM_NAME" value="menu-ce-order"/>
+            <column name="NAME" value="Order Registry"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="NAME" value="Users"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="9"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-user-management"/>
+            <column name="NAME" value="User Management"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="9"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-user-group"/>
+            <column name="NAME" value="User Groups"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="9"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-user-security-profile"/>
+            <column name="NAME" value="Security Profiles"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="9"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-user-security-certificate"/>
+            <column name="NAME" value="Security Certificates"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="NAME" value="Organizational Structure"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="14"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-department-management"/>
+            <column name="NAME" value="Organizational Structure Management"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="14"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-department-group"/>
+            <column name="NAME" value="Department Groups"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="NAME" value="Roles and Permissions"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="17"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-permission-role"/>
+            <column name="NAME" value="Roles"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="17"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-permission-right"/>
+            <column name="NAME" value="Permissions"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="NAME" value="Dictionaries"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="20"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-dictionary-system"/>
+            <column name="NAME" value="System Dictionaries"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="20"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-dictionary-custom"/>
+            <column name="NAME" value="Custom Dictionaries"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="NAME" value="Audit"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="23"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-audit-management"/>
+            <column name="NAME" value="Audit Settings"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="NAME" value="Audit Logs"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="25"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-auditlogs-io"/>
+            <column name="NAME" value="Login (Logout)"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="25"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-auditlogs-system"/>
+            <column name="NAME" value="System Events"/>
+        </insert>
+        <insert schemaName="CORE" tableName="TASKS">
+            <column name="TASKS_ID" valueComputed="NEXT VALUE FOR CORE.TASKS_ID_SEQ"/>
+            <column name="PARENT_TASK" valueNumeric="25"/>
+            <column name="PROJECTS_ID" valueNumeric="3"/>
+            <column name="SYSTEM_NAME" value="menu-administration-auditlogs-user"/>
+            <column name="NAME" value="User Events"/>
+        </insert>
+        
+        <!-- Insert rights -->
+        <insert schemaName="CORE" tableName="RIGHTS">
+            <column name="RIGHTS_ID" valueComputed="NEXT VALUE FOR CORE.RIGHTS_ID_SEQ"/>
+            <column name="GROUP_NAME" value="Currency Exchange"/>
+            <column name="SYSTEM_NAME" value="single-window-currency-exchange-commission"/>
+            <column name="NAME" value="Set/Remove Commission"/>
+            <column name="DESCRIPTION" value="Set/Remove commission for currency exchange operation"/>
+        </insert>
+        <insert schemaName="CORE" tableName="RIGHTS">
+            <column name="RIGHTS_ID" valueComputed="NEXT VALUE FOR CORE.RIGHTS_ID_SEQ"/>
+            <column name="GROUP_NAME" value="Currency Exchange"/>
+            <column name="SYSTEM_NAME" value="single-window-currency-exchange-rate"/>
+            <column name="NAME" value="Set New Rate"/>
+            <column name="DESCRIPTION" value="Set new exchange rate for currency exchange operation"/>
+        </insert>
+        <insert schemaName="CORE" tableName="RIGHTS">
+            <column name="RIGHTS_ID" valueComputed="NEXT VALUE FOR CORE.RIGHTS_ID_SEQ"/>
+            <column name="GROUP_NAME" value="Currency exchange"/>
+            <column name="SYSTEM_NAME" value="ce-resend-order"/>
+            <column name="NAME" value="Resend order"/>
+            <column name="DESCRIPTION" value="Resend order"/>
+        </insert>
+        
+        <!-- Create group for admin -->
+        <insert schemaName="CORE" tableName="GROUPS">
+            <column name="GROUPS_ID" valueComputed="NEXT VALUE FOR CORE.GROUPS_ID_SEQ"/>
+            <column name="NAME" value="Admin Group"/>
+            <column name="DESCRIPTION" value="Administrator Group"/>
+            <column name="TYPE" valueBoolean="false"/>
+            <column name="POSITION" valueNumeric="0"/>
+        </insert>
+        
+        <!-- Link group to department (DEPARTMENTS_ID = 1) -->
+        <insert schemaName="CORE" tableName="GROUP_DEPARTMENTS">
+            <column name="GROUPS_ID" valueNumeric="1"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+        </insert>
+        
+        <!-- Assign admin user to group (USERS_ID = 1, GROUPS_ID = 1) -->
+        <insert schemaName="CORE" tableName="GROUP_USERS">
+            <column name="GROUPS_ID" valueNumeric="1"/>
+            <column name="USERS_ID" valueNumeric="1"/>
+        </insert>
+        
+        <!-- Assign tasks to admin user (USERS_ID = 1) -->
+        <!-- Assign specific tasks by SYSTEM_NAME (matching 1.0.0 configuration) -->
+        <sql>
+            <![CDATA[
+            -- Assign tasks to admin (USERS_ID = 1) based on SYSTEM_NAME
+            INSERT INTO CORE.USER_TASKS (USERS_ID, TASKS_ID)
+            SELECT 1, TASKS_ID 
+            FROM CORE.TASKS 
+            WHERE SYSTEM_NAME IN (
+                'menu-single-window-currency-exchange',
+                'menu-ce-currency',
+                'menu-ce-department-currency',
+                'menu-ce-rule',
+                'menu-ce-commission',
+                'menu-ce-convertion',
+                'menu-ce-rate',
+                'menu-ce-order',
+                'menu-administration-user-management',
+                'menu-administration-user-group',
+                'menu-administration-user-security-profile',
+                'menu-administration-user-security-certificate',
+                'menu-administration-department-management',
+                'menu-administration-department-group',
+                'menu-administration-permission-role',
+                'menu-administration-permission-right',
+                'menu-administration-dictionary-system',
+                'menu-administration-dictionary-custom',
+                'menu-administration-audit-management',
+                'menu-administration-auditlogs-io',
+                'menu-administration-auditlogs-system',
+                'menu-administration-auditlogs-user'
+            );
+            ]]>
+        </sql>
+        
+        <!-- Assign rights to admin user (USERS_ID = 1) -->
+        <sql>
+            <![CDATA[
+            -- Assign all rights to admin (USERS_ID = 1)
+            INSERT INTO CORE.USER_RIGHTS (USERS_ID, RIGHTS_ID)
+            SELECT 1, RIGHTS_ID 
+            FROM CORE.RIGHTS;
+            ]]>
+        </sql>
+        
+        <!-- Create password history for admin -->
+        <sql>
+            <![CDATA[
+            -- Create password history record for admin
+            INSERT INTO CORE.USER_PASSWORDS (USER_PASSWORDS_ID, USERS_ID, CHANGE_DATE, PASS)
+            SELECT 
+                NEXT VALUE FOR CORE.USER_PASSWORDS_ID_SEQ,
+                1,
+                GETUTCDATE(),
+                PASS
+            FROM CORE.USERS
+            WHERE USERS_ID = 1;
+            
+            -- Ensure PASS_CHANGE_ON_LOGIN is false and ACCOUNT_EXP_DATE is NULL (to prevent password change loop)
+            UPDATE CORE.USERS
+            SET PASS_CHANGE_ON_LOGIN = 0,
+                ACCOUNT_EXP_DATE = NULL
+            WHERE USERS_ID = 1;
+            
+            -- Update password history date to current date (to prevent expired password check)
+            -- This ensures that even with PASS_EXP_TERM = 0, the expiration check passes
+            UPDATE CORE.USER_PASSWORDS
+            SET CHANGE_DATE = GETUTCDATE()
+            WHERE USERS_ID = 1 
+            AND USER_PASSWORDS_ID = (SELECT MAX(USER_PASSWORDS_ID) FROM CORE.USER_PASSWORDS WHERE USERS_ID = 1);
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="2" author="2.0.0" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM CORE.DICTIONARY_VALUES WHERE DICT_NAME = 'ADDRES_TYPES'</sqlCheck>
+        </preConditions>
+        <insert schemaName="CORE" tableName="DICTIONARIES">
+            <column name="DICT_NAME" value="ADDRES_TYPES"/>
+            <column name="NAME" value="Address Types"/>
+            <column name="GROUP_NAME" value="CRM"/>
+            <column name="UPD_DATE" valueComputed="GETUTCDATE()"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="DESCRIPTION" value="Person address types for CRM change log"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="ADDRES_TYPES"/>
+            <column name="CODE" value="Staying"/>
+            <column name="VALUE" value="Temporary (Staying) Address"/>
+            <column name="SHORT_VALUE" value="Staying"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="ADDRES_TYPES"/>
+            <column name="CODE" value="Residential"/>
+            <column name="VALUE" value="Residential Address"/>
+            <column name="SHORT_VALUE" value="Residential"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="ADDRES_TYPES"/>
+            <column name="CODE" value="Correspondence"/>
+            <column name="VALUE" value="Correspondence Address"/>
+            <column name="SHORT_VALUE" value="Correspondence"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+    <changeSet id="3" author="2.0.0" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM CORE.DICTIONARIES WHERE DICT_NAME = 'DOC_TYPES'</sqlCheck>
+        </preConditions>
+        <comment>CRM document and contact type dictionaries</comment>
+        <insert schemaName="CORE" tableName="DICTIONARIES">
+            <column name="DICT_NAME" value="DOC_TYPES"/>
+            <column name="NAME" value="Document Types"/>
+            <column name="GROUP_NAME" value="CRM"/>
+            <column name="UPD_DATE" valueComputed="GETUTCDATE()"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="DESCRIPTION" value="Client document types for CRM"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="DOC_TYPES"/>
+            <column name="CODE" value="21"/>
+            <column name="VALUE" value="US Passport"/>
+            <column name="SHORT_VALUE" value="US Passport"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="DOC_TYPES"/>
+            <column name="CODE" value="10"/>
+            <column name="VALUE" value="Foreign Citizen Passport"/>
+            <column name="SHORT_VALUE" value="Foreign Passport"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARIES">
+            <column name="DICT_NAME" value="CONTACT_TYPES"/>
+            <column name="NAME" value="Contact Types"/>
+            <column name="GROUP_NAME" value="CRM"/>
+            <column name="UPD_DATE" valueComputed="GETUTCDATE()"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="DESCRIPTION" value="Client contact types for CRM"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="CONTACT_TYPES"/>
+            <column name="CODE" value="Email"/>
+            <column name="VALUE" value="Email"/>
+            <column name="SHORT_VALUE" value="Email"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="CONTACT_TYPES"/>
+            <column name="CODE" value="MobilePhone"/>
+            <column name="VALUE" value="Mobile Phone"/>
+            <column name="SHORT_VALUE" value="Mobile"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="CONTACT_TYPES"/>
+            <column name="CODE" value="HomePhone"/>
+            <column name="VALUE" value="Home Phone"/>
+            <column name="SHORT_VALUE" value="Home"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="CONTACT_TYPES"/>
+            <column name="CODE" value="WorkPhone"/>
+            <column name="VALUE" value="Work Phone"/>
+            <column name="SHORT_VALUE" value="Work"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="CONTACT_TYPES"/>
+            <column name="CODE" value="Fax"/>
+            <column name="VALUE" value="Fax"/>
+            <column name="SHORT_VALUE" value="Fax"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="CONTACT_TYPES"/>
+            <column name="CODE" value="SmsClientBank"/>
+            <column name="VALUE" value="SMS Client-Bank"/>
+            <column name="SHORT_VALUE" value="SMS Bank"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+    <changeSet id="4" author="2.0.0" failOnError="true">
+        <comment>Single Window menu tasks and admin grants</comment>
+        <sql>
+            <![CDATA[
+            INSERT INTO CORE.TASKS (TASKS_ID, PROJECTS_ID, SYSTEM_NAME, NAME)
+            SELECT NEXT VALUE FOR CORE.TASKS_ID_SEQ, p.PROJECTS_ID, 'menu-single-window-client-search', 'Client Search'
+            FROM CORE.PROJECTS p
+            WHERE p.SYSTEM_NAME = 'menu-single-window'
+              AND NOT EXISTS (SELECT 1 FROM CORE.TASKS WHERE SYSTEM_NAME = 'menu-single-window-client-search');
+
+            INSERT INTO CORE.TASKS (TASKS_ID, PROJECTS_ID, SYSTEM_NAME, NAME)
+            SELECT NEXT VALUE FOR CORE.TASKS_ID_SEQ, p.PROJECTS_ID, 'menu-single-window-transfer', 'Transfers'
+            FROM CORE.PROJECTS p
+            WHERE p.SYSTEM_NAME = 'menu-single-window'
+              AND NOT EXISTS (SELECT 1 FROM CORE.TASKS WHERE SYSTEM_NAME = 'menu-single-window-transfer');
+
+            INSERT INTO CORE.TASKS (TASKS_ID, PROJECTS_ID, SYSTEM_NAME, NAME)
+            SELECT NEXT VALUE FOR CORE.TASKS_ID_SEQ, p.PROJECTS_ID, 'menu-single-window-payments-woa', 'WOA Payments'
+            FROM CORE.PROJECTS p
+            WHERE p.SYSTEM_NAME = 'menu-single-window'
+              AND NOT EXISTS (SELECT 1 FROM CORE.TASKS WHERE SYSTEM_NAME = 'menu-single-window-payments-woa');
+
+            INSERT INTO CORE.TASKS (TASKS_ID, PROJECTS_ID, SYSTEM_NAME, NAME)
+            SELECT NEXT VALUE FOR CORE.TASKS_ID_SEQ, p.PROJECTS_ID, 'menu-single-window-operation-log', 'Operation Log'
+            FROM CORE.PROJECTS p
+            WHERE p.SYSTEM_NAME = 'menu-single-window'
+              AND NOT EXISTS (SELECT 1 FROM CORE.TASKS WHERE SYSTEM_NAME = 'menu-single-window-operation-log');
+
+            INSERT INTO CORE.USER_TASKS (USERS_ID, TASKS_ID)
+            SELECT 1, TASKS_ID
+            FROM CORE.TASKS
+            WHERE SYSTEM_NAME IN (
+                'menu-single-window-client-search',
+                'menu-single-window-transfer',
+                'menu-single-window-payments-woa',
+                'menu-single-window-operation-log'
+            )
+            AND NOT EXISTS (
+                SELECT 1 FROM CORE.USER_TASKS ut
+                WHERE ut.USERS_ID = 1 AND ut.TASKS_ID = TASKS.TASKS_ID
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="5" author="2.0.0" failOnError="true">
+        <comment>Align dictionary task SYSTEM_NAME with UI/flow: dictionary-system → dictionary-standard</comment>
+        <sql>
+            <![CDATA[
+            UPDATE CORE.TASKS
+            SET SYSTEM_NAME = 'menu-administration-dictionary-standard',
+                NAME = 'Standard Dictionaries'
+            WHERE SYSTEM_NAME = 'menu-administration-dictionary-system';
+            ]]>
+        </sql>
+    </changeSet>
+</databaseChangeLog>

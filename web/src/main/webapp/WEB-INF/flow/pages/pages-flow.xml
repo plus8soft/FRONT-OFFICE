@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd">
+    <decision-state id="check-authorized">
+        <if test="userSession.authenticated" then="init-menu" else="login"/>
+    </decision-state>
+    <view-state id="login">
+        <var name="authorizationView" class="web.view.AuthorizationView"/>
+        <transition on="next" to="check-authorized"/>
+        <transition on-exception="web.service.AuthorizationException" to="change-password">
+            <set name="flowScope.FS_AUTHORIZATION_EXCEPTION" value="rootCauseException"/>
+        </transition>
+    </view-state>
+    <view-state id="change-password">
+        <var name="changePasswordView" class="web.view.password.ChangePasswordView"/>
+        <on-entry>
+            <set name="changePasswordView.authorizationResult" value="flowScope.FS_AUTHORIZATION_EXCEPTION?.authorizationResult"/>
+            <set name="changePasswordView.user" value="flowScope.FS_AUTHORIZATION_EXCEPTION?.user?:userSession.user"/>
+            <evaluate expression="changePasswordView.init()"/>
+        </on-entry>
+        <transition on="cancel" to="check-authorized"/>
+        <on-exit>
+            <evaluate expression="flowScope.remove('FS_AUTHORIZATION_EXCEPTION')"/>
+        </on-exit>
+    </view-state>
+    <view-state id="error">
+        <transition on="back" to="check-authorized"/>
+    </view-state>
+    <decision-state id="init-menu">
+        <on-entry>
+            <set name="conversationScope.CS_MENU" value="new web.session.Menu()" type="web.session.Menu"/>
+        </on-entry>
+        <if test="true" then="#{CS_MENU.startProjectName}"/>
+    </decision-state>
+    <subflow-state id="menu-single-window" subflow="pages/single-window">
+        <on-entry>
+            <evaluate expression="CS_MENU.setProjectByName(flowExecutionContext.activeSession.state.id)"/>
+        </on-entry>
+    </subflow-state>
+    <subflow-state id="menu-ce" subflow="pages/ce">
+        <on-entry>
+            <evaluate expression="CS_MENU.setProjectByName(flowExecutionContext.activeSession.state.id)"/>
+        </on-entry>
+    </subflow-state>
+    <subflow-state id="menu-administration" subflow="pages/administration">
+        <on-entry>
+            <evaluate expression="CS_MENU.setProjectByName(flowExecutionContext.activeSession.state.id)"/>
+        </on-entry>
+    </subflow-state>
+    <end-state id="logout">
+        <on-entry>
+            <set name="userSession.connectionEvent.manualLogoff" value="true"/>
+            <evaluate expression="externalContext.nativeRequest.session.invalidate()"/>
+        </on-entry>
+    </end-state>
+    <global-transitions>
+        <transition on-exception="java.lang.Throwable" to="error"/>
+        <transition on="error" to="error"/>
+        <transition on="logout" to="logout"/>
+        <transition on="menu-single-window" to="menu-single-window"/>
+        <transition on="menu-ce" to="menu-ce"/>
+        <transition on="menu-administration" to="menu-administration"/>
+        <transition on="change-password" to="change-password"/>
+    </global-transitions>
+</flow>

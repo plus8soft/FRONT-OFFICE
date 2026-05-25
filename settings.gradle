@@ -1,0 +1,7 @@
+/*
+ * Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+ */
+
+rootProject.name = 'front-office'
+include 'web'
+include 'primefaces-theme'

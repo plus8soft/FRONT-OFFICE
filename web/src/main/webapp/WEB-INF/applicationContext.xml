@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+-->
+
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:webflow="http://www.springframework.org/schema/webflow-config"
+       xmlns:faces="http://www.springframework.org/schema/faces"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/webflow-config http://www.springframework.org/schema/webflow-config/spring-webflow-config.xsd
+       http://www.springframework.org/schema/faces http://www.springframework.org/schema/faces/spring-faces.xsd
+       http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+    <context:property-placeholder location="${front-office.properties:file:front-office.properties}" ignore-resource-not-found="true" ignore-unresolvable="true"/>
+    <context:spring-configured/>
+    <context:annotation-config/>
+    <context:load-time-weaver/>
+    <context:component-scan base-package="web"/>
+    <aop:aspectj-autoproxy/>
+    <cache:annotation-driven mode="aspectj"/>
+    <tx:annotation-driven mode="aspectj"/>
+    <jpa:repositories base-package="web.repository" factory-class="web.repository.CustomJpaRepositoryFactoryBean"
+                      entity-manager-factory-ref="entityManagerFactory"/>
+    <task:annotation-driven executor="emailTaskExecutor" mode="aspectj"/>
+    <bean name="emailTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="threadPriority" value="1"/>
+        <property name="corePoolSize" value="5"/>
+        <property name="maxPoolSize" value="5"/>
+        <property name="waitForTasksToCompleteOnShutdown" value="true"/>
+    </bean>
+    <bean class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping" p:flowRegistry-ref="publicFlowRegistry"/>
+    <bean class="org.springframework.faces.webflow.JsfFlowHandlerAdapter" p:flowExecutor-ref="flowExecutor"/>
+    <bean id="facesContextListener" class="org.springframework.faces.webflow.FlowFacesContextLifecycleListener"/>
+    <webflow:flow-registry id="publicFlowRegistry" flow-builder-services="flowBuilderServices" base-path="/WEB-INF/flow">
+        <webflow:flow-location path="pages/pages-flow.xml"/>
+    </webflow:flow-registry>
+    <webflow:flow-registry id="flowRegistry" flow-builder-services="flowBuilderServices" base-path="/WEB-INF/flow">
+        <webflow:flow-location-pattern value="/**/*-flow.xml"/>
+    </webflow:flow-registry>
+    <webflow:flow-executor id="flowExecutor" flow-registry="flowRegistry">
+        <webflow:flow-execution-repository max-executions="1" max-execution-snapshots="0"/>
+        <webflow:flow-execution-listeners>
+            <webflow:listener ref="facesContextListener"/>
+        </webflow:flow-execution-listeners>
+    </webflow:flow-executor>
+    <faces:resources/>
+    <faces:flow-builder-services id="flowBuilderServices"/>
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+        <property name="jdbcUrl" value="#{settings.datasourceUrl}"/>
+        <property name="initialPoolSize" value="#{settings.datasourceInitialPoolSize}"/>
+        <property name="maxPoolSize" value="#{settings.datasourceMaxPoolSize}"/>
+        <property name="testConnectionOnCheckin" value="true"/>
+        <property name="idleConnectionTestPeriod" value="60"/>
+    </bean>
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" depends-on="liquibase">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"/>
+        </property>
+        <property name="persistenceUnitName" value="front-office"/>
+        <property name="packagesToScan" value="web.entity"/>
+        <property name="jpaProperties">
+            <props>
+                <prop key="hibernate.format_sql">true</prop>
+                <prop key="hibernate.dialect">web.configuration.FoSqlServer2012Dialect</prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.enable_lazy_load_no_trans">true</prop>
+                <prop key="hibernate.jdbc.batch_size">20</prop>
+            </props>
+        </property>
+    </bean>
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" p:entityManagerFactory-ref="entityManagerFactory"
+          primary="true"/>
+    <bean id="liquibase" class="liquibase.integration.spring.SpringLiquibase" p:dataSource-ref="dataSource" p:changeLog="classpath:db/2.0.0/changelog.xml"/>
+    <bean id="lobDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+        <property name="jdbcUrl" value="#{settings.lobDatasourceUrl}"/>
+        <property name="initialPoolSize" value="#{settings.lobDatasourceInitialPoolSize}"/>
+        <property name="maxPoolSize" value="#{settings.lobDatasourceMaxPoolSize}"/>
+        <property name="testConnectionOnCheckin" value="true"/>
+        <property name="idleConnectionTestPeriod" value="60"/>
+    </bean>
+    <jpa:repositories base-package="web.lob.repositories" entity-manager-factory-ref="lobEntityManagerFactory"
+                      transaction-manager-ref="lobTransactionManager" factory-class="web.repository.CustomJpaRepositoryFactoryBean"/>
+    <bean id="lobEntityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" depends-on="lobLiquibase">
+        <property name="dataSource" ref="lobDataSource"/>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"/>
+        </property>
+        <property name="persistenceUnitName" value="lob"/>
+        <property name="packagesToScan" value="web.lob.entity"/>
+        <property name="jpaProperties">
+            <props>
+                <prop key="hibernate.format_sql">true</prop>
+                <prop key="hibernate.dialect">web.configuration.FoSqlServer2012Dialect</prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.enable_lazy_load_no_trans">true</prop>
+                <prop key="hibernate.jdbc.batch_size">20</prop>
+            </props>
+        </property>
+    </bean>
+    <bean id="lobLiquibase" class="liquibase.integration.spring.SpringLiquibase" p:dataSource-ref="lobDataSource"
+          p:changeLog="classpath:dblob/changelog.xml"/>
+    <bean id="lobTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" p:entityManagerFactory-ref="lobEntityManagerFactory"/>
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager" p:cacheManager="cacheManager" p:cacheManager-ref="ehcache"/>
+    <bean id="ehcache" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" p:configLocation="classpath:ehcache.xml" p:shared="true"/>
+    <bean class="org.springframework.mail.javamail.JavaMailSenderImpl" scope="prototype">
+        <property name="host" value="#{settings.smtpHost}"/>
+        <property name="port" value="#{settings.smtpPort}"/>
+        <property name="username" value="#{settings.smtpUsername}"/>
+        <property name="password" value="#{settings.smtpPassword}"/>
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.auth">#{settings.smtpAuth}</prop>
+                <prop key="mail.smtp.starttls.enable">#{settings.smtpTls}</prop>
+                <prop key="mail.smtp.ssl.enable">#{settings.smtpSsl}</prop>
+            </props>
+        </property>
+    </bean>
+    <bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+</beans>

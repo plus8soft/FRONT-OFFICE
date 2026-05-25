@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/single-window/transfer/get">
+    <input name="payoutTransfer" type="web.view.transfer.get.AbstractPayoutTransfer"/>
+    <view-state id="step-two" view="../step-two.xhtml" parent="pages/single-window/transfer/get#step-two">
+        <var name="stepTwoView" class="web.view.transfer.get.StepTwoTransferView"/>
+        <on-entry>
+            <evaluate expression="stepTwoView.init(payoutTransfer)"/>
+        </on-entry>
+    </view-state>
+    <subflow-state id="step-three" parent="pages/single-window/transfer/get#step-three"/>
+    <view-state id="step-four" view="../step-four.xhtml" parent="pages/single-window/transfer/get#step-four">
+        <var name="stepFourView" class="web.view.transfer.get.StepFourTransferView"/>
+        <on-entry>
+            <evaluate expression="stepFourView.init(payoutTransfer, flowScope.FS_PERSON_ID)"/>
+        </on-entry>
+    </view-state>
+    <end-state id="back"/>
+</flow>

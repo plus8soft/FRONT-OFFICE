@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <view-state id="group">
+        <var name="groupView" class="web.view.administration.department.group.GroupView"/>
+        <on-entry>
+            <evaluate expression="groupView.init()"/>
+        </on-entry>
+        <transition on="add" to="edit">
+            <set name="flowScope.FS_GROUP" value="groupView.add()"/>
+        </transition>
+        <transition on="edit" to="edit">
+            <set name="flowScope.FS_GROUP" value="groupView.selected.data.group"/>
+        </transition>
+    </view-state>
+    <view-state id="edit">
+        <var name="groupEditView" class="web.view.administration.department.group.edit.GroupEditView"/>
+        <var name="userModel" class="web.view.administration.model.UserModel"/>
+        <on-entry>
+            <set name="groupEditView.group" value="flowScope.FS_GROUP"/>
+            <evaluate expression="groupEditView.init(userModel)"/>
+        </on-entry>
+        <transition on="to-group" to="group"/>
+    </view-state>
+</flow>

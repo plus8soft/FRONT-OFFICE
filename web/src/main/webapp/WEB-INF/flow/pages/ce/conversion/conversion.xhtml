@@ -1,0 +1,201 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../ce-template.xhtml">
+    <ui:define name="content-body">
+        <p:importEnum type="web.entity.ce.Sign"/>
+        <h1 class="title-page">Conversion Rules</h1>
+        <div class="flex_box">
+            <div class="flex_item w_1_3">
+                <p:panel header="Select Required Departments">
+                    <f:facet name="actions">
+                        <span class="icon-block icon_currency"/>
+                    </f:facet>
+                    <div class="tree_bg">
+                        <div class="header_tree">
+                            <div class="additional_col count_cell">Currencies</div>
+                            <div class="main_col">Departments</div>
+                        </div>
+                        <p:tree value="#{conversionView.departmentTree}" var="item" selection="#{conversionView.selectedDepartments}"
+                                selectionMode="checkbox" styleClass="w_100" animate="true" propagateSelectionDown="false"
+                                propagateSelectionUp="false">
+                            <p:ajax event="select" listener="#{conversionView.onChangeDepartmentTree()}" update="@form:right"/>
+                            <p:ajax event="unselect" listener="#{conversionView.onChangeDepartmentTree()}" update="@form"/>
+                            <p:treeNode type="empty">#{item}</p:treeNode>
+                            <p:treeNode>
+                                <span class="float_cell count_cell">#{conversionView.departmentCurrencyIndex[item.department].size()}</span>
+                                <span class="main_cell">#{item.department.name}</span>
+                            </p:treeNode>
+                        </p:tree>
+                        <p:contextMenu for="@parent" widgetVar="contextMenu"
+                                       targetFilter=".ui-treenode:not([data-nodetype='empty']) > .ui-treenode-content,
+                                       .ui-treenode:not([data-nodetype='empty']) > .ui-treenode-content *"
+                                       beforeShow="this.rowKey = $(event.target).closest('.ui-treenode').attr('data-rowkey')">
+                            <p:menuitem value="Select Child Elements" immediate="true"
+                                        onclick="selectSameLevel([{name: 'rowKey', value: PF('contextMenu').rowKey}]);"/>
+                            <p:menuitem value="Deselect Child Elements" immediate="true"
+                                        onclick="deselectSameLevel([{name: 'rowKey', value: PF('contextMenu').rowKey}]);"/>
+                        </p:contextMenu>
+                        <p:remoteCommand name="selectSameLevel" actionListener="#{conversionView.selectAllChilds}" update="@form"/>
+                        <p:remoteCommand name="deselectSameLevel" actionListener="#{conversionView.deselectAllChilds}" update="@form"/>
+                    </div>
+                </p:panel>
+                <div class="navigation_panel clearfix bottom">
+                    <p:commandLink value="Deselect All" styleClass="underline r-float_elem" action="#{conversionView.deselectAllDepartments()}"
+                                   update="@form"/>
+                    <p:commandLink value="Select All" styleClass="underline" action="#{conversionView.selectAllDepartments()}" update="@form"/>
+                </div>
+            </div>
+            <h:panelGroup id="right" layout="block" styleClass="flex_item w_2_3">
+                <ui:fragment rendered="#{not empty conversionView.selectedDepartments}">
+                    <p:panel header="Select Currency for Rule Configuration">
+                        <f:facet name="actions">
+                            <span class="icon-block icon_currency"/>
+                        </f:facet>
+                        <p:dataTable value="#{conversionView.currencies}" selection="#{conversionView.selectedCurrency}" var="currency"
+                                     rowKey="#{currency.id}" emptyMessage="No data">
+                            <p:ajax event="rowSelectRadio" listener="#{conversionView.onChangeCurrency}" update="@form"/>
+                            <p:column selectionMode="single" styleClass="check_cell" width="17"/>
+                            <p:column headerText="Currencies">
+                                #{currency.iso}:#{currency.name}
+                            </p:column>
+                            <p:column headerText="Denomination" styleClass="currency_cell">
+                                #{currency.ratio}
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    <ui:fragment rendered="#{not empty conversionView.selectedCurrency}">
+                        <p:panel header="Define Conversion Rule Parameters for Selected Departments">
+                            <f:facet name="actions">
+                                <span class="icon-block icon_currency"/>
+                            </f:facet>
+                            <p:dataTable value="#{conversionView.ruleItems}" var="item" emptyMessage="No data">
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column rowspan="3" headerText="Rule Active"/>
+                                        <p:column rowspan="3" headerText="Rule Description"/>
+                                        <p:column rowspan="2" colspan="2" headerText="Rule Range"/>
+                                        <p:column colspan="6" headerText="Conversion Amount Recalculation Rules"/>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="3" headerText="Buy"/>
+                                        <p:column colspan="3" headerText="Sell"/>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column headerText="Minimum Amount"/>
+                                        <p:column headerText="Maximum Amount"/>
+                                        <p:column headerText="Sign"/>
+                                        <p:column headerText="Absolute Amount, USD"/>
+                                        <p:column headerText="%"/>
+                                        <p:column headerText="Sign"/>
+                                        <p:column headerText="Absolute Amount, USD"/>
+                                        <p:column headerText="%"/>
+                                    </p:row>
+                                </p:columnGroup>
+                                <p:column>
+                                    <p:commandLink value="?" rendered="#{item.enabledConflict}" update="@form:right">
+                                        <f:setPropertyActionListener value="#{false}" target="#{item.enabledConflict}"/>
+                                        <f:setPropertyActionListener value="#{true}" target="#{conversionView.edited}"/>
+                                    </p:commandLink>
+                                    <p:selectBooleanCheckbox value="#{item.ruleParameter.enabled}" rendered="#{not item.enabledConflict}">
+                                        <p:ajax update="@form:right" listener="#{conversionView.setEdited(true)}"/>
+                                    </p:selectBooleanCheckbox>
+                                </p:column>
+                                <p:column>
+                                    #{item.rule.name}
+                                </p:column>
+                                <p:column styleClass="align-right">
+                                    <h:outputText value="#{item.rule.min}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column styleClass="align-right">
+                                    <h:outputText value="#{item.rule.max}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column>
+                                    <p:commandLink value="?" rendered="#{item.buyConflict}" update="@form:right">
+                                        <f:setPropertyActionListener value="#{false}" target="#{item.buyConflict}"/>
+                                        <f:setPropertyActionListener value="#{true}" target="#{conversionView.edited}"/>
+                                    </p:commandLink>
+                                    <p:selectOneMenu value="#{item.ruleParameter.buySign}" rendered="#{not item.buyConflict}">
+                                        <p:ajax update="@form:right" listener="#{conversionView.setEdited(true)}"/>
+                                        <f:selectItem itemLabel="+" itemValue="#{Sign.PLUS}"/>
+                                        <f:selectItem itemLabel="-" itemValue="#{Sign.MINUS}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column styleClass="align-right">
+                                    <p:commandLink value="?" rendered="#{item.buyConflict}" update="@form:right">
+                                        <f:setPropertyActionListener value="#{false}" target="#{item.buyConflict}"/>
+                                        <f:setPropertyActionListener value="#{true}" target="#{conversionView.edited}"/>
+                                    </p:commandLink>
+                                    <p:inputNumber value="#{item.ruleParameter.buyValue}" rendered="#{not item.buyConflict}"
+                                                   disabled="#{not empty item.ruleParameter.buyPercent}" minValue="0">
+                                        <p:ajax update="@form:right" listener="#{conversionView.setEdited(true)}"/>
+                                        <f:passThroughAttribute name="focus-priority" value="1"/>
+                                    </p:inputNumber>
+                                </p:column>
+                                <p:column styleClass="align-right">
+                                    <p:commandLink value="?" rendered="#{item.buyConflict}" update="@form:right">
+                                        <f:setPropertyActionListener value="#{false}" target="#{item.buyConflict}"/>
+                                        <f:setPropertyActionListener value="#{true}" target="#{conversionView.edited}"/>
+                                    </p:commandLink>
+                                    <p:inputNumber value="#{item.ruleParameter.buyPercent}" minValue="0" maxValue="99.99" decimalPlaces="2"
+                                                   rendered="#{not item.buyConflict}" disabled="#{not empty item.ruleParameter.buyValue}">
+                                        <p:ajax update="@form:right" listener="#{conversionView.setEdited(true)}"/>
+                                    </p:inputNumber>
+                                </p:column>
+                                <p:column>
+                                    <p:commandLink value="?" rendered="#{item.sellConflict}" update="@form:right">
+                                        <f:setPropertyActionListener value="#{false}" target="#{item.sellConflict}"/>
+                                        <f:setPropertyActionListener value="#{true}" target="#{conversionView.edited}"/>
+                                    </p:commandLink>
+                                    <p:selectOneMenu value="#{item.ruleParameter.sellSign}" rendered="#{not item.sellConflict}">
+                                        <p:ajax update="@form:right" listener="#{conversionView.setEdited(true)}"/>
+                                        <f:selectItem itemLabel="+" itemValue="#{Sign.PLUS}"/>
+                                        <f:selectItem itemLabel="-" itemValue="#{Sign.MINUS}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column styleClass="align-right">
+                                    <p:commandLink value="?" rendered="#{item.sellConflict}" update="@form:right">
+                                        <f:setPropertyActionListener value="#{false}" target="#{item.sellConflict}"/>
+                                        <f:setPropertyActionListener value="#{true}" target="#{conversionView.edited}"/>
+                                    </p:commandLink>
+                                    <p:inputNumber value="#{item.ruleParameter.sellValue}" rendered="#{not item.sellConflict}"
+                                                   disabled="#{not empty item.ruleParameter.sellPercent}" minValue="0">
+                                        <p:ajax update="@form:right" listener="#{conversionView.setEdited(true)}"/>
+                                    </p:inputNumber>
+                                </p:column>
+                                <p:column styleClass="align-right">
+                                    <p:commandLink value="?" rendered="#{item.sellConflict}" update="@form:right">
+                                        <f:setPropertyActionListener value="#{false}" target="#{item.sellConflict}"/>
+                                        <f:setPropertyActionListener value="#{true}" target="#{conversionView.edited}"/>
+                                    </p:commandLink>
+                                    <p:inputNumber value="#{item.ruleParameter.sellPercent}" minValue="0" maxValue="99.99" decimalPlaces="2"
+                                                   rendered="#{not item.sellConflict}" disabled="#{not empty item.ruleParameter.sellValue}">
+                                        <p:ajax update="@form:right" listener="#{conversionView.setEdited(true)}"/>
+                                    </p:inputNumber>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                        <div class="navigation_panel clearfix bottom">
+                            <p:defaultCommand target="@next"/>
+                            <p:commandButton value="Save" styleClass="blue-btn big_btn r-float_elem" action="#{conversionView.saveView()}"
+                                             update="@form" disabled="#{not conversionView.edited}"/>
+                            <p:commandButton value="Cancel" styleClass="orange-btn big_btn" action="#{conversionView.onChangeCurrency}" update="@form"
+                                             disabled="#{not conversionView.edited}"/>
+                        </div>
+                    </ui:fragment>
+                </ui:fragment>
+            </h:panelGroup>
+        </div>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

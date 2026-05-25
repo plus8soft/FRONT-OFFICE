@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="2.0.0" failOnError="true">
+        <sql>CREATE SCHEMA LOG</sql>
+        
+        <!-- CONNECTION_EVENTS table based on ConnectionEvent entity -->
+        <createTable schemaName="LOG" tableName="CONNECTION_EVENTS" remarks="Login Events">
+            <column name="CONNECTION_EVENTS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CONNECTION_EVENTS_ID_PK"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints foreignKeyName="CONNECTION_EVENTS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints foreignKeyName="CONNECTION_EVENTS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="USER_LOGIN" type="VARCHAR(50)" remarks="Login name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EVENT_DATE" type="DATETIME2" remarks="Date and time">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EVENT_CODE" type="INT" remarks="Code">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USER_IP" type="VARCHAR(40)" remarks="IP address">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USER_TIME_ZONE" type="VARCHAR(50)" remarks="User time zone"/>
+            <column name="USER_AGENT_STRING" type="VARCHAR(1000)" remarks="User Agent string">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LOGOFF_DATE" type="DATETIME2" remarks="Logout date"/>
+            <column name="LOGOFF_CORRECT" type="BIT" remarks="Correct logout">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="LOG" sequenceName="CONNECTION_EVENTS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex schemaName="LOG" tableName="CONNECTION_EVENTS" indexName="DEPARTMENTS_ID_IDX">
+            <column name="DEPARTMENTS_ID"/>
+        </createIndex>
+        <createIndex schemaName="LOG" tableName="CONNECTION_EVENTS" indexName="CONNECTION_EVENTS_EVENT_DATE_IDX">
+            <column name="EVENT_DATE"/>
+        </createIndex>
+        
+        <!-- OPERATIONS table based on Operation entity -->
+        <createTable schemaName="LOG" tableName="OPERATIONS" remarks="Operations">
+            <column name="OPERATIONS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="OPERATIONS_ID_PK"/>
+            </column>
+            <column name="EXT_OPERATIONS_ID" type="BIGINT" remarks="External ID"/>
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints nullable="false" foreignKeyName="OPERATIONS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="OPERATIONS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="TASKS_ID" type="INT" remarks="Task ID">
+                <constraints nullable="false" foreignKeyName="OPERATIONS_TASKS_ID_FK" references="CORE.TASKS(TASKS_ID)"/>
+            </column>
+            <column name="CONNECTION_EVENTS_ID" type="INT" remarks="Connection ID">
+                <constraints nullable="false" foreignKeyName="OPERATIONS_CONNECTION_EVENTS_ID_FK"
+                             references="LOG.CONNECTION_EVENTS(CONNECTION_EVENTS_ID)"/>
+            </column>
+            <column name="CDATE" type="DATETIME2" remarks="Date and time"/>
+            <column name="LDATE" type="DATETIME2" remarks="Date and time"/>
+            <column name="TYPE" type="VARCHAR(3)" remarks="Operation type"/>
+            <column name="CODE" type="INT" remarks="Operation code"/>
+            <column name="STATUS" type="INT" remarks="Status"/>
+        </createTable>
+        <createSequence schemaName="LOG" sequenceName="OPERATIONS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex schemaName="LOG" tableName="OPERATIONS" indexName="USERS_ID_IDX">
+            <column name="USERS_ID"/>
+        </createIndex>
+        <createIndex schemaName="LOG" tableName="OPERATIONS" indexName="DEPARTMENTS_ID_IDX">
+            <column name="DEPARTMENTS_ID"/>
+        </createIndex>
+        <createIndex schemaName="LOG" tableName="OPERATIONS" indexName="TASKS_ID_IDX">
+            <column name="TASKS_ID"/>
+        </createIndex>
+        <createIndex schemaName="LOG" tableName="OPERATIONS" indexName="CONNECTION_EVENTS_ID_IDX">
+            <column name="CONNECTION_EVENTS_ID"/>
+        </createIndex>
+        <createIndex schemaName="LOG" tableName="OPERATIONS" indexName="OPERATIONS_CDATE_IDX">
+            <column name="CDATE"/>
+        </createIndex>
+        
+        <!-- OPERATION_LOG table -->
+        <createTable schemaName="LOG" tableName="OPERATION_LOG" remarks="Operation Log">
+            <column name="OPERATION_LOG_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="OPERATION_LOG_ID_PK"/>
+            </column>
+            <column name="OPERATION_ID" type="INT" remarks="Operation ID (external reference)"/>
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints nullable="false" foreignKeyName="OPERATION_LOG_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="OPERATION_LOG_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="TASKS_ID" type="INT" remarks="Task ID">
+                <constraints nullable="false" foreignKeyName="OPERATION_LOG_TASKS_ID_FK" references="CORE.TASKS(TASKS_ID)"/>
+            </column>
+            <column name="CONNECTION_EVENTS_ID" type="INT" remarks="Connection ID">
+                <constraints nullable="false" foreignKeyName="OPERATION_LOG_CONNECTION_EVENTS_ID_FK"
+                             references="LOG.CONNECTION_EVENTS(CONNECTION_EVENTS_ID)"/>
+            </column>
+            <column name="PERSONS_ID" type="INT" remarks="Person ID"/>
+            <column name="START_DATE" type="DATETIME2" remarks="Date and time"/>
+            <column name="CODE" type="INT" remarks="Operation code"/>
+            <column name="STATUS" type="INT" remarks="Status"/>
+            <column name="DESCRIPTION" type="TEXT" remarks="Description"/>
+        </createTable>
+        <createSequence schemaName="LOG" sequenceName="OPERATION_LOG_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- OPERATION_PERSONS table based on PersonHistory entity -->
+        <createTable schemaName="LOG" tableName="OPERATION_PERSONS" remarks="Operation Log (Client Data)">
+            <column name="OPERATION_PERSONS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="OPERATION_PERSONS_ID_PK"/>
+            </column>
+            <column name="OPERATIONS_ID" type="INT" remarks="Operation ID">
+                <constraints nullable="false" foreignKeyName="OPERATION_PERSONS_OPERATIONS_ID_FK" references="LOG.OPERATIONS(OPERATIONS_ID)"/>
+            </column>
+            <column name="PERSONS_ID" type="INT" remarks="Person ID"/>
+            <column name="RESCOUNTRY" type="VARCHAR(50)" remarks="Resident country"/>
+            <column name="GENDER" type="INT" remarks="Gender"/>
+            <column name="CITIZENSHIP" type="VARCHAR(100)" remarks="Citizenship"/>
+            <column name="LASTNAME" type="VARCHAR(100)" remarks="Last name"/>
+            <column name="FIRSTNAME" type="VARCHAR(100)" remarks="First name"/>
+            <column name="PATRONYMIC" type="VARCHAR(100)" remarks="Middle name"/>
+            <column name="BIRTHDATE" type="DATE" remarks="Date of birth"/>
+            <column name="PLACEOFBTXT" type="VARCHAR(1000)" remarks="Place of birth (string)"/>
+            <column name="COUNTRYOFB" type="VARCHAR(50)" remarks="Country of birth"/>
+            <column name="DOC_TYPE" type="VARCHAR(50)" remarks="Document type"/>
+            <column name="DOC_SERIES" type="VARCHAR(20)" remarks="Document series"/>
+            <column name="DOC_NUMBER" type="VARCHAR(100)" remarks="Document number"/>
+            <column name="DOC_ISSUANCEUNIT" type="VARCHAR(255)" remarks="Issuing authority"/>
+            <column name="DOC_ISSUANCEDATE" type="DATE" remarks="Issue date"/>
+            <column name="DOC_ISSUANCEUNITID" type="VARCHAR(50)" remarks="Department code"/>
+            <column name="DOC_VALIDTODATE" type="DATE" remarks="Valid until date"/>
+            <column name="ADR_REG_DATE" type="DATE" remarks="Address registration date"/>
+            <column name="ADR_REG_DATE_END" type="DATE" remarks="Address registration end date"/>
+            <column name="ADR_REG_REASON" type="VARCHAR(20)" remarks="Residence (registration) basis"/>
+            <column name="ADR_REG_TYPE" type="VARCHAR(20)" remarks="Registration type"/>
+            <column name="ADR_ADDRESS_CODE" type="VARCHAR(19)" remarks="Address code"/>
+            <column name="ADR_POSTALCODE" type="VARCHAR(6)" remarks="Postal code"/>
+            <column name="ADR_COUNTRY" type="VARCHAR(40)" remarks="Country"/>
+            <column name="ADR_REGIONTYPE" type="VARCHAR(10)" remarks="Region type"/>
+            <column name="ADR_REGION" type="VARCHAR(40)" remarks="Region"/>
+            <column name="ADR_DISTRICTTYPE" type="VARCHAR(10)" remarks="District type"/>
+            <column name="ADR_DISTRICT" type="VARCHAR(40)" remarks="District"/>
+            <column name="ADR_CITYTYPE" type="VARCHAR(10)" remarks="City type"/>
+            <column name="ADR_CITY" type="VARCHAR(40)" remarks="City"/>
+            <column name="ADR_LOCALITYTYPE" type="VARCHAR(10)" remarks="Locality type"/>
+            <column name="ADR_LOCALITY" type="VARCHAR(255)" remarks="Locality"/>
+            <column name="ADR_STREETTYPE" type="VARCHAR(10)" remarks="Street type"/>
+            <column name="ADR_STREET" type="VARCHAR(255)" remarks="Street"/>
+            <column name="ADR_HOUSE" type="VARCHAR(50)" remarks="House"/>
+            <column name="ADR_HOUSING" type="VARCHAR(50)" remarks="Building"/>
+            <column name="ADR_STRUCTURE" type="VARCHAR(50)" remarks="Structure"/>
+            <column name="ADR_FLAT" type="VARCHAR(50)" remarks="Apartment"/>
+            <column name="CONTACT_MOB_TEL" type="VARCHAR(500)" remarks="Mobile phone"/>
+            <column name="CONTACT_HOUSE_TEL" type="VARCHAR(500)" remarks="Home phone"/>
+            <column name="CONTACT_EMAIL" type="VARCHAR(500)" remarks="EMAIL"/>
+        </createTable>
+        <createSequence schemaName="LOG" sequenceName="OPERATION_PERSONS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex schemaName="LOG" tableName="OPERATION_PERSONS" indexName="OPERATIONS_ID_IDX">
+            <column name="OPERATIONS_ID"/>
+        </createIndex>
+        <createIndex schemaName="LOG" tableName="OPERATION_PERSONS" indexName="PERSONS_ID_IDX">
+            <column name="PERSONS_ID"/>
+        </createIndex>
+        
+        <!-- SYSTEM_EVENTS table based on SystemEvent entity -->
+        <createTable schemaName="LOG" tableName="SYSTEM_EVENTS" remarks="System Events">
+            <column name="SYSTEM_EVENTS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="SYSTEM_EVENTS_ID_PK"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints foreignKeyName="SYSTEM_EVENTS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints foreignKeyName="SYSTEM_EVENTS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="TASKS_ID" type="INT" remarks="Task ID">
+                <constraints foreignKeyName="SYSTEM_EVENTS_TASKS_ID_FK" references="CORE.TASKS(TASKS_ID)"/>
+            </column>
+            <column name="PROJECTS_ID" type="INT" remarks="Project ID">
+                <constraints foreignKeyName="SYSTEM_EVENTS_PROJECTS_ID_FK" references="CORE.PROJECTS(PROJECTS_ID)"/>
+            </column>
+            <column name="CONNECTION_EVENTS_ID" type="INT" remarks="Connection ID">
+                <constraints foreignKeyName="SYSTEM_EVENTS_CONNECTION_EVENTS_ID_FK" references="LOG.CONNECTION_EVENTS(CONNECTION_EVENTS_ID)"/>
+            </column>
+            <column name="EVENT_DATE" type="DATETIME2" remarks="Date and time"/>
+            <column name="EVENT_GROUP" type="CHAR(36)" remarks="Event group ID"/>
+            <column name="EVENT_TYPE" type="INT" remarks="Type"/>
+            <column name="EVENT_CODE" type="INT" remarks="Code"/>
+            <column name="EVENT_DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+        </createTable>
+        <createSequence schemaName="LOG" sequenceName="SYSTEM_EVENTS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex schemaName="LOG" tableName="SYSTEM_EVENTS" indexName="DEPARTMENTS_ID_IDX">
+            <column name="DEPARTMENTS_ID"/>
+        </createIndex>
+        <createIndex schemaName="LOG" tableName="SYSTEM_EVENTS" indexName="EVENT_GROUP_IDX">
+            <column name="EVENT_GROUP"/>
+        </createIndex>
+        
+        <!-- USER_EVENTS table based on UserEvent entity -->
+        <createTable schemaName="LOG" tableName="USER_EVENTS" remarks="User Events">
+            <column name="USER_EVENTS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="USER_EVENTS_ID_PK"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints nullable="false" foreignKeyName="USER_EVENTS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="USER_EVENTS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="TASKS_ID" type="INT" remarks="Task ID">
+                <constraints nullable="false" foreignKeyName="USER_EVENTS_TASKS_ID_FK" references="CORE.TASKS(TASKS_ID)"/>
+            </column>
+            <column name="PROJECTS_ID" type="INT" remarks="Project ID">
+                <constraints nullable="false" foreignKeyName="USER_EVENTS_PROJECTS_ID_FK" references="CORE.PROJECTS(PROJECTS_ID)"/>
+            </column>
+            <column name="CONNECTION_EVENTS_ID" type="INT" remarks="Connection ID">
+                <constraints nullable="false" foreignKeyName="USER_EVENTS_CONNECTION_EVENTS_ID_FK"
+                             references="LOG.CONNECTION_EVENTS(CONNECTION_EVENTS_ID)"/>
+            </column>
+            <column name="EVENT_DATE" type="DATETIME2" remarks="Date and time"/>
+            <column name="EVENT_GROUP" type="CHAR(36)" remarks="Event group ID"/>
+            <column name="EVENT_TYPE" type="INT" remarks="Type"/>
+            <column name="EVENT_CODE" type="INT" remarks="Code"/>
+            <column name="EVENT_DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+        </createTable>
+        <createSequence schemaName="LOG" sequenceName="USER_EVENTS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex schemaName="LOG" tableName="USER_EVENTS" indexName="DEPARTMENTS_ID_IDX">
+            <column name="DEPARTMENTS_ID"/>
+        </createIndex>
+        <createIndex schemaName="LOG" tableName="USER_EVENTS" indexName="EVENT_GROUP_IDX">
+            <column name="EVENT_GROUP"/>
+        </createIndex>
+        
+        <!-- EVENT_DATA table -->
+        <createTable schemaName="LOG" tableName="EVENT_DATA" remarks="Event Data">
+            <column name="EVENT_DATA_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="EVENT_DATA_ID_PK"/>
+            </column>
+            <column name="USER_EVENTS_ID" type="INT" remarks="ID">
+                <constraints foreignKeyName="USER_EVENT_ID_FK" references="LOG.USER_EVENTS(USER_EVENTS_ID)"/>
+            </column>
+            <column name="SYSTEM_EVENTS_ID" type="INT" remarks="ID">
+                <constraints foreignKeyName="SYSTEM_EVENTS_ID_FK" references="LOG.SYSTEM_EVENTS(SYSTEM_EVENTS_ID)"/>
+            </column>
+            <column name="DATA_TYPE" type="VARCHAR(10)" remarks="Data type"/>
+            <column name="DB_ENTITY_NAME" type="VARCHAR(500)" remarks="Database entity name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DB_ENTITY_PK_FIELD" type="VARCHAR(100)" remarks="Entity primary key field">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DB_ENTITY_PK_FIELD_TYPE" type="VARCHAR(100)" remarks="Primary key field type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DB_ENTITY_PK_FIELD_VAL" type="VARCHAR(500)" remarks="Primary key field value">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EVENT_DATA" type="TEXT" remarks="Additional data">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="LOG" sequenceName="EVENT_DATA_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- OPERATION_LOG_DATA table -->
+        <createTable schemaName="LOG" tableName="OPERATION_LOG_DATA" remarks="Operation Log Data">
+            <column name="OPERATION_LOG_DATA_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="OPERATION_LOG_DATA_ID_PK"/>
+            </column>
+            <column name="OPERATION_LOG_ID" type="INT" remarks="Operation ID">
+                <constraints nullable="false" foreignKeyName="OPERATION_LOG_ID_FK" references="LOG.OPERATION_LOG(OPERATION_LOG_ID)"/>
+            </column>
+            <column name="USER_EVENTS_ID" type="INT" remarks="User event ID">
+                <constraints foreignKeyName="OPERATION_LOG_DATA_USER_EVENTS_ID_FK" references="LOG.USER_EVENTS(USER_EVENTS_ID)"/>
+            </column>
+            <column name="SYSTEM_EVENTS_ID" type="INT" remarks="System event ID">
+                <constraints foreignKeyName="OPERATION_LOG_DATA_SYSTEM_EVENTS_ID_FK"
+                             references="LOG.SYSTEM_EVENTS(SYSTEM_EVENTS_ID)"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="LOG" sequenceName="OPERATION_LOG_DATA_ID_SEQ" startValue="1" incrementBy="1"/>
+    </changeSet>
+</databaseChangeLog>

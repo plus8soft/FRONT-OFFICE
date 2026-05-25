@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <var name="FS_FILTER" class="web.view.administration.dictionary.standard.StandardDictionaryFilter"/>
+    <view-state id="standard">
+        <var name="dictionaryView" class="web.view.administration.dictionary.standard.StandardDictionaryView"/>
+        <var name="dictionaryModel" class="web.view.administration.dictionary.standard.StandardDictionaryModel"/>
+        <on-entry>
+            <set name="dictionaryView.filter" value="FS_FILTER"/>
+            <evaluate expression="dictionaryView.init(dictionaryModel)"/>
+        </on-entry>
+        <transition on="editDictionary" to="dictionary">
+            <set name="flowScope.FS_DICTIONARY" value="dictionaryModel.selected.dictionary"/>
+        </transition>
+        <transition on="elements" to="elements">
+            <set name="flowScope.FS_DICTIONARY" value="dictionaryModel.selected.dictionary"/>
+        </transition>
+        <on-exit>
+            <set name="FS_FILTER" value="dictionaryModel.filter"/>
+        </on-exit>
+    </view-state>
+    <view-state id="dictionary">
+        <var name="dictionaryEdit" class="web.view.administration.dictionary.standard.dictionary.DictionaryEditView"/>
+        <on-entry>
+            <set name="dictionaryEdit.dictionary" value="flowScope.FS_DICTIONARY"/>
+        </on-entry>
+        <transition on="cancel" to="standard"/>
+        <transition on="save" to="standard"/>
+    </view-state>
+    <view-state id="elements">
+        <var name="dictionaryValueView" class="web.view.administration.dictionary.standard.elements.DictionaryValueView"/>
+        <var name="dictionaryValueModel" class="web.view.administration.dictionary.standard.elements.DictionaryValueModel"/>
+        <on-entry>
+            <evaluate expression="dictionaryValueView.init(dictionaryValueModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="editDictionaryValue" to="dictionary-value">
+            <set name="flowScope.FS_DICTIONARY_VALUE" value="dictionaryValueModel.selected"/>
+        </transition>
+        <transition on="addDictionaryValue" to="dictionary-value">
+            <set name="flowScope.FS_DICTIONARY_VALUE"
+                 value="T(web.entity.core.DictionaryValue).builder().dictionary(flowScope.FS_DICTIONARY).build()"/>
+        </transition>
+        <transition on="back" to="standard"/>
+    </view-state>
+    <view-state id="dictionary-value">
+        <var name="dictionaryValueEdit" class="web.view.administration.dictionary.standard.elements.value.DictionaryValueEditView"/>
+        <on-entry>
+            <set name="dictionaryValueEdit.dictionaryValue" value="flowScope.FS_DICTIONARY_VALUE"/>
+        </on-entry>
+        <transition on="cancel" to="elements"/>
+        <transition on="save" to="elements"/>
+    </view-state>
+</flow>

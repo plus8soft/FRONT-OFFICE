@@ -1,0 +1,159 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{accountView.dictionary.group} > #{accountView.dictionary.name}">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="body_block">
+                <div class="grid_row">
+                    <div class="grid_cell w_40">
+                        <div class="grid_cell w_40">
+                            <p:outputLabel value="Department" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectOneMenu value="#{accountView.filter.department}" filter="true" styleClass="w_100" autoWidth="false"
+                                             converter="omnifaces.SelectItemsConverter">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{accountView.departments}" var="department" itemLabel="#{department.name}"
+                                               itemValue="#{department}"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel value="Account Type" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectOneMenu id="typeAccount" value="#{accountView.accountType}" styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{accountTypeDictionary.findAll()}" var="type" itemLabel="#{type.value}"
+                                               itemValue="#{type.shortValue}" itemDisabled="#{type.unused}"/>
+                                <p:ajax update="accountNumber" listener="#{accountView.selectAccountType()}"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel value="Account Number" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:inputMask id="accountNumber" value="#{accountView.filter.numberAccount}" styleClass="w_100"
+                                         mask="99999? – 999 – 9 – 9999 – 9999999" converter="CorrespondentAccount">
+                                <p:ajax event="keyup" update="typeAccount" listener="#{accountView.changeAccountNumber()}"/>
+                            </p:inputMask>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_40">
+                        <div class="grid_cell w_40">
+                            <p:outputLabel value="Currency"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectCheckboxMenu value="#{accountView.filter.currencies}" styleClass="w_100" label="" updateLabel="true"
+                                                  filter="true" filterMatchMode="startsWith" converter="omnifaces.SelectItemsConverter">
+                                <f:selectItems value="#{accountView.currencies}" var="currency" itemLabel="#{currency.iso}"
+                                               itemValue="#{currency}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel value="Status" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectOneMenu value="#{accountView.filter.status}" styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItem itemValue="#{true}" itemLabel="Active"/>
+                                <f:selectItem itemValue="#{false}" itemLabel="Closed"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel value="Name" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:inputText value="#{accountView.filter.name}" styleClass="w_100"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation_panel clearfix body_block">
+                <p:commandButton value="Search" update="@form" action="#{accountView.updateFilter()}" styleClass="blue-btn r-float_elem"/>
+            </div>
+            <p:dataTable id="accounts" value="#{accountModel}" var="account" lazy="true" rows="100" scrollRows="50"
+                         scrollable="#{accountModel.rowCount gt 10}" scrollHeight="#{accountModel.rowCount gt 10 ? 400 : null}"
+                         virtualScroll="true" selection="#{accountModel.selected}" selectionMode="single" sortMode="multiple"
+                         emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.ui-panel:last)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-panel:last)"/>
+                <p:ajax event="page" update="@(.ui-panel:last)" listener="#{accountModel.setSelected(null)}"/>
+                <p:columnGroup type="header">
+                    <p:row>
+                        <p:column rowspan="1" headerText="Account #" width="186"/>
+                        <p:column rowspan="1" headerText="Currency" width="42"/>
+                        <p:column rowspan="1" headerText="Department"/>
+                        <p:column rowspan="1" headerText="Name" width="500"/>
+                        <p:column rowspan="1" headerText="Status" width="60"/>
+                    </p:row>
+                </p:columnGroup>
+                <p:column>
+                    <h:outputText value="#{account.id}" converter="CorrespondentAccount"/>
+                </p:column>
+                <p:column>
+                    #{account.currency.iso}
+                </p:column>
+                <p:column>
+                    #{account.department.name}
+                </p:column>
+                <p:column styleClass="fix_cell">
+                    <span class="fix_row">#{account.name}</span>
+                </p:column>
+                <p:column>
+                    #{account.enabled ? "Active" : "Closed"}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <p:panel visible="#{not empty accountModel.selected and not empty accountModel.selected.accountLinks}">
+            <p>Account Link: <h:outputText value="#{not empty accountModel.selected ? accountModel.selected.getId() : '00000000000000000000'}"
+                                           converter="CorrespondentAccount"/></p>
+            <p:dataTable value="#{not empty accountModel.selected ? accountModel.selected.accountLinks : null}" var="accountLinkItem"
+                         emptyMessage="No data">
+                <p:column headerText="Object Type">
+                    #{accountLinkItem.objectType.value}
+                </p:column>
+                <p:column headerText="Link Type">
+                    #{accountTypeDictionary.findOne(accountLinkItem.type).value}
+                </p:column>
+                <p:column headerText="Object Name">
+                    #{accountLinkItem.department.fullName}
+                </p:column>
+                <p:column headerText="Open Date">
+                    <h:outputText value="#{accountLinkItem.openDate}">
+                        <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Close Date">
+                    <h:outputText value="#{accountLinkItem.closeDate}">
+                        <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

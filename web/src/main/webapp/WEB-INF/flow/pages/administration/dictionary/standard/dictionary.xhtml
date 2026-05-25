@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">
+            Classifiers > #{dictionaryEdit.dictionary.id} (#{dictionaryEdit.dictionary.group})
+        </h1>
+        <p:panel header="Basic Parameters">
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel for="@next" value="Name"/>
+                </div>
+                <div class="grid_cell w_50">
+                    <div class="icon_box">
+                        <p:inputText value="#{dictionaryEdit.dictionary.name}" readonly="#{dictionaryEdit.dictionary.system}" required="true"
+                                     styleClass="w_100">
+                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel for="@next" value="Group Name"/>
+                </div>
+                <div class="grid_cell w_50">
+                    <div class="icon_box">
+                        <p:autoComplete value="#{dictionaryEdit.dictionary.group}" styleClass="w_100" readonly="#{dictionaryEdit.dictionary.system}"
+                                        completeMethod="#{dictionaryEdit.completeGroup}" dropdown="true" required="true"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel for="@next" value="System Name"/>
+                </div>
+                <div class="grid_cell w_50">
+                    <div class="icon_box">
+                        <p:inputText value="#{dictionaryEdit.dictionary.id}" readonly="#{not empty dictionaryEdit.dictionary.updateDate}"
+                                     required="true" styleClass="w_100">
+                            <p:keyFilter regEx="/[_A-Za-z]/" preventPaste="false"/>
+                            <f:validator binding="#{dictionaryValidator}"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel for="@next" value="Description"/>
+                </div>
+                <div class="grid_cell w_50">
+                    <p:inputTextarea value="#{dictionaryEdit.dictionary.description}" styleClass="w_100"
+                                     readonly="#{dictionaryEdit.dictionary.system}"/>
+                </div>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:defaultCommand target="@next" scope="@previous"/>
+            <p:commandButton value="Save" action="#{dictionaryEdit.save()}" rendered="#{not dictionaryEdit.dictionary.system}"
+                             update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)" styleClass="r-float_elem blue-btn big_btn"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

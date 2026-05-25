@@ -1,0 +1,21 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:of="http://omnifaces.org/functions"
+                template="/WEB-INF/template/template.xhtml">
+    <ui:define name="body">
+        <section id="content">
+            <h:form>
+                <h1>500 Internal server error <p:commandButton value="Back" action="back" styleClass="gray-btn"/></h1>
+                <p:panel header="Stacktrace" toggleable="true" collapsed="true">
+                    <div style="white-space: pre-wrap;">#{of:printStackTrace(flowExecutionException)}</div>
+                </p:panel>
+            </h:form>
+        </section>
+    </ui:define>
+</ui:composition>

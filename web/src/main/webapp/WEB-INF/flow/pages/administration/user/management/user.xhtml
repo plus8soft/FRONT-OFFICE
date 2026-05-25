@@ -1,0 +1,159 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">User Management</h1>
+        <p:panel header="Select a user and perform the necessary actions">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel box_big_subpanel clearfix">
+                <div class="search_box">
+                    <p:outputLabel for="@next" value="Search:"/>
+                    <p:inputText value="#{userView.filter.textFilter}" placeholder="Search by name, login"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}">
+                        <f:passThroughAttribute name="focus-priority" value="1"/>
+                    </p:inputText>
+                    <p:remoteCommand name="updateTable" action="#{userView.fastSearch()}" update="@form"/>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                </div>
+            </div>
+            <p:panel toggleable="true" collapsed="#{not userView.filter.extendedSearch}" header="Advanced Search" styleClass="subpanel">
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Security Profile"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <p:selectOneMenu value="#{userView.filter.securityProfile}" styleClass="w_100" autoWidth="false"
+                                         converter="omnifaces.SelectItemsConverter">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{userView.securityProfiles}" var="securityProfile" itemValue="#{securityProfile}"
+                                           itemLabel="#{securityProfile.name}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="grid_cell w_10 ml-w_5">
+                        <p:outputLabel for="@next" value="Account Expiration Date"/>
+                    </div>
+                    <div class="grid_cell w_5 r-label">
+                        <p:outputLabel for="@next" value="from"/>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <div class="icon_box">
+                            <p:calendar value="#{userView.filter.accountExpirationDateFrom}" converter="javax.faces.Instant"
+                                        timeZone="#{userSession.user.department.zoneId}" pattern="dd.MM.yyyy" showOn="button"
+                                        placeholder="dd.mm.yyyy" mask="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_5 r-label">
+                        <p:outputLabel value="to" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <div class="icon_box">
+                            <p:calendar value="#{userView.filter.accountExpirationDateTo}" converter="javax.faces.Instant"
+                                        timeZone="#{userSession.user.department.zoneId}" pattern="dd.MM.yyyy" showOn="button"
+                                        placeholder="dd.mm.yyyy" mask="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_5 ml-w_5">
+                        <p:outputLabel for="@next" value="Phone"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <p:inputText value="#{userView.filter.phone}" placeholder="+79219812131" styleClass="w_100">
+                            <p:keyFilter inputRegEx="/^\+\d*$|^\+?$/" preventPaste="false"/>
+                        </p:inputText>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_5">
+                        <p:outputLabel for="@next" value="Status"/>
+                    </div>
+                    <div class="grid_cell w_20 ml-w_5">
+                        <p:selectOneMenu value="#{userView.filter.status}" autoWidth="false" styleClass="w_100">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{userStatusDictionary.findAll()}" var="status" itemLabel="#{status.value}"
+                                           itemValue="#{status.code}" itemDisabled="#{status.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="grid_cell w_10 ml-w_5">
+                        <p:outputLabel value="Department"/>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <p:selectCheckboxMenu value="#{userView.filter.departments}" label="" filter="true" filterMatchMode="startsWith"
+                                              converter="omnifaces.SelectItemsConverter" updateLabel="true" styleClass="w_100">
+                            <f:selectItems value="#{userView.departments}" var="department" itemLabel="#{department.name}"
+                                           itemValue="#{department}"/>
+                        </p:selectCheckboxMenu>
+                    </div>
+                    <div class="grid_cell w_5 ml-w_5">
+                        <p:outputLabel for="@next" value="Email"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <p:inputText value="#{userView.filter.email}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel for="@next" value="Position"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:selectOneMenu value="#{userView.filter.position}" converter="javax.faces.Integer" autoWidth="false" styleClass="w_100">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{userJobPositionDictionary.findAll()}" var="position" itemLabel="#{position.value}"
+                                           itemValue="#{position.code}" itemDisabled="#{position.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="btn_box clearfix">
+                    <p:defaultCommand target="@next" scope="@parent"/>
+                    <p:commandButton value="Search" action="#{userView.extendedSearch()}" update="@form" styleClass="blue-btn r-float_elem"/>
+                </div>
+            </p:panel>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="edit" disabled="#{empty userModel.selected}" styleClass="blue-btn action-button"/>
+                <p:commandButton value="Delete" disabled="#{empty userModel.selected}" styleClass="orange-btn action-button"
+                                 onclick="PF('confirm').show()"/>
+                <p:commandButton value="Unlock" disabled="#{empty userModel.selected or userModel.selected.status eq 'ACTIVE'}"
+                                 styleClass="blue-btn btn_group action-button" action="#{userView.setStatusForSelectedUser('ACTIVE')}"
+                                 update="@form"/>
+                <p:commandButton value="Lock" disabled="#{empty userModel.selected or userModel.selected.status.startsWith('LOCKED')}"
+                                 styleClass="action-button orange-btn"
+                                 action="#{userView.setStatusForSelectedUser('LOCKED')}" update="@form"/>
+            </div>
+            <p:dataTable id="users" value="#{userModel}" var="user" lazy="true" rows="100" virtualScroll="true" scrollRows="50"
+                         scrollHeight="#{userModel.rowCount gt 10 ? 400 : null}" scrollable="#{userModel.rowCount gt 10}"
+                         selection="#{userModel.selected}" selectionMode="single" sortMode="multiple" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.action-button)"/>
+                <p:ajax event="rowUnselect" update="@(.action-button)"/>
+                <p:ajax event="page" update="@(.action-button)" listener="#{userModel.setSelected(null)}"/>
+                <p:column headerText="Login" width="200">
+                    #{user.login}
+                </p:column>
+                <p:column headerText="Name, Position" width="360">
+                    #{user.lastname} #{user.firstname} #{user.patronymic}<br/>#{userJobPositionDictionary.findOne(user.position).value}
+                </p:column>
+                <p:column headerText="EMAIL">
+                    #{user.email}
+                </p:column>
+                <p:column headerText="Status" width="288">
+                    #{userStatusDictionary.findOne(user.status).value}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{userView.delete()}" onclick="PF('confirm').hide()"
+                             styleClass="blue-btn r-float_elem" update="@form"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

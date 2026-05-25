@@ -1,0 +1,47 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Security Profiles</h1>
+        <p:panel header="Select a security profile and perform the necessary actions">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" styleClass="blue-btn" action="add"/>
+                <p:commandButton value="Edit" styleClass="blue-btn" action="edit" disabled="#{empty securityProfileView.selected}"/>
+                <p:commandButton value="Delete" styleClass="orange-btn" disabled="#{empty securityProfileView.selected}"
+                                 onclick="PF('confirm').show()"/>
+            </div>
+            <p:dataTable id="security-profile" value="#{securityProfileView.securityProfileModel}" var="item" sortMode="multiple" lazy="true"
+                         selection="#{securityProfileView.selected}" selectionMode="single" rows="100" scrollRows="50"
+                         scrollable="#{securityProfileView.securityProfileModel.rowCount gt 10}" virtualScroll="true" emptyMessage="No data"
+                         scrollHeight="#{securityProfileView.securityProfileModel.rowCount gt 10 ? 400 : null}">
+                <p:ajax event="rowSelect" update="@(.ui-button)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-button)"/>
+                <p:ajax event="page" update="@(.ui-button)" listener="#{securityProfileView.setSelected(null)}"/>
+                <p:column headerText="Profile Name">
+                    #{item.securityProfile.name}
+                </p:column>
+                <p:column headerText="Description">
+                    #{item.securityProfile.description}
+                </p:column>
+                <p:column headerText="In Use (Number of Users)">
+                    <span class="fix_row align-right">#{item.usersCount}</span>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{securityProfileView.delete()}" onclick="PF('confirm').hide()"
+                             styleClass="blue-btn r-float_elem" update="@form"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

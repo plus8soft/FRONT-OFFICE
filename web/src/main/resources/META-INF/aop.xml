@@ -1,0 +1,15 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<!DOCTYPE aspectj PUBLIC
+        "-//AspectJ//DTD//EN" "http://www.eclipse.org/aspectj/dtd/aspectj.dtd">
+<aspectj>
+    <weaver options="-Xset:weaveJavaxPackages=true">
+        <include within="web..*"/>
+    </weaver>
+    <aspects>
+        <aspect name="web.audit.ce.CurrencyOperationAspect"/>
+        <aspect name="web.audit.transfer.TransferAspect"/>
+    </aspects>
+</aspectj>

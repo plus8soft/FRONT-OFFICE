@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:fo="http://xmlns.jcp.org/jsf/composite/component"
+                template="../../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:importConstants type="web.utils.DateTimes"/>
+        <p:panel header="Enter recipient details" styleClass="transaction_page">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span class="current">5</span>
+                    <span>6</span>
+                    <span>7</span>
+                </div>
+            </f:facet>
+            <div class="attention_text">
+                To reduce fraud cases when receiving funds, request from client maximum complete data about who the transfer is intended for and enter them into the system
+            </div>
+            <p:panel header="Main Information" toggleable="true">
+                <h:outputScript library="js" name="translit.js"/>
+                <div class="grid_row">
+                    <div class="grid_cell ml-w_15 w_25"><p:outputLabel value="Last Name" for="lastname"/></div>
+                    <div class="grid_cell ml-w_5 w_25"><p:outputLabel value="First Name" for="firstname"/></div>
+                    <div class="grid_cell ml-w_5 w_25"><p:outputLabel value="Middle Name" for="patronymic"/></div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:tooltip for="@next" value="Client's last name, first name and middle name. Example: Ivanov Ivan Ivanovich" position="top" showDelay="2000"/>
+                        <p:outputLabel value="In Nominative Case" for="lastname"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <div class="icon_box">
+                            <p:inputText id="lastname" value="#{stepFiveView.recipient.lastname}" required="true" styleClass="w_100"
+                                         onchange="PF('person-lastname-latin').getJQ().val(translit(value));">
+                                <f:passThroughAttribute name="focus-priority" value="1"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                            <script>focusByPriority();</script>
+                        </div>
+                    </div>
+                    <div class="grid_cell ml-w_5 w_25">
+                        <div class="icon_box">
+                            <p:inputText id="firstname" value="#{stepFiveView.recipient.firstname}" required="true" styleClass="w_100"
+                                         onchange="PF('person-firstname-latin').getJQ().val(translit(value));"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell ml-w_5 w_25">
+                        <p:inputText id="patronymic" value="#{stepFiveView.recipient.patronymic}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel value="Resident Country" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{stepFiveView.recipient.residentCountry}" autoWidth="false" required="true" filter="true"
+                                             styleClass="w_100" filterMatchMode="startsWith">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{stepFiveView.countries}" var="country" itemLabel="#{country.name}"
+                                               itemValue="#{country.id}" itemDisabled="#{not country.enabled}"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_15 r-label">
+                        <p:outputLabel value="Birth Date" for="@next:@next"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <div class="icon_box">
+                            <p:tooltip for="@next" value="Date in format dd.mm.yyyy. Example: 01.12.1991" position="top" showDelay="2000"/>
+                            <p:calendar value="#{stepFiveView.recipient.birthDate}" pattern="dd.MM.yyyy" placeholder="dd.mm.yyyy" showOn="button"
+                                        styleClass="w_100" mask="true" converter="javax.faces.LocalDateConverter"
+                                        mindate="#{DateTimes.MIN_LOCAL_DATE}">
+                                <f:validator binding="#{minTemporalValidator}"/>
+                                <f:validator binding="#{maxCurrentLocalDateValidator}"/>
+                                <f:attribute name="zoneId" value="#{userSession.user.department.zoneId}"/>
+                            </p:calendar>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_15 r-label">
+                        <p:outputLabel value="Gender" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <div class="icon_box">
+                            <p:importEnum type="web.entity.crm.Gender"/>
+                            <p:selectOneMenu value="#{stepFiveView.recipient.gender}" required="true" autoWidth="false" styleClass="w_100">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItem itemValue="#{Gender.MALE}" itemLabel="Male"/>
+                                <f:selectItem itemValue="#{Gender.FEMALE}" itemLabel="Female"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel value="Citizenship" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_85">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{stepFiveView.recipient.citizenship}" required="true" filter="true" filterMatchMode="startsWith"
+                                             styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{stepFiveView.countries}" var="country" itemLabel="#{country.name}"
+                                               itemValue="#{country.id}" itemDisabled="#{not country.enabled}"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel value="Birth Country" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_85">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{stepFiveView.recipient.birthCountry}" required="true" filter="true" filterMatchMode="startsWith"
+                                             styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{stepFiveView.countries}" var="country" itemLabel="#{country.name}"
+                                               itemValue="#{country.id}" itemDisabled="#{not country.enabled}"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel value="Place of Birth" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_85">
+                        <p:inputText value="#{stepFiveView.recipient.birthPlace}" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </p:panel>
+            <p:panel header="Primary Identity Document" toggleable="true">
+                <div class="grid_row">
+                    <o:importConstants type="web.utils.Documents"/>
+                    <div class="grid_cell w_10">
+                        <p:outputLabel value="Document Type" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_40 mr-w_5">
+                        <p:selectOneMenu value="#{stepFiveView.recipient.docType}" autoWidth="false" styleClass="w_100">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItem itemLabel="#{documentTypeDictionary.findOne(Documents.US_PASSPORT_CODE).value}"
+                                          itemValue="#{Documents.US_PASSPORT_CODE}"/>
+                            <f:selectItem itemLabel="#{documentTypeDictionary.findOne(Documents.FOREIGN_CITIZEN_PASSPORT_CODE).value}"
+                                          itemValue="#{Documents.FOREIGN_CITIZEN_PASSPORT_CODE}"/>
+                            <p:ajax process="@parent" update="@parent"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="grid_cell w_20 mr-w_5">
+                        <div class="grid_cell w_25">
+                            <p:outputLabel value="Series" for="@next" styleClass="document-state"/>
+                        </div>
+                        <div class="grid_cell w_75">
+                            <p:inputText value="#{stepFiveView.recipient.docSeries}" styleClass="w_100"
+                                         maxlength="#{stepFiveView.recipient.docType eq Documents.US_PASSPORT_CODE ? 4 : 30}">
+                                <p:keyFilter regEx="#{stepFiveView.recipient.docType eq Documents.US_PASSPORT_CODE ? '/\\d/' :
+                                    '/[0-9A-Za-z-]/'}" preventPaste="false"/>
+                            </p:inputText>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="grid_cell w_25">
+                            <p:outputLabel value="Number" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_75">
+                            <p:inputText value="#{stepFiveView.recipient.docNumber}" styleClass="w_100"
+                                         maxlength="#{stepFiveView.recipient.docType eq Documents.US_PASSPORT_CODE ? 6 : 40}">
+                                <p:keyFilter regEx="#{stepFiveView.recipient.docType eq Documents.US_PASSPORT_CODE ? '/\\d/' :
+                                    '/[0-9A-Za-z-]/'}" preventPaste="false"/>
+                            </p:inputText>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel value="Issuance Place" styleClass="document-state" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_40 mr-w_5">
+                        <p:inputText value="#{stepFiveView.recipient.docIssuanceUnit}" styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_20 mr-w_5">
+                        <p:outputLabel value="Department Code" for="@next" styleClass="document-state"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputMask mask="999-999" value="#{stepFiveView.recipient.docIssuanceUnitCode}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel value="Issuance Date" styleClass="document-state" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_40 mr-w_5">
+                        <div class="icon_box">
+                            <p:calendar value="#{stepFiveView.recipient.docIssuanceDate}" pattern="dd.MM.yyyy" placeholder="dd.mm.yyyy"
+                                        showOn="button" styleClass="w_50" mask="true" converter="javax.faces.LocalDateConverter"
+                                        mindate="#{DateTimes.MIN_LOCAL_DATE}">
+                                <f:validator binding="#{maxCurrentLocalDateValidator}"/>
+                                <f:attribute name="zoneId" value="#{userSession.user.department.zoneId}"/>
+                                <f:validator binding="#{minTemporalValidator}"/>
+                            </p:calendar>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_20 mr-w_5">
+                        <p:outputLabel value="Valid Until" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:calendar value="#{stepFiveView.recipient.docValidUntilDate}" pattern="dd.MM.yyyy" placeholder="dd.mm.yyyy"
+                                        showOn="button" styleClass="w_100" mask="true" converter="javax.faces.LocalDateConverter"
+                                        mindate="#{DateTimes.MIN_LOCAL_DATE}">
+                                <f:validator binding="#{minTemporalValidator}"/>
+                            </p:calendar>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+            <p:panel header="Contact Information" toggleable="true">
+                <div class="grid_row">
+                    <div class="grid_cell w_30 align-center">
+                        <p:outputLabel value="Mobile Phone" for="mobilePhone"/>
+                    </div>
+                    <div class="grid_cell ml-w_5 w_30 align-center">
+                        <p:outputLabel value="Home Phone" for="homePhone"/>
+                    </div>
+                    <div class="grid_cell ml-w_5 w_30 align-center">
+                        <p:outputLabel value="Email Address" for="email"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_30 align-center">
+                        <p:tooltip for="@next" value="Client's mobile phone number. Numbers only. Example: 7(920)5498641" position="top"
+                                   showDelay="2000"/>
+                        <p:inputMask id="mobilePhone" mask="+7(999)-999-99-99" value="#{stepFiveView.recipient.mobilePhone}" converter="Phone"
+                                     styleClass="w_100" placeholder="+7(999)-999-99-99"/>
+                        <p:message for="@previous"/>
+                    </div>
+                    <div class="grid_cell ml-w_5 w_30 align-center">
+                        <p:tooltip for="@next" value="Client's phone number. Numbers only. Example: 7(485)2646354"
+                                   position="top" showDelay="2000"/>
+                        <p:inputText id="homePhone" value="#{stepFiveView.recipient.homePhone}" styleClass="w_100">
+                            <p:keyFilter regEx="/[0-9+]/" preventPaste="false"/>
+                        </p:inputText>
+                    </div>
+                    <div class="grid_cell ml-w_5 w_30 align-center">
+                        <p:tooltip for="@next" showDelay="2000" position="top"
+                                   value="Client's email address. Only Latin letters and numbers, symbols: @ ; . ; - ; _ ; Example: Ivanov@mail.ru"/>
+                        <p:inputText id="email" value="#{stepFiveView.recipient.email}" styleClass="w_100">
+                            <p:keyFilter regEx="/[_A-Za-z0-9-@\\.]/" preventPaste="false"/>
+                            <f:validator binding="#{emailValidator}"/>
+                        </p:inputText>
+                    </div>
+                </div>
+            </p:panel>
+            <div class="navigation_panel bottom clearfix">
+                <p:defaultCommand target="@next"/>
+                <p:commandButton value="Next" action="#{stepFiveView.next()}" update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"
+                                 styleClass="r-float_elem big_btn blue-btn"/>
+                <p:commandButton value="Back" action="back" immediate="true" process="@this" styleClass="big_btn orange-btn"/>
+                <p:commandButton value="Cancel" action="cancel" process="@this" styleClass="big_btn orange-btn"/>
+            </div>
+        </p:panel>
+    </ui:define>
+</ui:composition>

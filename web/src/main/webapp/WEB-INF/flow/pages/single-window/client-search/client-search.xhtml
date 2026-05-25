@@ -1,0 +1,560 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:fo="http://front-office/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{empty FS_CLIENT_SEARCH_VIEW.headerLabel ? 'Client Search' : FS_CLIENT_SEARCH_VIEW.headerLabel}">
+            <f:facet name="actions">
+                <ui:fragment rendered="#{not empty FS_CLIENT_SEARCH_VIEW.stepNumber}">
+                    <div class="step_indicator">
+                        <ui:repeat value="#{FS_CLIENT_SEARCH_VIEW.initStepList()}" var="i">
+                            <ui:fragment rendered="#{FS_CLIENT_SEARCH_VIEW.stepNumber ne i}">
+                                <span>#{i}</span>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{FS_CLIENT_SEARCH_VIEW.stepNumber eq i}">
+                                <span class="current">#{i}</span>
+                            </ui:fragment>
+                        </ui:repeat>
+                    </div>
+                </ui:fragment>
+            </f:facet>
+            <div class="search-block search-block-crm">
+                <div class="search-block-toolbar navigation_panel clearfix">
+                    <p:commandLink value="Advanced Search" actionListener="#{FS_CLIENT_SEARCH_VIEW.onAdvancedSearchChange}" process="@this"
+                                   update="@form" styleClass="search-toolbar-link"/>
+                    <p:commandLink value="Exact Search" actionListener="#{FS_CLIENT_SEARCH_VIEW.openExactSearch}" process="@this"
+                                   update="@form" styleClass="search-toolbar-link" style="margin-left: 1em;"/>
+                </div>
+                <div class="search-block-row">
+                    <div class="search-field">
+                <fo:autoComplete completeMethod="#{FS_CLIENT_SEARCH_VIEW.getAutoCompletes}" value="#{FS_CLIENT_SEARCH_VIEW.searchingDocument}"
+                                 valueConverter="#{FS_CLIENT_SEARCH_VIEW.valueConverter}" var="item" itemValue="#{item}"
+                                 itemLabel="#{FS_CLIENT_SEARCH_VIEW.searchingDocument}" converter="#{FS_CLIENT_SEARCH_VIEW.converter}"
+                                 placeholder="Passport series and number, e.g. 1234 567890"
+                                 styleClass="w_100">
+                    <p:ajax event="itemSelect" listener="#{FS_CLIENT_SEARCH_VIEW.onSelectPerson}"/>
+                    <p:column>
+                        <div class="autocomplete-query">
+                            <span class="document_id">#{item.documentSeries} #{item.documentNumber}</span>
+                            <span class="document_type">#{documentTypeDictionary.findOne(item.documentType).value}</span>
+                        </div>
+                        <div>
+                            #{item.lastName} #{item.firstName} #{item.patronymic}
+                            <h:outputText value="#{item.birthDate}">
+                                <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            </h:outputText>
+                        </div>
+                        <div>
+                            #{utils.addresses.formatAddress(item.address)}
+                        </div>
+                    </p:column>
+                </fo:autoComplete>
+                <p:keyFilter for="@previous" regEx="/[0-9a-zA-Z- ]/" preventPaste="false"/>
+                <p:defaultCommand target="@next"/>
+                <p:commandLink tabindex="-1" action="#{FS_CLIENT_SEARCH_VIEW.findPersonByString()}" update="@form"
+                               oncomplete="if (args.empty) PF('confirm').show()"/>
+                    </div>
+                    <p:commandButton value="Add" action="#{FS_CLIENT_SEARCH_VIEW.addPerson}" immediate="true"
+                                     styleClass="blue-btn big_btn search-field-add"/>
+                </div>
+                <p class="search-field-hint">As you type: partial match on passport series and number in CRM (from 5 characters). Press Enter for exact match by document.</p>
+                <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" closable="false" styleClass="no_title">
+                        <f:facet name="message">
+                            Client not found with the specified parameters.<br/>Refine search parameters or create a new client by clicking the &quot;Add&quot; button
+                            <ui:fragment rendered="#{FS_CLIENT_SEARCH_VIEW.fineractSearchEnabled and not empty FS_CLIENT_SEARCH_VIEW.fineractSearchResults}">
+                                <br/><br/>
+                                <b>Found in Fineract (not in CRM):</b>
+                            </ui:fragment>
+                        </f:facet>
+                        <ui:fragment rendered="#{FS_CLIENT_SEARCH_VIEW.fineractSearchEnabled and not empty FS_CLIENT_SEARCH_VIEW.fineractSearchResults}">
+                            <p:dataTable value="#{FS_CLIENT_SEARCH_VIEW.fineractSearchResults}" var="finClient" style="margin-bottom: 0.75em;">
+                                <p:column headerText="Name">#{finClient.displayName}</p:column>
+                                <p:column headerText="Account">#{finClient.accountNo}</p:column>
+                                <p:column headerText="Phone">#{finClient.mobileNo}</p:column>
+                                <p:column headerText="Status">#{finClient.statusLabel}</p:column>
+                                <p:column headerText="Actions" style="width: 8em;">
+                                    <p:commandButton value="Create in CRM" action="#{FS_CLIENT_SEARCH_VIEW.importFineractClientById(finClient.fineractClientId)}"
+                                                     update="@form" styleClass="blue-btn"
+                                                     oncomplete="if (!args.validationFailed) PF('confirm').hide();"/>
+                                </p:column>
+                            </p:dataTable>
+                        </ui:fragment>
+                        <p:commandButton value="Add" action="#{FS_CLIENT_SEARCH_VIEW.addPerson}" onclick="PF('confirm').hide()" immediate="true"
+                                         styleClass="r-float_elem blue-btn"/>
+                        <p:button value="Cancel" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+                    </p:confirmDialog>
+            </div>
+        </p:panel>
+        <o:importConstants type="web.utils.Documents"/>
+        <ui:fragment rendered="#{FS_CLIENT_SEARCH_VIEW.advancedSearch}">
+            <div>
+                <p:panel styleClass="subpanel">
+                    <div class="search-block-action">
+                        <p:commandButton value="Search" action="#{FS_CLIENT_SEARCH_VIEW.findPerson()}" update="@form"
+                                         oncomplete="if (args.empty) PF('confirm').show()" styleClass="blue-btn big_btn"
+                                         icon="fa fa-search fa-rotate-90" iconPos="right"/>
+                    </div>
+                    <p class="search-field-hint">Exact match by document type, series and number in CRM.</p>
+                    <div class="grid_row">
+                        <div class="grid_cell w_100">
+                            <div class="grid_row">
+                                <div class="grid_cell w_15"><p:outputLabel value="Document Type" for="@next"/></div>
+                                <div class="grid_cell w_80">
+                                    <p:selectOneMenu value="#{FS_CLIENT_SEARCH_VIEW.document.type}" styleClass="w_100">
+                                        <f:selectItem itemLabel="#{documentTypeDictionary.findOne(Documents.US_PASSPORT_CODE).value}"
+                                                      itemValue="#{Documents.US_PASSPORT_CODE}"/>
+                                        <f:selectItem itemLabel="#{documentTypeDictionary.findOne(Documents.FOREIGN_CITIZEN_PASSPORT_CODE).value}"
+                                                      itemValue="#{Documents.FOREIGN_CITIZEN_PASSPORT_CODE}"/>
+                                        <p:ajax listener="#{FS_CLIENT_SEARCH_VIEW.onDocumentTypeChanged}" process="@this"
+                                                update="@(.document-state)"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                            <div class="grid_row">
+                                <div class="grid_cell w_15"><p:outputLabel value="Series" for="@next:@next"/></div>
+                                <div class="grid_cell w_25 mr-w_5">
+                                    <div class="icon_box">
+                                        <p:tooltip for="@next" value="#{FS_CLIENT_SEARCH_VIEW.document.type eq Documents.US_PASSPORT_CODE ?
+                                         'Numbers only. Example: 123456' : 'Numbers and Latin letters only. Example: AB123'}" showDelay="2000"/>
+                                        <p:inputText value="#{FS_CLIENT_SEARCH_VIEW.document.series}"
+                                                     required="#{FS_CLIENT_SEARCH_VIEW.document.type eq Documents.US_PASSPORT_CODE}"
+                                                     maxlength="#{FS_CLIENT_SEARCH_VIEW.document.type eq Documents.US_PASSPORT_CODE ? 4 : 30}"
+                                                     styleClass="w_100 document-state">
+                                            <f:validateLength minimum="4"
+                                                              disabled="#{FS_CLIENT_SEARCH_VIEW.document.type ne Documents.US_PASSPORT_CODE}"/>
+                                            <p:keyFilter regEx="#{FS_CLIENT_SEARCH_VIEW.document.type eq Documents.US_PASSPORT_CODE ? '/\\d/'
+                                                : '/[0-9a-zA-Z-]/'}" preventPaste="false"/>
+                                        </p:inputText>
+                                        <p:message for="@previous" display="icon"/>
+                                    </div>
+                                </div>
+                                <div class="grid_cell w_15"><p:outputLabel value="Number" for="@next:@next"/></div>
+                                <div class="grid_cell w_35">
+                                    <div class="icon_box">
+                                        <p:tooltip for="@next" value="#{FS_CLIENT_SEARCH_VIEW.document.type eq Documents.US_PASSPORT_CODE ?
+                                         'Numbers only. Example: 123456' : 'Numbers and Latin letters only. Example: AB123'}" showDelay="2000"/>
+                                        <p:inputText value="#{FS_CLIENT_SEARCH_VIEW.document.number}" required="true"
+                                                     maxlength="#{FS_CLIENT_SEARCH_VIEW.document.type  eq Documents.US_PASSPORT_CODE ? 6 : 40}"
+                                                     styleClass="w_100 document-state">
+                                            <f:validateLength minimum="6"
+                                                              disabled="#{FS_CLIENT_SEARCH_VIEW.document.type ne Documents.US_PASSPORT_CODE}"/>
+                                            <p:keyFilter preventPaste="false"
+                                                         regEx="#{FS_CLIENT_SEARCH_VIEW.document.type eq Documents.US_PASSPORT_CODE ? '/\\d/'
+                                                            : '/[0-9a-zA-Z-]/'}"/>
+                                        </p:inputText>
+                                        <p:message for="@previous" display="icon"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p:panel>
+            </div>
+        </ui:fragment>
+        <ui:fragment rendered="#{FS_CLIENT_SEARCH_VIEW.fineractSearchEnabled}">
+            <p:panel header="Fineract search" styleClass="search-panel-fineract">
+                <p class="search-field-hint">Type a name, phone or account number (from 2 characters). Clients in Fineract not linked to CRM are listed below.</p>
+                <p:autoComplete value="#{FS_CLIENT_SEARCH_VIEW.fineractSearchQuery}"
+                                completeMethod="#{FS_CLIENT_SEARCH_VIEW.getFineractAutoCompletes}"
+                                minQueryLength="2" queryDelay="400" dropdown="true" forceSelection="false"
+                                placeholder="Name, phone, account number..."
+                                styleClass="w_100">
+                    <p:ajax event="query" update="fineractSearchResults"/>
+                </p:autoComplete>
+                <h:panelGroup id="fineractSearchResults">
+                    <ui:fragment rendered="#{not empty FS_CLIENT_SEARCH_VIEW.fineractSearchResults}">
+                        <p:dataTable value="#{FS_CLIENT_SEARCH_VIEW.fineractSearchResults}" var="finClient"
+                                     emptyMessage="No Fineract clients found that are not linked to CRM."
+                                     style="margin-top: 0.75em;">
+                            <p:column headerText="Fineract ID">#{finClient.fineractClientId}</p:column>
+                            <p:column headerText="Name">#{finClient.displayName}</p:column>
+                            <p:column headerText="Account">#{finClient.accountNo}</p:column>
+                            <p:column headerText="Phone">#{finClient.mobileNo}</p:column>
+                            <p:column headerText="Birth date">
+                                <h:outputText value="#{finClient.dateOfBirth}" rendered="#{not empty finClient.dateOfBirth}">
+                                    <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                    <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Status">#{finClient.statusLabel}</p:column>
+                            <p:column headerText="Actions" style="width: 14em;">
+                                <p:commandButton value="Create in CRM" action="#{FS_CLIENT_SEARCH_VIEW.importFineractClientById(finClient.fineractClientId)}"
+                                                 update="@form" styleClass="blue-btn"/>
+                                <p:commandButton value="Link" actionListener="#{FS_CLIENT_SEARCH_VIEW.linkFineractClientById(finClient.fineractClientId)}"
+                                                 update="fineractStatusBlock fineractSearchResults" styleClass="blue-btn"
+                                                 rendered="#{FS_CLIENT_SEARCH_VIEW.fineractClientLinkAvailable}"
+                                                 style="margin-left: 0.25em;"/>
+                            </p:column>
+                        </p:dataTable>
+                    </ui:fragment>
+                </h:panelGroup>
+            </p:panel>
+        </ui:fragment>
+        <ui:fragment rendered="#{not empty FS_CLIENT_SEARCH_VIEW.person}">
+            <p:panel header="Client Information" styleClass="client_card">
+                <div class="title_page">
+                    <div class="navigation_panel">
+                        <p:commandButton value="Back to search" action="#{FS_CLIENT_SEARCH_VIEW.finishSession()}" immediate="true"
+                                         update="@form" styleClass="orange-btn" style="margin-right: 0.5em;"
+                                         rendered="#{FS_CLIENT_SEARCH_VIEW.clientSessionOpen}"/>
+                        <p:commandButton value="Edit Profile" action="#{FS_CLIENT_SEARCH_VIEW.toEditClient()}" immediate="true"
+                                         styleClass="blue-btn r-float_elem"/>
+                        <p:commandButton value="Document Copies" action="to-document-copy" immediate="true" styleClass="blue-btn r-float_elem"/>
+                        <p:commandButton value="Change History" action="to-client-history" styleClass="blue-btn"/>
+                    </div>
+                    <h:outputText value="Please verify data correctness" rendered="#{validated}" styleClass="success_title"/>
+                    <h:panelGroup id="fineractStatusBlock">
+                        <ui:fragment rendered="#{FS_CLIENT_SEARCH_VIEW.fineractClientStatus.showOnCard}">
+                            <p class="#{FS_CLIENT_SEARCH_VIEW.fineractClientStatus.cssClass}" style="margin-top: 0.5em;">
+                                #{FS_CLIENT_SEARCH_VIEW.fineractClientStatus.summary}
+                            </p>
+                            <p:commandButton value="Refresh Fineract status" action="#{FS_CLIENT_SEARCH_VIEW.onRefreshFineractStatus}"
+                                             update="fineractStatusBlock" styleClass="blue-btn" style="margin-top: 0.25em;"/>
+                            <p:commandButton value="Sync to Fineract" action="#{FS_CLIENT_SEARCH_VIEW.onSyncToFineract}"
+                                             update="fineractStatusBlock" styleClass="blue-btn" style="margin-top: 0.25em; margin-left: 0.5em;"/>
+                        </ui:fragment>
+                    </h:panelGroup>
+                    <ui:fragment rendered="#{not empty FS_CLIENT_SEARCH_VIEW.validateException}">
+                        <p class="error_title">
+                            <span class="fa-stack">
+                                <i class="fa fa-circle-thin fa-stack-2x"/>
+                                <i class="fa fa-exclamation fa-stack-1x"/>
+                            </span>Client data validation failed
+                        </p>
+                    </ui:fragment>
+                </div>
+                <ui:fragment rendered="#{not empty FS_CLIENT_SEARCH_VIEW.validateException}">
+                    <div class="error_list">
+                        <div class="name"><span>#{FS_CLIENT_SEARCH_VIEW.validateException.message}</span></div>
+                        <p:repeat value="#{FS_CLIENT_SEARCH_VIEW.validateException.details}" var="detail">
+                            <div class="text">#{detail}</div>
+                        </p:repeat>
+                    </div>
+                </ui:fragment>
+                <div class="grid_row client_card_text">
+                    <div class="grid_row title_group">Basic Data</div>
+                    <div class="grid_cell w_80">
+                        <div class="grid_row">
+                            <div class="grid_cell w_30"><b>Full Name</b></div>
+                            <div class="grid_cell w_70">
+                                #{utils.getStrings().joinFio(FS_CLIENT_SEARCH_VIEW.person.lastname, FS_CLIENT_SEARCH_VIEW.person.firstname, FS_CLIENT_SEARCH_VIEW.person.patronymic)}
+                                <ui:fragment rendered="#{not empty FS_CLIENT_SEARCH_VIEW.person.birthDate}">
+                                    <h:outputText value="#{FS_CLIENT_SEARCH_VIEW.person.birthDate}">
+                                        <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                                    </h:outputText> (#{FS_CLIENT_SEARCH_VIEW.calculateAge()} years old)
+                                </ui:fragment>
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_30"><b>Country and Place of Birth</b></div>
+                            <div class="grid_cell w_70">
+                                #{FS_CLIENT_SEARCH_VIEW.birthValue}
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_30"><b>Citizenship</b></div>
+                            <div class="grid_cell w_70">
+                                <ui:fragment rendered="#{not empty FS_CLIENT_SEARCH_VIEW.person.citizenship}">
+                                    #{FS_CLIENT_SEARCH_VIEW.countryRepository.findOne(FS_CLIENT_SEARCH_VIEW.person.citizenship).name}
+                                </ui:fragment>
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_30"><b>Resident</b></div>
+                            <div class="grid_cell w_70">
+                                <ui:fragment rendered="#{not empty FS_CLIENT_SEARCH_VIEW.person.residentCountry}">
+                                    #{FS_CLIENT_SEARCH_VIEW.countryRepository.findOne(FS_CLIENT_SEARCH_VIEW.person.residentCountry).name}
+                                </ui:fragment>
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell title_group">Identity Document</div>
+                        </div>
+                        <ui:fragment rendered="#{empty FS_CLIENT_SEARCH_VIEW.mainDocument}">
+                            <div class="grid_row">
+                                <div class="grid_cell w_30"/>
+                                <div class="grid_cell w_70">-</div>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{not empty FS_CLIENT_SEARCH_VIEW.mainDocument}">
+                            <div class="grid_row">
+                                <div class="grid_cell w_30">
+                                    <b><h:outputText value="#{documentTypeDictionary.findOne(FS_CLIENT_SEARCH_VIEW.mainDocument.type).value}"
+                                                     rendered="#{not empty FS_CLIENT_SEARCH_VIEW.mainDocument.type}"/></b>
+                                </div>
+                                <div class="grid_cell w_70">
+                                    #{FS_CLIENT_SEARCH_VIEW.buildDocumentValue(FS_CLIENT_SEARCH_VIEW.mainDocument)}
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        <div class="grid_row">
+                            <div class="grid_cell w_30 title_group">Other Documents</div>
+                            <ui:fragment rendered="#{empty FS_CLIENT_SEARCH_VIEW.additionalDocuments}">
+                                <div class="grid_cell w_70">-</div>
+                            </ui:fragment>
+                        </div>
+                        <div class="grid_row">
+                            <p:repeat value="#{FS_CLIENT_SEARCH_VIEW.additionalDocuments}" var="document">
+                                <ui:fragment rendered="#{not empty document.type}">
+                                    <div class="grid_cell w_30">
+                                        <b>#{documentTypeDictionary.findOne(document.type).value}</b>
+                                    </div>
+                                </ui:fragment> #{FS_CLIENT_SEARCH_VIEW.buildDocumentValue(document)}
+                            </p:repeat>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell title_group">Addresses</div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_row">
+                                <div class="grid_cell w_30"><b>Staying</b></div>
+                                <div class="grid_cell w_70">
+                                    #{utils.addresses.formatAddress(FS_CLIENT_SEARCH_VIEW.stayingPersonAddress.address)}
+                                </div>
+                            </div>
+                            <div class="grid_row">
+                                <div class="grid_cell w_30"><b>Accommodation</b></div>
+                                <o:importConstants type="web.view.ce.clientsearch.ClientSearchView"/>
+                                <div class="grid_cell w_70">
+                                    #{empty FS_CLIENT_SEARCH_VIEW.accommodationPersonAddress.matchType ?
+                                            utils.addresses.formatAddress(FS_CLIENT_SEARCH_VIEW.accommodationPersonAddress.address) :
+                                            ClientSearchView.MATCH_ADDRESS_VALUES.get(FS_CLIENT_SEARCH_VIEW.accommodationPersonAddress.matchType)}
+                                </div>
+                            </div>
+                            <div class="grid_row">
+                                <div class="grid_cell w_30"><b>Residential</b></div>
+                                <div class="grid_cell w_70">
+                                    #{empty FS_CLIENT_SEARCH_VIEW.residentialPersonAddress.matchType ?
+                                            utils.addresses.formatAddress(FS_CLIENT_SEARCH_VIEW.residentialPersonAddress.address) :
+                                            ClientSearchView.MATCH_ADDRESS_VALUES.get(FS_CLIENT_SEARCH_VIEW.residentialPersonAddress.matchType)}
+                                </div>
+                            </div>
+                            <div class="grid_row">
+                                <div class="grid_cell w_30"><b>Correspondence</b></div>
+                                <div class="grid_cell w_70">
+                                    #{empty FS_CLIENT_SEARCH_VIEW.correspondencePersonAddress.matchType ?
+                                            utils.addresses.formatAddress(FS_CLIENT_SEARCH_VIEW.correspondencePersonAddress.address) :
+                                            ClientSearchView.MATCH_ADDRESS_VALUES.get(FS_CLIENT_SEARCH_VIEW.correspondencePersonAddress.matchType)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_30 title_group">Contact Information</div>
+                            <ui:fragment rendered="#{empty FS_CLIENT_SEARCH_VIEW.contacts}">
+                                <div class="grid_cell w_70">-</div>
+                            </ui:fragment>
+                        </div>
+                        <div class="grid_row">
+                            <p:repeat value="#{FS_CLIENT_SEARCH_VIEW.contacts}" var="contact">
+                                <ui:fragment rendered="#{not empty contact.type}">
+                                    <div class="grid_cell w_30">
+                                        <b>#{contactTypeDictionary.findOne(contact.type).value}</b>
+                                    </div>
+                                </ui:fragment>
+                                <div class="grid_cell w_70">#{contact.data}</div>
+                            </p:repeat>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <h:graphicImage url="data:image/jpg;base64,#{FS_CLIENT_SEARCH_VIEW.toBase64()}" width="215" height="auto"
+                                        styleClass="r-float_elem"/>
+                    </div>
+                </div>
+            </p:panel>
+            <p:panel header="Expired Documents" rendered="#{empty FS_CLIENT_SEARCH_VIEW.stepsCount and empty FS_CLIENT_SEARCH_VIEW.stepNumber
+                and not empty FS_CLIENT_SEARCH_VIEW.invalidDocuments}" styleClass="red-panel">
+                <ui:fragment rendered="#{userSession.rights.contains('single-window-document-copies-edit')}">
+                    <div class="navigation_panel clearfix">
+                        <p:commandButton value="View" action="#{FS_CLIENT_SEARCH_VIEW.setShowReport(true)}" update="@form"
+                                         disabled="#{empty FS_CLIENT_SEARCH_VIEW.selectedInvalidDocument
+                                         or empty FS_CLIENT_SEARCH_VIEW.selectedInvalidDocument.id}"
+                                         styleClass="blue-btn r-float_elem action-button"/>
+                        <p:commandButton value="Attach" action="to-edit-document-copy"
+                                         disabled="#{empty FS_CLIENT_SEARCH_VIEW.selectedInvalidDocument}"
+                                         styleClass="blue-btn r-float_elem action-button"/>
+                        <p:commandButton value="Generate" action="#{FS_CLIENT_SEARCH_VIEW.printExpiredDocumentReport()}"
+                                         disabled="#{empty FS_CLIENT_SEARCH_VIEW.selectedInvalidDocument.bankDocumentType
+                                         or empty FS_CLIENT_SEARCH_VIEW.selectedInvalidDocument.bankDocumentType.reportTemplate}" update="@form"
+                                         immediate="true" styleClass="blue-btn r-float_elem action-button"/>
+
+                    </div>
+                </ui:fragment>
+                <p:dataTable var="invalidDocument" value="#{FS_CLIENT_SEARCH_VIEW.invalidDocuments}"
+                             rowKey="#{invalidDocument.clientDocumentType}, #{invalidDocument.bankDocumentType}"
+                             selection="#{FS_CLIENT_SEARCH_VIEW.selectedInvalidDocument}" selectionMode="single" emptyMessage="No data">
+                    <p:ajax event="rowSelect" update="@(.action-button)"/>
+                    <p:ajax event="rowUnselect" update="@(.action-button)"/>
+                    <p:column headerText="Name">
+                        #{invalidDocument.name}
+                    </p:column>
+                    <p:column headerText="Type">
+                        #{invalidDocument.external ? "Client Document" : "Bank Document"}
+                    </p:column>
+                    <p:column headerText="Creation Date">
+                        <p:outputLabel value="#{invalidDocument.creationDate}">
+                            <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            <f:converter converterId="javax.faces.Instant"/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Expiration Date">
+                        <p:outputLabel value="#{invalidDocument.validUntilDate}">
+                            <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            <f:converter converterId="javax.faces.LocalDateConverter"/>
+                        </p:outputLabel>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            <p:panel header="Product and Account Information"
+                     rendered="#{empty FS_CLIENT_SEARCH_VIEW.stepsCount and empty FS_CLIENT_SEARCH_VIEW.stepNumber}"
+                     styleClass="client_card">
+                <div class="navigation_panel clearfix">
+                    <p:commandButton value="Update" action="#{FS_CLIENT_SEARCH_VIEW.updateProducts}" update="@parent" styleClass="blue-btn"/>
+                    <p:outputLabel value="Show All Products" for="@next"/>
+                    <p:selectBooleanCheckbox value="#{FS_CLIENT_SEARCH_VIEW.allProducts}">
+                        <p:ajax listener="#{FS_CLIENT_SEARCH_VIEW.showAllProducts}" update="deposits credits"/>
+                    </p:selectBooleanCheckbox>
+                    <p:commandButton value="Summary" action="#{FS_CLIENT_SEARCH_VIEW.printReport}" update="products-report"
+                                     styleClass="blue-btn r-float_elem"/>
+                </div>
+                <p:outputPanel deferred="true" styleClass="body_block">
+                    #{FS_CLIENT_SEARCH_VIEW.findDeposits()}
+                    <p:dataTable id="deposits" value="#{FS_CLIENT_SEARCH_VIEW.filteredDeposits}" var="deposit"
+                                 emptyMessage="#{empty FS_CLIENT_SEARCH_VIEW.depositsInfo.errorMessage ? 'No data' : FS_CLIENT_SEARCH_VIEW.depositsInfo.errorMessage}">
+                        <f:facet name="header">
+                            <b>
+                                Deposits (as of:
+                                <h:outputText value="#{FS_CLIENT_SEARCH_VIEW.depositsInfo.creationDateTime}">)
+                                    <f:converter converterId="javax.faces.Instant"/>
+                                    <f:attribute name="pattern" value="dd.MM.yyyy HH:mm"/>
+                                    <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                                </h:outputText>)
+                            </b>
+                        </f:facet>
+                        <p:column headerText="Product Name">
+                            #{deposit.productName}
+                        </p:column>
+                        <p:column headerText="Interest Rate %" width="75">
+                            #{deposit.interestRate}
+                        </p:column>
+                        <p:column headerText="Contract No.">
+                            #{deposit.number}
+                        </p:column>
+                        <p:column headerText="Opening Date" width="90">
+                            <p:outputLabel value="#{deposit.dateOpen}">
+                                <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Closing Date" width="90">
+                            <p:outputLabel value="#{deposit.dateClose}">
+                                <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Balance" width="130">
+                            <p:outputLabel value="#{deposit.balance}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Currency" width="115">
+                            #{deposit.currency.name}
+                        </p:column>
+                    </p:dataTable>
+                </p:outputPanel>
+                <p:outputPanel deferred="true" styleClass="body_block">
+                    #{FS_CLIENT_SEARCH_VIEW.findCredits()}
+                    <p:dataTable id="credits" value="#{FS_CLIENT_SEARCH_VIEW.filteredCredits}" var="credit"
+                                 emptyMessage="#{empty FS_CLIENT_SEARCH_VIEW.creditsInfo.errorMessage ? 'No data' : FS_CLIENT_SEARCH_VIEW.creditsInfo.errorMessage}">
+                        <f:facet name="header">
+                            <b>
+                                Credits (as of:
+                                <h:outputText value="#{FS_CLIENT_SEARCH_VIEW.creditsInfo.creationDateTime}">)
+                                    <f:converter converterId="javax.faces.Instant"/>
+                                    <f:attribute name="pattern" value="dd.MM.yyyy HH:mm"/>
+                                    <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                                </h:outputText>)
+                            </b>
+                        </f:facet>
+                        <p:column headerText="Product Name">
+                            #{credit.productName}
+                        </p:column>
+                        <p:column headerText="Interest Rate %" width="75">
+                            #{credit.interestRate}
+                        </p:column>
+                        <p:column headerText="Contract Number">
+                            #{credit.number}
+                        </p:column>
+                        <p:column headerText="Opening Date" width="90"/>
+                        <p:column headerText="Closing Date" width="90">
+                            <p:outputLabel value="#{credit.dateClose}">
+                                <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Debt">
+                            <p:outputLabel value="#{credit.debt}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Scheduled Payment">
+                            <p:outputLabel value="#{credit.payAmount}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Currency" width="115">
+                            #{credit.currency.name}
+                        </p:column>
+                    </p:dataTable>
+                </p:outputPanel>
+            </p:panel>
+        </ui:fragment>
+        <div jsf:id="products-report">
+            <p:dialog modal="true" closable="true" visible="true" rendered="#{FS_CLIENT_SEARCH_VIEW.showProductsReport}"
+                      resizable="false" draggable="false" closeOnEscape="true" appendTo="@(body)" positionType="absolute" position="top">
+                <p:ajax event="close" listener="#{FS_CLIENT_SEARCH_VIEW.closeDialog}" update="products-report"/>
+                <p:media value="#{reportRequest.report}" player="pdf" width="1200" height="500">
+                    <f:param name="path" value="#{FS_CLIENT_SEARCH_VIEW.productsReport}"/>
+                </p:media>
+            </p:dialog>
+        </div>
+        <p:dialog modal="true" closable="true" visible="true" rendered="#{FS_CLIENT_SEARCH_VIEW.showReport}" resizable="false" draggable="false"
+                  closeOnEscape="true" appendTo="@(body)" positionType="absolute" position="top">
+            <p:ajax event="close" listener="#{FS_CLIENT_SEARCH_VIEW.closeDialog}" update="@form"/>
+            <p:media value="#{reportRequest.report}" player="pdf" width="1200" height="500">
+                <f:param name="path" value="#{FS_CLIENT_SEARCH_VIEW.expiredDocumentReport}"/>
+            </p:media>
+        </p:dialog>
+        <p:commandButton id="backToSearchTrigger" style="display:none" action="#{FS_CLIENT_SEARCH_VIEW.finishSession()}"
+                         update="@form" immediate="true" rendered="#{FS_CLIENT_SEARCH_VIEW.clientSessionOpen}"/>
+        <h:outputScript rendered="#{FS_CLIENT_SEARCH_VIEW.clientSessionOpen}">
+            if (window.FrontOffice &amp;&amp; FrontOffice.bindClientSearchBackGuard) {
+                FrontOffice.bindClientSearchBackGuard();
+            }
+        </h:outputScript><div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Next" action="#{FS_CLIENT_SEARCH_VIEW.validatePersonData}" update="@form"
+                             rendered="#{not empty FS_CLIENT_SEARCH_VIEW.stepNumber and not empty FS_CLIENT_SEARCH_VIEW.stepsCount}"
+                             disabled="#{empty FS_CLIENT_SEARCH_VIEW.person}" styleClass="blue-btn big_btn r-float_elem"/>
+            <p:commandButton value="Close" action="#{FS_CLIENT_SEARCH_VIEW.finishSession()}"
+                             rendered="#{not empty FS_CLIENT_SEARCH_VIEW.person and empty FS_CLIENT_SEARCH_VIEW.stepsCount}" immediate="true"
+                             update="@form" styleClass="orange-btn big_btn"/>
+            <p:commandButton value="Back" action="back" immediate="true"
+                             rendered="#{not empty FS_CLIENT_SEARCH_VIEW.stepNumber and not empty FS_CLIENT_SEARCH_VIEW.stepsCount}"
+                             styleClass="orange-btn big_btn"/>
+            <p:commandButton value="Cancel" action="cancel"
+                             rendered="#{not empty FS_CLIENT_SEARCH_VIEW.person and not empty FS_CLIENT_SEARCH_VIEW.stepsCount}"
+                             immediate="true" update="@form" styleClass="orange-btn big_btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

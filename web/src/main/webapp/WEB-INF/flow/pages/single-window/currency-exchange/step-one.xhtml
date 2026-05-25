@@ -1,0 +1,126 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="growl"/>
+    <ui:define name="content-body">
+        <p:panel styleClass="arm_page" header="Define operation category, specify amount and currency type">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span class="current">1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                </div>
+            </f:facet>
+            <ui:fragment rendered="#{not empty stepOne.errorMessage}">
+                #{stepOne.errorMessage}
+            </ui:fragment>
+            <ui:fragment rendered="#{empty stepOne.errorMessage}">
+                <div class="step_block">
+                    <p:fragment>
+                        <div class="toggle_operation">
+                            <p:selectOneRadio id="operation-type" value="#{stepOne.operation.code}" layout="custom">
+                                <f:selectItem itemLabel="Sell" itemValue="#{OperationCode.SELL}"/>
+                                <f:selectItem itemLabel="Buy" itemValue="#{OperationCode.BUY}"/>
+                                <p:ajax update="@parent"/>
+                            </p:selectOneRadio>
+                            <p:radioButton for="operation-type" itemIndex="0"/>
+                            <p:outputLabel for="@previous" styleClass="sell_label#{OperationCode.SELL eq stepOne.operation.code ? ' current' : ''}">
+                                <span>Sell</span>Selling foreign currency to client
+                            </p:outputLabel>
+                            <p:radioButton for="operation-type" itemIndex="1"/>
+                            <p:outputLabel for="@previous" styleClass="buy_label#{OperationCode.BUY eq stepOne.operation.code ? ' current' : ''}">
+                                <span>Buy</span>Buying foreign currency from client
+                            </p:outputLabel>
+                        </div>
+                    </p:fragment>
+                    <div class="value_operation">
+                        <span class="label">Amount</span>
+                        <p:tooltip for="@next" value="Enter currency amount for exchange. Example: 250.50" position="top" showDelay="2000"/>
+                        <p:inputNumber widgetVar="sum-input" value="#{stepOne.operation.sum}" decimalPlaces="2" autocomplete="off" minValue="0">
+                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                        </p:inputNumber>
+                    </div>
+                    <ui:param name="displayedCurrencies" value="#{stepOne.displayedCurrencies()}"/>
+                    <ui:param name="hiddenCurrencies" value="#{stepOne.hiddenCurrencies(displayedCurrencies)}"/>
+                    <div class="currency_operation#{displayedCurrencies.size() > 2 ? ' justify' : ''}">
+                        <p:repeat value="#{displayedCurrencies}" var="currency" varStatus="varStatus">
+                            <ui:fragment rendered="#{not (varStatus.last and varStatus.index eq 2 and stepOne.currencies.size() > 3)}">
+                                <div>
+                                    <p:commandLink update="@form"
+                                                   styleClass="currency_item#{stepOne.operation.currency eq currency ? ' current' : ''}">
+                                        <f:setPropertyActionListener value="#{currency}" target="#{stepOne.operation.currency}"/>
+                                        <div class="img_box">
+                                            <p:graphicImage value="#{currencyImageRequest.image}">
+                                                <f:param name="id" value="#{currency.id}"/>
+                                            </p:graphicImage>
+                                        </div>
+                                        <span>#{currency.iso}</span>#{currency.name}
+                                    </p:commandLink>
+                                </div>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{varStatus.last and varStatus.index eq 2 and stepOne.currencies.size() > 3}">
+                                <div>
+                                    <p:commandLink styleClass="currency_item#{stepOne.operation.currency eq currency ? ' current' : ''}">
+                                        <ui:fragment rendered="#{not empty currency}">
+                                            <div class="img_box">
+                                                <p:graphicImage value="#{currencyImageRequest.image}">
+                                                    <f:param name="id" value="#{currency.id}"/>
+                                                </p:graphicImage>
+                                            </div>
+                                            <span>#{currency.iso}</span>#{currency.name}
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{empty currency}">
+                                            <div class="img_box">?</div>
+                                            <span>Other</span>currency
+                                        </ui:fragment>
+                                    </p:commandLink>
+                                    <p:overlayPanel for="@previous" rendered="#{not empty hiddenCurrencies}" hideEffect="fade">
+                                        <p:repeat value="#{hiddenCurrencies}" var="currency">
+                                            <div>
+                                                <p:commandLink styleClass="currency_item" update="@form">
+                                                    <f:setPropertyActionListener value="#{currency}" target="#{stepOne.operation.currency}"/>
+                                                    <div class="img_box">
+                                                        <p:graphicImage value="#{currencyImageRequest.image}">
+                                                            <f:param name="id" value="#{currency.id}"/>
+                                                        </p:graphicImage>
+                                                    </div>
+                                                    <span>#{currency.iso}</span>#{currency.name}
+                                                </p:commandLink>
+                                            </div>
+                                        </p:repeat>
+                                    </p:overlayPanel>
+                                </div>
+                            </ui:fragment>
+                        </p:repeat>
+                    </div>
+                    <div class="navigation_panel clearfix">
+                        <p:commandButton value="Calculate" action="#{stepOne.calculate()}" widgetVar="calculate-button"
+                                         styleClass="r-float_elem blue-btn big_btn"/>
+                    </div>
+                </div>
+                <p:fragment autoUpdate="true">
+                    <script>
+                        $(function () {
+                            PF('sum-input').getJQ().keyup((function () {
+                                if (!PF('sum-input').getValue()) {
+                                    PF('calculate-button').disable();
+                                } else {
+                                    PF('calculate-button').enable();
+                                }
+                                return arguments.callee;
+                            })());
+                        });
+                    </script>
+                </p:fragment>
+            </ui:fragment>
+        </p:panel>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

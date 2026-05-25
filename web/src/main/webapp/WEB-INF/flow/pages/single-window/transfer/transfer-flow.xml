@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/single-window/transition">
+    <view-state id="transfer">
+        <var name="transferView" class="web.view.transfer.TransferView"/>
+        <on-entry>
+            <evaluate expression="transferView.init()"/>
+        </on-entry>
+        <transition on="send" to="send"/>
+        <transition on="get" to="get"/>
+    </view-state>
+    <subflow-state id="send" subflow="pages/single-window/transfer/send">
+        <transition on="cancel" to="transfer"/>
+    </subflow-state>
+    <subflow-state id="get" subflow="pages/single-window/transfer/get">
+        <transition on="cancel" to="transfer"/>
+    </subflow-state>
+</flow>

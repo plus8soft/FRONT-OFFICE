@@ -1,0 +1,325 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:fo="http://front-office/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Specify recipient data and amount">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span class="current">1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                </div>
+            </f:facet>
+            <div><span class="step_num">1.1</span>Enter recipient data</div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="TIN" for="@next:@next"/>
+                </div>
+                <div class="grid_cell w_35">
+                    <div class="icon_box">
+                        <p:tooltip for="@next" value="Digits only. Example: 123456" position="top" showDelay="2000"/>
+                        <fo:autoComplete value="#{stepOne.payment.counteragent.ein}" converter="#{stepOne.counteragentConverter}"
+                                         valueConverter="#{stepOne.counteragentValueConverter}" var="counteragent"
+                                         itemValue="#{counteragent}" itemLabel="#{counteragent.ein}"
+                                         completeMethod="#{stepOne.completeEin}" required="true" panelStyleClass="person_autocomplete" maxlength="9"
+                                         styleClass="w_100" panelStyle="width: 60%;">
+                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                            <f:validateLength minimum="9" maximum="9"/>
+                            <f:validator binding="#{personEinValidator}"/>
+                            <p:ajax event="query" global="false"/>
+                            <p:ajax event="itemSelect" listener="#{stepOne.onCounteragentSelect}" update="@form"
+                                    oncomplete="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == this.source)[0];
+                                            widget.itemSelectTimeout = true;
+                                            setTimeout(() => widget.itemSelectTimeout = null, 100)"/>
+                            <p:ajax listener="#{stepOne.onCounteragentChanged}" update="@parent"
+                                    onstart="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == cfg.source)[0];
+                                         if (widget.itemSelectTimeout || widget.panel.is(':visible')) return false"/>
+                            <p:column>
+                                <div>#{counteragent.name}</div>
+                                <div>#{counteragent.ein} #{counteragent.address}</div>
+                            </p:column>
+                        </fo:autoComplete>
+                        <p:message for="@previous" display="icon"/>
+                        <p:keyFilter for="@previous:@previous" regEx="/\d/" preventPaste="false"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Name" for="@next"/>
+                </div>
+                <div class="grid_cell w_35">
+                    <div class="icon_box">
+                        <p:inputText value="#{stepOne.payment.counteragent.name}" disabled="#{stepOne.counteragentSelected}" styleClass="w_100"
+                                     required="true">
+                            <p:ajax listener="#{stepOne.updateCounteragent()}"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+                <div class="grid_cell w_10 ml-w_5">
+                    <p:outputLabel value="Address" for="@next"/>
+                </div>
+                <div class="grid_cell w_35 ml-w_5">
+                    <div class="icon_box">
+                        <p:inputText value="#{stepOne.payment.counteragent.address}" disabled="#{stepOne.counteragentSelected}" styleClass="w_100"
+                                     required="true">
+                            <p:ajax listener="#{stepOne.updateCounteragent()}"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <p class="strike_title"><span>Recipient Bank Details</span></p>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="BIC" for="@next"/>
+                </div>
+                <div class="grid_cell w_35">
+                    <div class="icon_box">
+                        <p:autoComplete value="#{stepOne.payment.bank}" styleClass="w_100" completeMethod="#{stepOne.completeRoutingNumber}"
+                                        disabled="#{stepOne.counteragentSelected}" converter="#{stepOne.bankConverter}" var="bank"
+                                        itemLabel="#{bank.routingNumber}" itemValue="#{bank}" required="true">
+                            <p:ajax event="itemSelect" listener="#{stepOne.onBankSelect}" update="@form"/>
+                            <p:column>
+                                <div>#{bank.name}</div>
+                                <div>#{bank.routingNumber} #{bank.address}</div>
+                            </p:column>
+                        </p:autoComplete>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+                <div class="grid_cell w_10 ml-w_5">
+                    <p:outputLabel value="Corr. Account" for="@next"/>
+                </div>
+                <div class="grid_cell w_35 ml-w_5">
+                    <div class="icon_box">
+                        <p:outputLabel value="#{stepOne.payment.bank.correspondentAccount}" required="true" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Name" for="@next"/>
+                </div>
+                <div class="grid_cell w_90">
+                    <div class="icon_box">
+                        <p:outputLabel value="#{stepOne.payment.bank.name}" required="true" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Category" for="@next"/>
+                </div>
+                <div class="grid_cell w_35">
+                    <div class="icon_box">
+                        <p:selectOneMenu value="#{stepOne.payment.payAction}" styleClass="w_100" converter="omnifaces.SelectItemsConverter"
+                                         autoWidth="false">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{stepOne.availablePayActions}" var="payAction" itemLabel="#{payAction.name}"
+                                           itemValue="#{payAction}"/>
+                            <p:ajax event="itemSelect" update="@form" listener="#{stepOne.onPayActionSelect()}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="grid_cell w_10 ml-w_5">Cash Symbol</div>
+                <div class="grid_cell w_5">
+                    <h:outputText id="symbol" value="#{stepOne.payment.payAction != null ? stepOne.payment.payAction.cashSymbol : ''}"/>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Account" for="@next"/>
+                </div>
+                <div class="grid_cell w_90">
+                    <div class="icon_box">
+                        <p:selectOneMenu value="#{stepOne.payment.account}" converter="omnifaces.SelectItemsConverter"
+                                         disabled="#{stepOne.payment.payAction != null and not empty stepOne.payment.payAction.account}"
+                                         styleClass="w_100" autoWidth="false">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{accountRepository.findAll()}" var="account" itemLabel="#{account.id}" itemValue="#{account}"/>
+                            <p:ajax event="itemSelect" update="@form"/>
+                        </p:selectOneMenu>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <p:importEnum type="web.entity.log.OperationCode"/>
+            <div class="grid_row">
+                <div class="grid_cell w_10">Payment Type</div>
+                <div class="grid_cell w_90">
+                    <p:selectOneRadio value="#{stepOne.payment.paymentOperationCode}" disabled="#{empty stepOne.payment.counteragent
+                        or empty stepOne.payment.bank or (stepOne.payment.payAction != null and stepOne.payment.payAction.type != null)}">
+                        <f:selectItem itemLabel="Legal Entities"
+                                      itemValue="#{stepOne.payment.counteragent.contract ? OperationCode.COMPANY_PARTNER_PAYMENT : OperationCode.COMPANY_FREE_PAYMENT}"/>
+                        <f:selectItem itemLabel="Public Sector Organizations" itemValue="#{OperationCode.PUBLIC_SECTOR_PAYMENT}"/>
+                        <f:selectItem itemLabel="Taxes and Fees" itemValue="#{OperationCode.TAXES_PAYMENT}"/>
+                        <p:ajax update="@form"/>
+                    </p:selectOneRadio>
+                </div>
+            </div>
+            <ui:fragment rendered="#{not empty stepOne.payment.paymentOperationCode}">
+                <hr/>
+                <div><span class="step_num">1.2</span>Specify payment parameters</div>
+                <ui:fragment rendered="#{stepOne.payment.paymentOperationCode eq OperationCode.COMPANY_PARTNER_PAYMENT
+                    or stepOne.payment.paymentOperationCode eq OperationCode.COMPANY_FREE_PAYMENT}">
+                    <div class="grid_row">
+                        <div class="grid_cell w_10">
+                            <p:outputLabel value="VAT" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_65">
+                            <div class="icon_box">
+                                <p:selectOneMenu value="#{stepOne.payment.vat}" styleClass="w_100" converter="javax.faces.Integer" required="true"
+                                                 autoWidth="false">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{ndsDictionary.findAll()}" var="nds" itemLabel="#{nds.value}" itemValue="#{nds.code}"
+                                                   itemDisabled="#{nds.unused}"/>
+                                </p:selectOneMenu>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{stepOne.payment.paymentOperationCode eq OperationCode.PUBLIC_SECTOR_PAYMENT
+                        or stepOne.payment.paymentOperationCode eq OperationCode.TAXES_PAYMENT}">
+                    <div class="grid_row">
+                        <div class="grid_cell w_15">
+                            <p:outputLabel value="Payer TIN (60)" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_35">
+                            <div class="icon_box">
+                                <p:inputText value="#{stepOne.payment.senderEin}" styleClass="w_100" maxlength="9">
+                                    <p:keyFilter regEx="/[0-9]/" preventPaste="false"/>
+                                    <f:validateLength minimum="9" maximum="9"/>
+                                    <f:validator binding="#{personEinValidator}"/>
+                                </p:inputText>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <ui:fragment rendered="#{stepOne.payment.paymentOperationCode eq OperationCode.TAXES_PAYMENT}">
+                        <div class="grid_row">
+                            <div class="grid_cell w_15">
+                                <p:outputLabel value="Basis (106)" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_85">
+                                <div class="icon_box">
+                                    <p:selectOneMenu value="#{stepOne.payment.reason}" styleClass="w_100" converter="omnifaces.SelectItemsConverter"
+                                                     autoWidth="false">
+                                        <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                        <f:selectItems value="#{paymentBasisDictionary.findAll()}" var="reason" itemLabel="#{reason.value}"
+                                                       itemValue="#{reason.code}" itemDisabled="#{reason.unused}"/>
+                                        <p:ajax listener="#{stepOne.payment.setDocDate(null)}" update="doc-date"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="multiline ml-w_15">
+                            <p>1st and 2nd digits: tax payment period: MC - month; KV - quarter; PL - half-year; GD - year.</p>
+                            <p>3rd digit: period.</p>
+                            <p>4th and 5th digits: period value: 01-12 for MC; 01-04 for KV; 01 or 02 for PL; 00 for GD.</p>
+                            <p>6th digit: period.</p>
+                            <p>7th to 10th digits: year for which tax is paid.</p>
+                            <p>Example: MC.02.2017; KV.01.2017; PL.02.2017; GD.00.2017.</p>
+                            <p>Specific date is entered in format: DD.MM.YYYY</p>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_15">
+                                <p:outputLabel value="Period (107)" for="@next:@next"/>
+                            </div>
+                            <div class="grid_cell w_85">
+                                <div class="icon_box">
+                                    <p:tooltip
+                                            value="Specify frequency or specific payment date. Field in payment order &quot;107&quot;"
+                                            for="@next" position="top" showDelay="2000"/>
+                                    <p:inputText value="#{stepOne.payment.period}" styleClass="w_100">
+                                        <f:validator binding="#{periodValidator}"/>
+                                    </p:inputText>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_15">
+                                <p:outputLabel value="Document Number (108)" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_15">
+                                <p:inputText value="#{stepOne.payment.docNumber}" styleClass="w_100"/>
+                            </div>
+                            <div class="grid_cell w_15 ml-w_5">
+                                <p:outputLabel value="Document Date (109)" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_20">
+                                <p:calendar id="doc-date" value="#{stepOne.payment.docDate}" disabled="#{stepOne.payment.reason eq 'VD'}"
+                                            converter="javax.faces.LocalDateConverter" pattern="dd.MM.yyyy" showOn="button"
+                                            placeholder="dd.mm.yyyy" mask="true" styleClass="w_100"/>
+                            </div>
+                            <div class="grid_cell w_10 ml-w_5">
+                                <p:outputLabel value="Payment Code (110)" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_15">
+                                <p:inputText value="#{stepOne.payment.paymentCode}" styleClass="w_100"/>
+                            </div>
+                        </div>
+                    </ui:fragment>
+                </ui:fragment>
+                <div class="grid_row">
+                    <div class="w_60 ml-w_15">
+                        <div class="icon_box">
+                            <div class="value_operation less_size">
+                                <span class="label">Amount</span>
+                                <p:inputNumber value="#{stepOne.payment.sum}" required="true" autocomplete="off"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w_15 navigation_panel bottom">
+                        <p:defaultCommand target="@next" scope="@previous:@previous"/>
+                        <p:commandButton value="Calculate" styleClass="r-float_elem blue-btn" action="#{stepOne.calculate}"
+                                         update="@(.ui-panel) next"/>
+                    </div>
+                </div>
+            </ui:fragment>
+            <div class="paysystem_list">
+                <div class="list_enabled_sys">
+                    <div class="grid_row">
+                        <div class="grid_cell w_30">Commission:</div>
+                        <div class="grid_cell w_70">#{stepOne.payment.counteragentCommission}</div>
+                    </div>
+                    <div class="grid_row">
+                        <div class="grid_cell w_30">VAT:</div>
+                        <div class="grid_cell w_70">#{stepOne.payment.vatSum}</div>
+                    </div>
+                    <div class="grid_row total_row">
+                        <div class="grid_cell w_30">Total to Pay:</div>
+                        <div class="grid_cell w_70">
+                            #{stepOne.payment.total}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </p:panel>
+        <script>focusByPriority();</script>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton id="next" value="Next" styleClass="r-float_elem big_btn blue-btn" action="#{stepOne.toNextStep()}"
+                             update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"
+                             disabled="#{empty stepOne.payment.counteragent or empty stepOne.payment.bank or empty stepOne.payment.total}"/>
+            <p:commandButton value="New Payment" styleClass="r-float_elem big_btn blue-btn" actionListener="#{stepOne.clearAll()}" update="@form"
+                             immediate="true">
+                <p:resetInput target="@form"/>
+            </p:commandButton>
+        </div>
+    </ui:define>
+</ui:composition>

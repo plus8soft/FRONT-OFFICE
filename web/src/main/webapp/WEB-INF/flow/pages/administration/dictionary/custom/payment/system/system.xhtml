@@ -1,0 +1,42 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{paymentSystemView.dictionary.group} > #{paymentSystemView.dictionary.name}">
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Edit" action="edit" styleClass="blue-btn" disabled="#{empty paymentSystemModel.selected}"/>
+            </div>
+            <p:dataTable value="#{paymentSystemModel}" var="paymentSystem" lazy="true" rows="100" sortMode="multiple"
+                         virtualScroll="true" scrollable="#{paymentSystemModel.rowCount gt 10}" scrollRows="50"
+                         scrollHeight="#{paymentSystemModel.rowCount gt 10 ? 400 : null}" selection="#{paymentSystemModel.selected}"
+                         selectionMode="single" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.ui-button:first)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-button:first)"/>
+                <p:ajax event="page" update="@(.ui-button:first)" listener="#{paymentSystemModel.setSelected(null)}"/>
+                <p:column>
+                    #{paymentSystem.name}
+                </p:column>
+                <p:column headerText="System Name">
+                    #{paymentSystem.id}
+                </p:column>
+                <p:column headerText="Name">
+                    #{paymentSystem.name}
+                </p:column>
+                <p:column headerText="Agent Commission">
+                    #{paymentSystem.commission}%
+                </p:column>
+                <p:column headerText="Status">
+                    #{paymentSystem.enabled ? "Active" : "Not Used"}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

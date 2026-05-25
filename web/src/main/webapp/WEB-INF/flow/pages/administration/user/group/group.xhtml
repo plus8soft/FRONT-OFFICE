@@ -1,0 +1,48 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">User Groups</h1>
+        <p:panel header="Select a user group and perform the necessary actions">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="edit" disabled="#{empty groupView.selectedTreeNode}" styleClass="blue-btn"/>
+                <p:commandButton value="Delete" disabled="#{empty groupView.selectedTreeNode}" styleClass="orange-btn"
+                                 onclick="PF('confirm').show()"/>
+            </div>
+            <div class="tree_bg">
+                <div class="header_tree">
+                    <div class="additional_col grid-w_15">Roles</div>
+                    <div class="additional_col grid-w_15">Users</div>
+                    <div class="main_col">Group List</div>
+                </div>
+                <p:tree value="#{groupView.tree}" var="item" selectionMode="single" selection="#{groupView.selectedTreeNode}" draggable="true"
+                        droppable="true" styleClass="w_100" animate="true">
+                    <p:ajax event="select" update="@(.ui-button)"/>
+                    <p:ajax event="unselect" update="@(.ui-button)"/>
+                    <p:ajax event="dragdrop" listener="#{groupView.onDragDrop}" update="@this"/>
+                    <p:treeNode type="empty">#{item}</p:treeNode>
+                    <p:treeNode>
+                        <span class="float_cell grid-w_15">#{item.rolesCount}</span>
+                        <span class="float_cell grid-w_15">#{item.usersCount}</span>
+                        <span class="main_cell">#{item.group.name}</span>
+                    </p:treeNode>
+                </p:tree>
+            </div>
+        </p:panel>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" closable="false" severity="help"
+                         message="Do you really want to delete the selected record?">
+            <p:commandButton value="Yes" actionListener="#{groupView.delete()}" onclick="PF('confirm').hide()"
+                             styleClass="blue-btn r-float_elem" update="@form"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

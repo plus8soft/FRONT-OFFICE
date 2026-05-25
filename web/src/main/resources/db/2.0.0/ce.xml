@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="2.0.0" failOnError="true">
+        <sql>CREATE SCHEMA CE</sql>
+        
+        <!-- DEPARTMENT_CURRENCIES table based on DepartmentCurrency entity -->
+        <createTable schemaName="CE" tableName="DEPARTMENT_CURRENCIES" remarks="Department Currency Types">
+            <column name="DEPARTMENT_CURRENCIES_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="DEPARTMENT_CURRENCIES_ID_PK"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="DEPARTMENT_CURRENCIES_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="CURRENCIES_KD" type="VARCHAR(3)" remarks="Currency code">
+                <constraints nullable="false" foreignKeyName="DEPARTMENT_CURRENCIES_CURRENCIES_KD_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="POSITION" type="INT" remarks="Display position in workstation">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="CE" sequenceName="DEPARTMENT_CURRENCIES_ID_SEQ" startValue="1" incrementBy="20"/>
+        <createIndex schemaName="CE" tableName="DEPARTMENT_CURRENCIES" indexName="CURRENCIES_KD_IDX">
+            <column name="CURRENCIES_KD"/>
+        </createIndex>
+
+        <!-- Initial department currencies for test department (ID = 1) -->
+        <insert schemaName="CE" tableName="DEPARTMENT_CURRENCIES">
+            <column name="DEPARTMENT_CURRENCIES_ID" valueComputed="NEXT VALUE FOR CE.DEPARTMENT_CURRENCIES_ID_SEQ"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="CURRENCIES_KD" value="USD"/>
+            <column name="POSITION" valueNumeric="1"/>
+        </insert>
+        <insert schemaName="CE" tableName="DEPARTMENT_CURRENCIES">
+            <column name="DEPARTMENT_CURRENCIES_ID" valueComputed="NEXT VALUE FOR CE.DEPARTMENT_CURRENCIES_ID_SEQ"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="CURRENCIES_KD" value="EUR"/>
+            <column name="POSITION" valueNumeric="2"/>
+        </insert>
+        
+        <!-- RULES table based on Rule entity -->
+        <createTable schemaName="CE" tableName="RULES" remarks="Conversion Rules">
+            <column name="RULES_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="RULES_ID_PK"/>
+            </column>
+            <column name="NAME" type="VARCHAR(500)" remarks="Name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SYSTEM_NAME" type="VARCHAR(100)" remarks="Rule system name"/>
+            <column name="MIN_VAL" type="DECIMAL(14,2)" remarks="Minimum operation amount">
+                <constraints nullable="false"/>
+            </column>
+            <column name="MAX_VAL" type="DECIMAL(14,2)" remarks="Maximum operation amount"/>
+            <column name="IS_SYSTEM" type="BIT" remarks="System rule">
+                <constraints nullable="false"/>
+            </column>
+            <column name="IS_CURRENCY" type="BIT" remarks="Conversion rule">
+                <constraints nullable="false"/>
+            </column>
+            <column name="IS_COMMISION" type="BIT" remarks="Commission rule">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ENABLE" type="BIT" remarks="Usage flag">
+                <constraints nullable="false"/>
+            </column>
+            <column name="POSITION" type="INT" remarks="Display position"/>
+        </createTable>
+        <createSequence schemaName="CE" sequenceName="RULES_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- RULE_PARAMS table based on RuleParameter entity -->
+        <createTable schemaName="CE" tableName="RULE_PARAMS" remarks="Rule Parameters">
+            <column name="RULE_PARAMS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="RULE_PARAMS_ID_PK"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints foreignKeyName="RULE_PARAMS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="RULES_ID" type="INT" remarks="Rule ID">
+                <constraints nullable="false" foreignKeyName="RULE_PARAMS_RULES_ID_FK" references="CE.RULES(RULES_ID)"/>
+            </column>
+            <column name="CURRENCIES_KD" type="VARCHAR(3)" remarks="Currency code">
+                <constraints foreignKeyName="RULE_PARAMS_CURRENCIES_KD_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="SELL_RULES_SIGN" type="VARCHAR(1)" remarks="Rule sign (+ or -)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SELL_RULES_VAL" type="DECIMAL(14,2)" remarks="Absolute value"/>
+            <column name="SELL_RULES_PERCENT" type="DECIMAL(4,2)" remarks="Percentage"/>
+            <column name="BUY_RULES_SIGN" type="VARCHAR(1)" remarks="Rule sign (+ or -)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="BUY_RULES_VAL" type="DECIMAL(14,2)" remarks="Absolute value"/>
+            <column name="BUY_RULES_PERCENT" type="DECIMAL(4,2)" remarks="Percentage"/>
+            <column name="ENABLE" type="BIT" remarks="Usage flag"/>
+        </createTable>
+        <createSequence schemaName="CE" sequenceName="RULE_PARAMS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex schemaName="CE" tableName="RULE_PARAMS" indexName="CURRENCIES_KD_IDX">
+            <column name="CURRENCIES_KD"/>
+        </createIndex>
+        <createIndex schemaName="CE" tableName="RULE_PARAMS" indexName="RULES_ID_IDX">
+            <column name="RULES_ID"/>
+        </createIndex>
+
+        <!-- Conversion rule and params (Exchange Rates > General Rates) -->
+        <insert schemaName="CE" tableName="RULES">
+            <column name="RULES_ID" valueComputed="NEXT VALUE FOR CE.RULES_ID_SEQ"/>
+            <column name="NAME" value="Conversion Rules"/>
+            <column name="SYSTEM_NAME" value="conversion-default"/>
+            <column name="MIN_VAL" valueNumeric="0"/>
+            <column name="MAX_VAL" valueNumeric="999999999"/>
+            <column name="IS_SYSTEM" valueBoolean="false"/>
+            <column name="IS_CURRENCY" valueBoolean="true"/>
+            <column name="IS_COMMISION" valueBoolean="false"/>
+            <column name="ENABLE" valueBoolean="true"/>
+            <column name="POSITION" valueNumeric="1"/>
+        </insert>
+        <insert schemaName="CE" tableName="RULE_PARAMS">
+            <column name="RULE_PARAMS_ID" valueComputed="NEXT VALUE FOR CE.RULE_PARAMS_ID_SEQ"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="RULES_ID" valueNumeric="1"/>
+            <column name="CURRENCIES_KD" value="USD"/>
+            <column name="SELL_RULES_SIGN" value="+"/>
+            <column name="BUY_RULES_SIGN" value="+"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+        <insert schemaName="CE" tableName="RULE_PARAMS">
+            <column name="RULE_PARAMS_ID" valueComputed="NEXT VALUE FOR CE.RULE_PARAMS_ID_SEQ"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="RULES_ID" valueNumeric="1"/>
+            <column name="CURRENCIES_KD" value="EUR"/>
+            <column name="SELL_RULES_SIGN" value="+"/>
+            <column name="BUY_RULES_SIGN" value="+"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+
+        <!-- Commission rule and params -->
+        <insert schemaName="CE" tableName="RULES">
+            <column name="RULES_ID" valueComputed="NEXT VALUE FOR CE.RULES_ID_SEQ"/>
+            <column name="NAME" value="Commission Rules"/>
+            <column name="SYSTEM_NAME" value="commission-default"/>
+            <column name="MIN_VAL" valueNumeric="0"/>
+            <column name="MAX_VAL" valueNumeric="999999999"/>
+            <column name="IS_SYSTEM" valueBoolean="false"/>
+            <column name="IS_CURRENCY" valueBoolean="false"/>
+            <column name="IS_COMMISION" valueBoolean="true"/>
+            <column name="ENABLE" valueBoolean="true"/>
+            <column name="POSITION" valueNumeric="2"/>
+        </insert>
+        <insert schemaName="CE" tableName="RULE_PARAMS">
+            <column name="RULE_PARAMS_ID" valueComputed="NEXT VALUE FOR CE.RULE_PARAMS_ID_SEQ"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="RULES_ID" valueNumeric="2"/>
+            <column name="CURRENCIES_KD" value="USD"/>
+            <column name="SELL_RULES_SIGN" value="+"/>
+            <column name="BUY_RULES_SIGN" value="+"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+        <insert schemaName="CE" tableName="RULE_PARAMS">
+            <column name="RULE_PARAMS_ID" valueComputed="NEXT VALUE FOR CE.RULE_PARAMS_ID_SEQ"/>
+            <column name="DEPARTMENTS_ID" valueNumeric="1"/>
+            <column name="RULES_ID" valueNumeric="2"/>
+            <column name="CURRENCIES_KD" value="EUR"/>
+            <column name="SELL_RULES_SIGN" value="+"/>
+            <column name="BUY_RULES_SIGN" value="+"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+        
+        <!-- ORDERS table based on Order entity -->
+        <createTable schemaName="CE" tableName="ORDERS" remarks="Orders">
+            <column name="ORDERS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ORDERS_ID_PK"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="ORDERS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User identifier">
+                <constraints nullable="false" foreignKeyName="ORDERS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="DEAL_USERS_ID" type="INT" remarks="User ID allowed to perform the deal">
+                <constraints foreignKeyName="ORDERS_DEAL_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="LDATE" type="DATETIME2" remarks="Order date and time (local)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NUM" type="BIGINT" remarks="Order number">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CANCELED_ORDERS_ID" type="INT" remarks="Canceled order ID">
+                <constraints foreignKeyName="ORDERS_ORDERS_ID_FK" references="CE.ORDERS(ORDERS_ID)"/>
+            </column>
+            <column name="DEAL_STATUS" type="INT" remarks="Deal status for this order"/>
+            <column name="DEAL_STATUS_DATE" type="DATETIME2" remarks="Deal status date for this order"/>
+            <column name="ALLOWED_OPERATIONS" type="INT" remarks="Allowed operations count"/>
+            <column name="PERFORMED_OPERATIONS" type="INT" remarks="Performed operations count"/>
+        </createTable>
+        <createSequence schemaName="CE" sequenceName="ORDERS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex schemaName="CE" tableName="ORDERS" indexName="CANCELED_ORDERS_ID_IDX">
+            <column name="CANCELED_ORDERS_ID"/>
+        </createIndex>
+        <createIndex schemaName="CE" tableName="ORDERS" indexName="DEAL_USERS_ID_IDX">
+            <column name="DEAL_USERS_ID"/>
+        </createIndex>
+        <createIndex schemaName="CE" tableName="ORDERS" indexName="USERS_ID_IDX">
+            <column name="USERS_ID"/>
+        </createIndex>
+        
+        <!-- CURRENCY_RATES table based on Rate entity -->
+        <createTable schemaName="CE" tableName="CURRENCY_RATES" remarks="Approved Rate">
+            <column name="CURRENCY_RATES_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CURRENCY_RATES_ID_PK"/>
+            </column>
+            <column name="CURRENCIES_KD" type="VARCHAR(3)" remarks="Currency code">
+                <constraints nullable="false" foreignKeyName="CURRENCY_RATES_CURRENCIES_KD_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="CURRENCY_RATES_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="ORDERS_ID" type="INT" remarks="Order ID">
+                <constraints nullable="false" foreignKeyName="CURRENCY_RATES_ORDERS_ID_FK" references="CE.ORDERS(ORDERS_ID)"/>
+            </column>
+            <column name="RULES_NAME" type="VARCHAR(500)" remarks="Conversion rule name"/>
+            <column name="MIN_VAL" type="DECIMAL(14,2)" remarks="Minimum operation amount"/>
+            <column name="MAX_VAL" type="DECIMAL(14,2)" remarks="Maximum operation amount"/>
+            <column name="RATIO" type="INT" remarks="Currency units per base currency">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SELL_RATE" type="DECIMAL(9,4)" remarks="Sell rate">
+                <constraints nullable="false"/>
+            </column>
+            <column name="BUY_RATE" type="DECIMAL(9,4)" remarks="Buy rate">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EXTERNAL_RATE" type="DECIMAL(9,4)" remarks="External currency rate">
+                <constraints nullable="false"/>
+            </column>
+            <column name="RULES_POSITION" type="INT" remarks="Rule position"/>
+            <column name="CURRENCIES_POSITION" type="INT" remarks="Currency position"/>
+            <column name="ARM_CURRENCIES_POSITION" type="INT" remarks="Operation currency position"/>
+        </createTable>
+        <createSequence schemaName="CE" sequenceName="CURRENCY_RATES_ID_SEQ" startValue="1" incrementBy="20"/>
+        <createIndex schemaName="CE" tableName="CURRENCY_RATES" indexName="CURRENCIES_KD_IDX">
+            <column name="CURRENCIES_KD"/>
+        </createIndex>
+        <createIndex schemaName="CE" tableName="CURRENCY_RATES" indexName="ORDERS_ID_IDX">
+            <column name="ORDERS_ID"/>
+        </createIndex>
+        
+        <!-- EXT_CURRENCY_RATES table based on ExtRate entity (in DICT schema) -->
+        <createTable schemaName="DICT" tableName="EXT_CURRENCY_RATES" remarks="Rate from External Sources">
+            <column name="EXT_CURRENCY_RATES_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="EXT_CURRENCY_RATES_ID_PK"/>
+            </column>
+            <column name="CURRENCIES_KD" type="VARCHAR(3)" remarks="Currency code">
+                <constraints nullable="false" foreignKeyName="EXT_CURRENCY_RATES_CURRENCIES_KD_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="DATE" type="SMALLDATETIME" remarks="Rate as of">
+                <constraints nullable="false"/>
+            </column>
+            <column name="RATIO" type="INT" remarks="Currency units per base currency">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SRC" type="VARCHAR(200)" remarks="Source">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SELL_RATE" type="DECIMAL(9,4)" remarks="Sell rate">
+                <constraints nullable="false"/>
+            </column>
+            <column name="BUY_RATE" type="DECIMAL(9,4)" remarks="Buy rate">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="EXT_CURRENCY_RATES_ID_SEQ" startValue="1" incrementBy="20"/>
+        <createIndex schemaName="DICT" tableName="EXT_CURRENCY_RATES" indexName="CURRENCIES_KD_IDX">
+            <column name="CURRENCIES_KD"/>
+        </createIndex>
+        <createIndex schemaName="DICT" tableName="EXT_CURRENCY_RATES" indexName="EXT_CURRENCY_RATES_DATE_IDX">
+            <column name="DATE"/>
+        </createIndex>
+        <createIndex schemaName="DICT" tableName="EXT_CURRENCY_RATES" indexName="EXT_CURRENCY_RATES_CURRENCIES_KD_IDX">
+            <column name="CURRENCIES_KD"/>
+        </createIndex>
+        
+        <!-- CURRENCY_OPERATIONS table based on CurrencyOperation entity -->
+        <createTable schemaName="CE" tableName="CURRENCY_OPERATIONS" remarks="Currency Exchange Operations">
+            <column name="CURRENCY_OPERATIONS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CURRENCY_OPERATIONS_ID_PK"
+                             foreignKeyName="OPERATIONS_OPERATIONS_ID_FK" references="LOG.OPERATIONS(OPERATIONS_ID)"/>
+            </column>
+            <column name="ORDERS_ID" type="INT" remarks="Order ID">
+                <constraints nullable="false" foreignKeyName="CURRENCY_OPERATIONS_ORDERS_ID_FK" references="CE.ORDERS(ORDERS_ID)"/>
+            </column>
+            <column name="CURRENCIES_KD" type="VARCHAR(3)" remarks="Currency code">
+                <constraints nullable="false" foreignKeyName="CURRENCY_OPERATIONS_CURRENCIES_KD_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="OPR_NUM" type="BIGINT" remarks="Operation number">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REG_NUM" type="BIGINT" remarks="Register number">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CUR_SUM" type="DECIMAL(14, 2)" remarks="Currency amount">
+                <constraints nullable="false"/>
+            </column>
+            <column name="BASE_AMOUNT" type="DECIMAL(14, 2)" remarks="Amount in base currency">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EXC_RATIO" type="INT" remarks="Currency units per base currency">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EXC_RATE" type="DECIMAL(9, 4)" remarks="Exchange rate">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EXC_EXTERNAL_RATE" type="DECIMAL(9, 4)" remarks="External currency rate">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EXC_COMMISSION_SUM" type="DECIMAL(14, 2)" remarks="Commission amount"/>
+            <column name="EXC_COMMISSION_DIS" type="BIT" remarks="Commission disabled">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex schemaName="CE" tableName="CURRENCY_OPERATIONS" indexName="ORDERS_ID_IDX">
+            <column name="ORDERS_ID"/>
+        </createIndex>
+        <createIndex schemaName="CE" tableName="CURRENCY_OPERATIONS" indexName="CURRENCIES_KD_IDX">
+            <column name="CURRENCIES_KD"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

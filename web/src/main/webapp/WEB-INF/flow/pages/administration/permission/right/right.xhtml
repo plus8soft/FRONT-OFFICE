@@ -1,0 +1,32 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Permissions</h1>
+        <p:panel header="Select a permission and perform the necessary actions">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Edit" action="edit" disabled="#{empty rightView.rightItem}" styleClass="blue-btn"/>
+            </div>
+            <p:dataTable value="#{rightView.rightModel}" var="item" selectionMode="single" selection="#{rightView.rightItem}"
+                         rows="100" lazy="true" scrollRows="50" scrollable="#{rightView.rightModel.rowCount gt 10}" virtualScroll="true"
+                         scrollHeight="#{rightView.rightModel.rowCount gt 10 ? 400 : null}" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.blue-btn)"/>
+                <p:ajax event="rowUnselect" update="@(.blue-btn)"/>
+                <p:ajax event="page" update="@(.blue-btn)" listener="#{rightView.setRightItem(null)}"/>
+                <p:column headerText="Group">#{item.right.groupName}</p:column>
+                <p:column headerText="Name">#{item.right.name}</p:column>
+                <p:column headerText="Users"><span class="fix_row align-right">#{item.usersCount}</span></p:column>
+                <p:column headerText="Roles"><span class="fix_row align-right">#{item.rolesCount}</span></p:column>
+            </p:dataTable>
+        </p:panel>
+    </ui:define>
+</ui:composition>

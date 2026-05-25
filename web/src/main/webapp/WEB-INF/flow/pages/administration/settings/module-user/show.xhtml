@@ -1,0 +1,144 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">#{showView.task.name}</h1>
+        <p:panel header="Users">
+            <div class="navigation_panel box_big_subpanel clearfix">
+                <div class="search_box">
+                    <p:outputLabel for="@next" value="Search:"/>
+                    <p:inputText value="#{showView.filter.textFilter}" placeholder="Search by name, login"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}">
+                        <f:passThroughAttribute name="focus-priority" value="1"/>
+                    </p:inputText>
+                    <p:remoteCommand name="updateTable" action="#{showView.fastSearch}" update="@form"/>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                </div>
+            </div>
+            <p:panel toggleable="true" collapsed="true" header="Advanced Search" styleClass="subpanel">
+                <div class="grid_row">
+                    <div class="grid_cell w_5">
+                        <p:outputLabel value="Status"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:selectCheckboxMenu value="#{showView.filter.userStatuses}" label="" filter="true" filterMatchMode="startsWith"
+                                              updateLabel="true" styleClass="w_100">
+                            <f:selectItems value="#{userStatusDictionary.findAll()}" var="status" itemLabel="#{status.value}"
+                                           itemValue="#{status.code}" itemDisabled="#{status.unused}"/>
+                        </p:selectCheckboxMenu>
+                    </div>
+                    <div class="grid_cell w_10 ml-w_5">
+                        <p:outputLabel for="@next" value="Valid Until Date"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <div class="icon_box">
+                            <p:calendar value="#{showView.filter.expirationDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy"
+                                        timeZone="#{userSession.user.department.zoneId}" showOn="button" placeholder="dd.mm.yyyy" mask="true"
+                                        styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_15 ml-w_5">
+                        <p:outputLabel value="Security Profile"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <p:selectCheckboxMenu value="#{showView.filter.securityProfiles}" label="" filter="true" filterMatchMode="startsWith"
+                                              converter="omnifaces.SelectItemsConverter" updateLabel="true" styleClass="w_100">
+                            <f:selectItems value="#{showView.securityProfiles}" var="securityProfile" itemLabel="#{securityProfile.name}"
+                                           itemValue="#{securityProfile}"/>
+                        </p:selectCheckboxMenu>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Department Parameters</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel value="Department"/>
+                    </div>
+                    <div class="grid_cell w_45">
+                        <p:selectCheckboxMenu value="#{showView.filter.departmentByNames}" label="" filter="true" filterMatchMode="startsWith"
+                                              converter="omnifaces.SelectItemsConverter" updateLabel="true" styleClass="w_100">
+                            <f:selectItems value="#{showView.departments}" var="department" itemLabel="#{department.name}"
+                                           itemValue="#{department}"/>
+                        </p:selectCheckboxMenu>
+                    </div>
+                    <div class="grid_cell w_15 ml-w_5">
+                        <p:outputLabel value="Department Code"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <p:selectCheckboxMenu value="#{showView.filter.departmentByCodes}" label="" filter="true" filterMatchMode="startsWith"
+                                              converter="omnifaces.SelectItemsConverter" updateLabel="true" styleClass="w_100">
+                            <f:selectItems value="#{showView.departments}" var="department" itemLabel="#{department.unitCode}"
+                                           itemValue="#{department}"/>
+                        </p:selectCheckboxMenu>
+                    </div>
+                </div>
+                <div class="btn_box clearfix">
+                    <p:defaultCommand target="@next" scope="@parent"/>
+                    <p:commandButton value="Search" action="#{showView.extendedSearch}" update="@form" styleClass="blue-btn r-float_elem"/>
+                </div>
+            </p:panel>
+            <p:dataTable id="users" var="user" value="#{moduleUserModel}" lazy="true" rows="100" scrollRows="50"
+                         scrollable="#{moduleUserModel.rowCount gt 10}" scrollHeight="#{moduleUserModel.rowCount gt 10 ? 400 : null}"
+                         selection="#{showView.selected}" selectionMode="single" virtualScroll="true" sortMode="multiple" emptyMessage="No data">
+                <p:ajax event="rowSelect" listener="#{showView.updatePermissionSource}" update="@(.ui-panel:last)"/>
+                <p:ajax event="rowUnselect" listener="#{showView.setPermissionSourceItems(null)}" update="@(.ui-panel:last)"/>
+                <p:columnGroup type="header">
+                    <p:column headerText="Login" width="152"/>
+                    <p:column headerText="Full Name, Position" width="290"/>
+                    <p:column headerText="EMAIL"/>
+                    <p:column headerText="Activity Date" width="118"/>
+                    <p:column headerText="Department"/>
+                    <p:column headerText="Status" width="155"/>
+                </p:columnGroup>
+                <p:column>
+                    #{user.login}
+                </p:column>
+                <p:column styleClass="fix_cell">
+                    <span class="fix_row">
+                        #{user.lastname} #{user.firstname} #{user.patronymic}<br/>#{userJobPositionDictionary.findOne(user.position).value}
+                    </span>
+                </p:column>
+                <p:column>
+                    #{user.email}
+                </p:column>
+                <p:column>
+                    <h:outputText value="#{user.lastLoginEventDate}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+                <p:column>
+                    #{user.department.name}
+                </p:column>
+                <p:column>
+                    #{userStatusDictionary.findOne(user.status).value}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <p:panel header="Task Access Sources">
+            <p:dataTable value="#{showView.permissionSourceItems}" var="source" emptyMessage="No data">
+                <p:column headerText="Group">
+                    #{source.group}
+                </p:column>
+                <p:column headerText="Role">
+                    #{source.role}
+                </p:column>
+                <p:column headerText="Task">
+                    #{source.task}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" immediate="true" process="@this"/>
+        </div>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

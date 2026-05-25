@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+<p:importEnum type="web.entity.log.OperationStatus"/>
+<p:importEnum type="web.entity.log.OperationCode"/>
+<f:view contentType="text/html" locale="en_US" encoding="utf-8">
+    <h:head>
+        <title>Front Office</title>
+        <f:facet name="first">
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['faviconLogo.ico']}"/>
+        </f:facet>
+        <!-- <h:outputScript library="js" name="primefaces-locale.js" target="head"/> -->
+        <h:outputScript library="js" name="jcwebclient.js"/>
+        <h:outputScript library="js" name="main.js"/>
+    </h:head>
+    <h:body id="body">
+        <f:facet name="last">
+            <h:outputStylesheet library="css" name="normalize.min.css"/>
+            <h:outputStylesheet library="css" name="main.css"/>
+        </f:facet>
+        <p:ajaxStatus onstart="$('#block').addClass('visible')"
+                      oncomplete="$('#block').removeClass('visible');
+                      if($('#' + arguments[2].source.replace(/:/g, '\\:')).is('.ui-button,.ui-commandlink')) {FrontOffice.checkError();}"/>
+        <div id="block"><span><i class="fa fa-spinner fa-pulse fa-3x"/></span></div>
+        <ui:insert name="body">
+            <header id="header">
+                <h:form styleClass="inner_block">
+                    <i class="fa fa-bars nav_toggle" aria-hidden="true"/>
+                    <div class="user_menu_box toggle_menu">
+                        <p class="name">#{utils.strings.capitalizeFio(userSession.user.lastname, userSession.user.firstname,
+                                userSession.user.patronymic)}</p>
+                        <p class="post" title="#{userSession.user.positionText}">#{userSession.user.positionText}</p>
+                        <div class="menu">
+                            <p:commandLink action="change-password" styleClass="item_menu" immediate="true">
+                                <i class="fa fa-key" aria-hidden="true"/>Change Password
+                            </p:commandLink>
+                            <p:commandLink action="logout" styleClass="item_menu" immediate="true">
+                                <i class="fa fa-sign-out" aria-hidden="true"/>Logout
+                            </p:commandLink>
+                            <ui:fragment rendered="#{userSession.viaToken}">
+                                <p:remoteCommand name="logout" action="logout" immediate="true"/>
+                                <script>
+                                    $(function () {
+                                        FrontOffice.Token().onRemoveToken(logout);
+                                    });
+                                </script>
+                            </ui:fragment>
+                        </div>
+                        <i class="fa fa-angle-down toggle_arrow"/>
+                    </div>
+                    <div class="date_box">
+                        <p class="time">
+                            <i class="fa fa-clock-o fa-flip-horizontal fa-fw" aria-hidden="true"/>
+                            <span/>
+                        </p>
+                        <p class="date">
+                            <i class="fa fa-calendar-o fa-fw" aria-hidden="true"/>
+                            <span/>
+                        </p>
+                    </div>
+                    <ui:fragment rendered="#{CS_MENU.severalProjects}">
+                        <div class="header_menu_box toggle_menu">
+                            <i class="fa fa-th" aria-hidden="true"/>
+                            <div class="menu">
+                                <p:commandLink value="Single Window" action="menu-single-window" styleClass="item_menu" immediate="true"
+                                               rendered="#{CS_MENU.isProjectEnabled('menu-single-window')}"/>
+                                <p:commandLink value="Currency Exchange" action="menu-ce" styleClass="item_menu" immediate="true"
+                                               rendered="#{CS_MENU.isProjectEnabled('menu-ce')}"/>
+                                <p:commandLink value="Administration" action="menu-administration" styleClass="item_menu" immediate="true"
+                                               rendered="#{CS_MENU.isProjectEnabled('menu-administration')}"/>
+                            </div>
+                        </div>
+                    </ui:fragment>
+                    <a href="/" class="header_logo nodecor">
+                        <img src="#{resource['img/header_logo.png']}"/>
+                        <ui:fragment rendered="#{not settings.production}"><span>Test Environment</span></ui:fragment>
+                    </a>
+                    <h1>#{userSession.user.department.name}</h1>
+                    <p:remoteCommand name="themeAristo" update="@all" global="false">
+                        <f:setPropertyActionListener value="aristo" target="#{userSession.theme}"/>
+                    </p:remoteCommand>
+                    <p:remoteCommand name="themePlus8" update="@all" global="false">
+                        <f:setPropertyActionListener value="plus8theme" target="#{userSession.theme}"/>
+                    </p:remoteCommand>
+                </h:form>
+            </header>
+            <nav id="main_navigation">
+                <h2>
+                    <img src="#{resource['img/header_logo.png']}"/>
+                    <i class="fa fa-chevron-left" aria-hidden="true"/>
+                </h2>
+                <ui:insert name="menu"/>
+            </nav>
+            <div id="canvas">
+                <h:form id="content">
+                    <f:passThroughAttribute name="autocomplete" value="off"/>
+                    <ui:insert name="growl">
+                        <p:growl globalOnly="true" autoUpdate="true"/>
+                    </ui:insert>
+                    <ui:insert name="content"/>
+                </h:form>
+            </div>
+        </ui:insert>
+    </h:body>
+</f:view>
+</html>

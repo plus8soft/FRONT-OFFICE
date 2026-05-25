@@ -1,0 +1,160 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">
+            <h:outputText value="New Role" rendered="#{empty roleEditView.role.id}"/>
+            <h:outputText value="#{roleEditView.role.groupName} > #{roleEditView.role.name}" rendered="#{not empty roleEditView.role.id}"/>
+        </h1>
+        <p:panel header="Basic Parameters" toggleable="true">
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Group" for="@next"/>
+                </div>
+                <div class="grid_cell w_90">
+                    <div class="icon_box">
+                        <p:autoComplete value="#{roleEditView.role.groupName}" completeMethod="#{roleEditView.completeGroup}" dropdown="true"
+                                        disabled="#{roleEditView.role.system}" required="true" styleClass="w_30">
+                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                        </p:autoComplete>
+                        <p:message for="@previous" display="icon" styleClass="mlm-w_70"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Name" for="@next"/>
+                </div>
+                <div class="grid_cell w_90">
+                    <div class="icon_box">
+                        <p:inputText value="#{roleEditView.role.name}" disabled="#{roleEditView.role.system}" required="true" styleClass="w_30">
+                            <f:validator binding="#{roleNameValidator}"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon" styleClass="mlm-w_70"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Description" for="@next"/>
+                </div>
+                <div class="grid_cell w_90">
+                    <p:inputTextarea value="#{roleEditView.role.description}" disabled="#{roleEditView.role.system}" styleClass="w_30"/>
+                </div>
+            </div>
+        </p:panel>
+        <p:panel header="Rights, Groups and Tasks" toggleable="true">
+            <p:tabView>
+                <p:tab title="Rights">
+                    <p:tree value="#{roleEditView.rightTree}" var="node" animate="true" selectionMode="checkbox"
+                            selection="#{roleEditView.selectedRights}">
+                        <p:treeNode type="empty">#{node}</p:treeNode>
+                        <p:treeNode type="group">#{node}</p:treeNode>
+                        <p:treeNode>#{node.name}</p:treeNode>
+                    </p:tree>
+                </p:tab>
+                <p:tab title="Groups">
+                    <p:tree value="#{roleEditView.groupTree}" var="node" animate="true" selection="#{roleEditView.selectedGroups}"
+                            selectionMode="checkbox" propagateSelectionDown="false" propagateSelectionUp="false">
+                        <p:treeNode type="empty">#{node}</p:treeNode>
+                        <p:treeNode>#{node.name}</p:treeNode>
+                    </p:tree>
+                </p:tab>
+                <p:tab title="Modules and Tasks">
+                    <p:tree value="#{roleEditView.taskTree}" var="node" animate="true" selectionMode="checkbox"
+                            selection="#{roleEditView.selectedTasks}">
+                        <p:treeNode type="empty">#{node}</p:treeNode>
+                        <p:treeNode type="group">#{node.name}</p:treeNode>
+                        <p:treeNode>#{node.name}</p:treeNode>
+                    </p:tree>
+                </p:tab>
+            </p:tabView>
+        </p:panel>
+        <p:panel header="Users" toggleable="true">
+            <div class="navigation_panel box_big_subpanel clearfix">
+                <div class="search_box">
+                    <p:outputLabel for="@next" value="Search:"/>
+                    <p:inputText value="#{roleEditView.filter.textFilter}" placeholder="Search by name, login"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}"/>
+                    <p:remoteCommand name="updateTable" action="#{roleEditView.fastSearch}" update="users"/>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                </div>
+            </div>
+            <p:panel toggleable="true" styleClass="subpanel" collapsed="true" header="Advanced Search">
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Activity Date, until"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <div class="icon_box">
+                            <p:calendar value="#{roleEditView.filter.lastLoginEventDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                        timeZone="#{userSession.user.department.zoneId}" showOn="button" placeholder="dd.mm.yyyy hh:mm" mask="true"
+                                        styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_5 ml-w_5">
+                        <p:outputLabel for="@next" value="Status"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <p:selectOneMenu value="#{roleEditView.filter.status}" styleClass="w_100" autoWidth="false">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{userStatusDictionary.findAll()}" var="status" itemLabel="#{status.value}"
+                                           itemValue="#{status.code}" itemDisabled="#{status.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="grid_cell w_10 ml-w_5">
+                        <p:outputLabel for="@next" value="Position"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:selectOneMenu styleClass="w_100" value="#{roleEditView.filter.position}" converter="javax.faces.Integer"
+                                         autoWidth="false">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{userJobPositionDictionary.findAll()}" var="position" itemValue="#{position.code}"
+                                           itemLabel="#{position.value}" itemDisabled="#{position.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="btn_box clearfix">
+                    <p:defaultCommand target="@next" scope="@parent:@parent"/>
+                    <p:commandButton value="Search" action="#{roleEditView.extendedSearch()}" update="@parent:@parent"
+                                     styleClass="blue-btn r-float_elem"/>
+                </div>
+            </p:panel>
+            <p:dataTable id="users" value="#{roleEditView.model}" var="user" lazy="true" rows="100" scrollRows="50"
+                         scrollable="#{roleEditView.model.rowCount gt 10}" scrollHeight="#{roleEditView.model.rowCount gt 10 ? 400 : null}"
+                         virtualScroll="true" emptyMessage="No data" sortMode="multiple">
+                <p:column headerText="Login">
+                    #{user.login}
+                </p:column>
+                <p:column headerText="Name, Position">
+                    #{user.lastname} #{user.firstname} #{user.patronymic}<br/>#{userJobPositionDictionary.findOne(user.position).value}
+                </p:column>
+                <p:column headerText="Activity Date">
+                    <h:outputText value="#{user.lastLoginEventDate}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Status">
+                    #{userStatusDictionary.findOne(user.status).value}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="btn_box">
+            <p:defaultCommand target="@next" scope="@previous:@previous:@previous"/>
+            <p:commandButton value="Save" action="#{roleEditView.save}" styleClass="blue-btn big_btn r-float_elem"
+                             rendered="#{not roleEditView.role.system}" update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"/>
+            <p:commandButton value="Cancel" action="to-role" styleClass="orange-btn big_btn" immediate="true" process="@this"/>
+        </div>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

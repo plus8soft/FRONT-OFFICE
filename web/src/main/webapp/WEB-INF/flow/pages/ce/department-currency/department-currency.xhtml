@@ -1,0 +1,124 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../ce-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Department Currencies</h1>
+        <div class="flex_box">
+            <div class="flex_item w_1_3">
+                <p:panel header="Select Required Departments">
+                    <f:facet name="actions">
+                        <span class="icon-block icon_currency"/>
+                    </f:facet>
+                    <div class="tree_bg">
+                        <div class="header_tree">
+                            <div class="additional_col count_cell">Currencies</div>
+                            <div class="main_col">Departments</div>
+                        </div>
+                        <p:tree value="#{departmentCurrencyView.departmentTree}" var="item" selection="#{departmentCurrencyView.selectedDepartments}"
+                                selectionMode="checkbox" styleClass="w_100" animate="true" propagateSelectionDown="false"
+                                propagateSelectionUp="false">
+                            <p:ajax event="select" listener="#{departmentCurrencyView.onChangeDepartmentTree()}" update="@form:right"/>
+                            <p:ajax event="unselect" listener="#{departmentCurrencyView.onChangeDepartmentTree()}" update="@form"/>
+                            <p:treeNode type="empty">#{item}</p:treeNode>
+                            <p:treeNode>
+                                <span class="float_cell count_cell">#{departmentCurrencyView.departmentCurrencyIndex[item.department].size()}</span>
+                                <span class="main_cell">#{item.department.name}</span>
+                            </p:treeNode>
+                        </p:tree>
+                        <p:contextMenu for="@parent" widgetVar="contextMenu"
+                                       targetFilter=".ui-treenode:not([data-nodetype='empty']) > .ui-treenode-content,
+                                       .ui-treenode:not([data-nodetype='empty']) > .ui-treenode-content *"
+                                       beforeShow="this.rowKey = $(event.target).closest('.ui-treenode').attr('data-rowkey')">
+                            <p:menuitem value="Select Child Elements" immediate="true"
+                                        onclick="selectSameLevel([{name: 'rowKey', value: PF('contextMenu').rowKey}]);"/>
+                            <p:menuitem value="Deselect Child Elements" immediate="true"
+                                        onclick="deselectSameLevel([{name: 'rowKey', value: PF('contextMenu').rowKey}]);"/>
+                        </p:contextMenu>
+                        <p:remoteCommand name="selectSameLevel" actionListener="#{departmentCurrencyView.selectAllChilds}" update="@form"/>
+                        <p:remoteCommand name="deselectSameLevel" actionListener="#{departmentCurrencyView.deselectAllChilds}" update="@form"/>
+                    </div>
+                </p:panel>
+                <div class="navigation_panel clearfix bottom">
+                    <p:commandLink value="Deselect All" styleClass="underline r-float_elem"
+                                   action="#{departmentCurrencyView.deselectAllDepartments()}" update="@form"/>
+                    <p:commandLink value="Select All" styleClass="underline" action="#{departmentCurrencyView.selectAllDepartments()}"
+                                   update="@form"/>
+                </div>
+            </div>
+            <h:panelGroup id="right" layout="block" styleClass="flex_item w_2_3">
+                <ui:fragment rendered="#{not empty departmentCurrencyView.selectedDepartments}">
+                    <p:panel header="Set Currencies for Selected Departments and Define Their Order" styleClass="flex_column">
+                        <f:facet name="actions">
+                            <span class="icon-block icon_currency"/>
+                        </f:facet>
+                        <div class="flex_row">
+                            <div class="column">
+                                <div class="navigation_panel clearfix">
+                                    <p:commandLink value="Add All" styleClass="underline link_all"
+                                                   action="#{departmentCurrencyView.toTargetAllCurrencies()}" update="@form"/>
+                                    <p:commandButton styleClass="gray-btn" action="#{departmentCurrencyView.toTargetCurrencies()}" update="@form"
+                                                     disabled="#{empty departmentCurrencyView.availableCurrencies}" icon="fa fa-arrow-right"/>
+                                </div>
+                                <p:dataTable value="#{departmentCurrencyView.availableCurrencies}" selectionMode="multiple"
+                                             selection="#{departmentCurrencyView.selectedAvailableCurrencies}" var="currency" rowKey="#{currency.id}"
+                                             emptyMessage="No data">
+                                    <p:ajax event="rowDblselect" listener="#{departmentCurrencyView.toTargetCurrencies()}" update="@form"/>
+                                    <p:ajax event="rowUnselect" update="@form"/>
+                                    <p:column headerText="Available List">
+                                        <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                                        styleClass="currency_img">
+                                            <f:param name="id" value="#{currency.id}"/>
+                                        </p:graphicImage>
+                                        #{currency.iso}
+                                        #{currency.name}
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                            <div class="column">
+                                <div class="navigation_panel clearfix">
+                                    <p:commandButton styleClass="gray-btn r-float_elem" action="#{departmentCurrencyView.moveCurrencyUp()}"
+                                                     update="@form" disabled="#{empty departmentCurrencyView.targetCurrencies}"
+                                                     icon="fa fa-arrow-up"/>
+                                    <p:commandButton styleClass="gray-btn r-float_elem" action="#{departmentCurrencyView.moveCurrencyDown()}"
+                                                     update="@form" disabled="#{empty departmentCurrencyView.targetCurrencies}"
+                                                     icon="fa fa-arrow-down"/>
+                                    <p:commandLink value="Remove All" styleClass="underline link_all"
+                                                   action="#{departmentCurrencyView.toAvailableAllCurrencies()}" update="@form"/>
+                                    <p:commandButton styleClass="gray-btn" action="#{departmentCurrencyView.toAvailableCurrencies()}" update="@form"
+                                                     disabled="#{empty departmentCurrencyView.targetCurrencies}" icon="fa fa-arrow-left"/>
+                                </div>
+                                <p:dataTable value="#{departmentCurrencyView.targetCurrencies}" selectionMode="multiple"
+                                             selection="#{departmentCurrencyView.selectedTargetCurrencies}" var="currency" rowKey="#{currency.id}"
+                                             emptyMessage="No data" tableStyleClass="settings_currency">
+                                    <p:ajax event="rowDblselect" listener="#{departmentCurrencyView.toAvailableCurrencies()}" update="@form"/>
+                                    <p:ajax event="rowUnselect" update="@form"/>
+                                    <p:column headerText="List for Selected Departments">
+                                        <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                                        styleClass="currency_img">
+                                            <f:param name="id" value="#{currency.id}"/>
+                                        </p:graphicImage>
+                                        #{currency.iso}
+                                        #{currency.name}
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:panel>
+                    <div class="navigation_panel clearfix bottom">
+                        <p:commandButton value="Save" styleClass="blue-btn big_btn r-float_elem" action="#{departmentCurrencyView.saveView()}"
+                                         update="@form" disabled="#{not departmentCurrencyView.edited}"/>
+                        <p:commandButton value="Cancel" styleClass="orange-btn big_btn" action="#{departmentCurrencyView.onChangeDepartmentTree()}"
+                                     update="@form" disabled="#{not departmentCurrencyView.edited}"/>
+                    </div>
+                </ui:fragment>
+            </h:panelGroup>
+        </div>
+    </ui:define>
+</ui:composition>

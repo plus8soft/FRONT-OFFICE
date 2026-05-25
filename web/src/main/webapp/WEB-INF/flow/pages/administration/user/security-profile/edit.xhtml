@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <section class="edit_page">
+            <h1 class="title-page">
+                <h:outputText value="New Profile" rendered="#{empty securityProfileEditView.securityProfile.id}"/>
+                <h:outputText value="#{securityProfileEditView.securityProfile.name}"
+                              rendered="#{not empty securityProfileEditView.securityProfile.id}"/>
+            </h1>
+            <p:panel header="Basic Parameters" toggleable="true">
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel for="@next" value="Profile Name"/>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="icon_box">
+                            <p:inputText value="#{securityProfileEditView.securityProfile.name}" required="true" styleClass="w_100">
+                                <f:validator binding="#{securityProfileNameValidator}"/>
+                                <f:passThroughAttribute name="focus-priority" value="1"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                            <script>focusByPriority();</script>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel for="@next" value="Description"/>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <p:inputTextarea value="#{securityProfileEditView.securityProfile.description}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Password Complexity Requirements</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_100">
+                        <p:selectBooleanCheckbox value="#{securityProfileEditView.securityProfile.passwordComplexity.requireMixedRegister}"
+                                                 itemLabel="Password must contain both uppercase and lowercase characters"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_100">
+                        <p:selectBooleanCheckbox value="#{securityProfileEditView.securityProfile.passwordComplexity.requireNumbers}"
+                                                 itemLabel="Password must contain numbers"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_100">
+                        <p:selectBooleanCheckbox
+                                value="#{securityProfileEditView.securityProfile.passwordComplexity.requireSpecialCharacters}"
+                                itemLabel="Password must contain special characters"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_100">
+                        <p:selectBooleanCheckbox value="#{securityProfileEditView.securityProfile.passwordComplexity.forbidUserData}"
+                                                 itemLabel="Password cannot contain username or last name"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_100">
+                        <p:selectBooleanCheckbox
+                                value="#{securityProfileEditView.securityProfile.passwordComplexity.forbidCommonWords}"
+                                itemLabel="Password cannot contain common words or character combinations"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Minimum Password Length"/>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <div class="icon_box">
+                            <p:inputNumber value="#{securityProfileEditView.securityProfile.passwordComplexity.minLength}" decimalPlaces="0"
+                                           minValue="0" required="true" styleClass="w_90 align-right"/>
+                            <p:message for="@previous" display="icon" styleClass="mlm-w_10"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_20">
+                        characters
+                    </div>
+                </div>
+                <p class="strike_title"><span>Password Change Frequency and Expiration Requirements</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Password Expiration Term"/>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <div class="icon_box">
+                            <p:inputNumber value="#{securityProfileEditView.securityProfile.passwordExpirationTerm}" decimalPlaces="0" required="true"
+                                           minValue="1" styleClass="w_90 align-right"/>
+                            <p:message for="@previous" display="icon" styleClass="mlm-w_10"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:selectOneMenu value="#{securityProfileEditView.securityProfile.passwordExpirationTermUnit}" styleClass="w_100"
+                                         autoWidth="false">
+                            <f:selectItems value="#{termTypeDictionary.findAll()}" var="type" itemLabel="#{type.value}" itemValue="#{type.code}"
+                                           itemDisabled="#{type.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Lock Parameters</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_80">
+                        <p:selectBooleanCheckbox itemLabel="Lock account when user is inactive for more than"
+                                                 value="#{securityProfileEditView.securityProfile.lock.inactiveAccount}">
+                            <p:ajax update="@next @next:@next:@next"/>
+                        </p:selectBooleanCheckbox>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <div class="icon_box">
+                            <p:inputNumber value="#{securityProfileEditView.securityProfile.lock.inactiveTerm}"
+                                           disabled="#{not securityProfileEditView.securityProfile.lock.inactiveAccount}"
+                                           required="#{securityProfileEditView.securityProfile.lock.inactiveAccount}"
+                                           decimalPlaces="0" minValue="1" styleClass="w_90 align-right"/>
+                            <p:message for="@previous" display="icon" styleClass="mlm-w_10"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <p:selectOneMenu value="#{securityProfileEditView.securityProfile.lock.inactiveTermUnit}" autoWidth="false"
+                                         disabled="#{not securityProfileEditView.securityProfile.lock.inactiveAccount}" styleClass="w_100">
+                            <f:selectItems value="#{termTypeDictionary.findAll()}" var="type" itemLabel="#{type.value}" itemValue="#{type.code}"
+                                           itemDisabled="#{type.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_80">
+                        <p:selectBooleanCheckbox
+                                itemLabel="Lock account when maximum number of consecutive failed authentication attempts is exceeded by more than"
+                                value="#{securityProfileEditView.securityProfile.lock.exceedLoginFailureCount}">
+                            <p:ajax update="@next"/>
+                        </p:selectBooleanCheckbox>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <div class="icon_box">
+                            <p:inputNumber value="#{securityProfileEditView.securityProfile.lock.loginFailureAttempts}"
+                                           disabled="#{not securityProfileEditView.securityProfile.lock.exceedLoginFailureCount}"
+                                           required="#{securityProfileEditView.securityProfile.lock.exceedLoginFailureCount}"
+                                           decimalPlaces="0" minValue="1" styleClass="w_90 align-right"/>
+                            <p:message for="@previous" display="icon" styleClass="mlm-w_10"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_10">
+                        attempts
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_80">
+                        <p:selectBooleanCheckbox value="#{securityProfileEditView.securityProfile.lock.tempExceedLoginFailureCount}"
+                                                 itemLabel="Temporarily lock account when maximum number of failed authentication attempts is exceeded">
+                            <p:ajax update="@(.temp-lock-state)"/>
+                        </p:selectBooleanCheckbox>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <p:outputLabel for="@next" value="Number of Failed Authentication Attempts"/>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <div class="icon_box">
+                            <p:inputNumber value="#{securityProfileEditView.securityProfile.lock.tempLoginFailureAttempts}"
+                                           disabled="#{not securityProfileEditView.securityProfile.lock.tempExceedLoginFailureCount}"
+                                           required="#{securityProfileEditView.securityProfile.lock.tempExceedLoginFailureCount}"
+                                           decimalPlaces="0" minValue="1" styleClass="w_90 align-right temp-lock-state"/>
+                            <p:message for="@previous" display="icon" styleClass="mlm-w_10"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_10">
+                        attempts
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <p:outputLabel for="@next" value="Account Lock Time"/>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <div class="icon_box">
+                            <p:inputNumber value="#{securityProfileEditView.securityProfile.lock.tempLoginFailureTerm}"
+                                           disabled="#{not securityProfileEditView.securityProfile.lock.tempExceedLoginFailureCount}"
+                                           required="#{securityProfileEditView.securityProfile.lock.tempExceedLoginFailureCount}"
+                                           decimalPlaces="0" minValue="1" styleClass="w_90 align-right temp-lock-state"/>
+                            <p:message for="@previous" display="icon" styleClass="mlm-w_10"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_10">
+                        <p:selectOneMenu value="#{securityProfileEditView.securityProfile.lock.tempLoginFailureTermUnit}" autoWidth="false"
+                                         disabled="#{not securityProfileEditView.securityProfile.lock.tempExceedLoginFailureCount}"
+                                         styleClass="w_100 temp-lock-state">
+                            <f:selectItems value="#{termTypeDictionary.findAll()}" var="type" itemLabel="#{type.value}" itemValue="#{type.code}"
+                                           itemDisabled="#{type.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Connection Parameters</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <p:outputLabel for="@next" value="Number of Simultaneous Logins"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputNumber value="#{securityProfileEditView.securityProfile.maxSessions}" decimalPlaces="0" minValue="1"
+                                       styleClass="w_90 align-right"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <p:outputLabel for="@next" value="Session Timeout on User Inactivity"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:inputNumber value="#{securityProfileEditView.securityProfile.sessionTimeout}" required="true" decimalPlaces="0"
+                                           minValue="0" styleClass="w_90 align-right"/>
+                            <p:message for="@previous" display="icon" styleClass="mlm-w_10"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_10">
+                        min
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <p:selectBooleanCheckbox itemLabel="Allow connections only from trusted zones"
+                                                 value="#{securityProfileEditView.securityProfile.connectOnlyFromTrustZone}">
+                            <p:ajax update="@next"/>
+                        </p:selectBooleanCheckbox>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <o:importConstants type="web.utils.IpAddresses"/>
+                            <p:inputText value="#{securityProfileEditView.securityProfile.trustZone}"
+                                         widgetVar="trustZone" disabled="#{not securityProfileEditView.securityProfile.connectOnlyFromTrustZone}"
+                                         styleClass="w_90 trust" validatorMessage="invalid format">
+                                <f:validateRegex pattern="#{IpAddresses.VALIDATION_REG_EXP}"/>
+                                <p:keyFilter inputRegEx="#{IpAddresses.INPUT_REG_EXP}" preventPaste="false"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+            <div class="navigation_panel bottom clearfix">
+                <p:defaultCommand target="@next"/>
+                <p:commandButton value="Save" action="#{securityProfileEditView.save}" styleClass="r-float_elem big_btn blue-btn"
+                                 update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"/>
+                <p:commandButton value="Cancel" styleClass="big_btn orange-btn" action="to-security-profile" immediate="true" process="@this"/>
+            </div>
+        </section>
+    </ui:define>
+</ui:composition>

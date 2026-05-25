@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <var name="FS_BANK_FILTER" class="web.view.administration.dictionary.custom.banking.bank.BankFilter"/>
+    <var name="FS_COUNTRY_FILTER" class="web.view.administration.dictionary.custom.country.CountryFilter"/>
+    <var name="FS_PAY_ACTION_FILTER" class="web.view.administration.dictionary.custom.payaction.PayActionFilter"/>
+    <var name="FS_COUNTERAGENT_FILTER" class="web.view.administration.dictionary.custom.counteragent.CounteragentFilter"/>
+    <view-state id="custom">
+        <var name="customDictionaryView" class="web.view.administration.dictionary.custom.CustomDictionaryView"/>
+        <on-entry>
+            <evaluate expression="customDictionaryView.init()"/>
+        </on-entry>
+        <transition on="elements" to="distributor">
+            <set name="flowScope.FS_DICTIONARY" value="customDictionaryView.selected"/>
+        </transition>
+        <transition on="options" to="options">
+            <set name="flowScope.FS_DICTIONARY" value="customDictionaryView.selected"/>
+        </transition>
+    </view-state>
+    <view-state id="options">
+        <var name="customDictionaryEdit" class="web.view.administration.dictionary.custom.CustomDictionaryEdit"/>
+        <on-entry>
+            <evaluate expression="customDictionaryEdit.init(flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="cancel" to="custom"/>
+    </view-state>
+    <action-state id="distributor">
+        <evaluate expression="flowScope.FS_DICTIONARY.system"/>
+        <transition on="CURRENCIES" to="currency"/>
+        <transition on="BANKS" to="bank"/>
+        <transition on="DEPARTMENT_ACCOUNTS" to="department"/>
+        <transition on="ACCOUNTS" to="account"/>
+        <transition on="PS_SYSTEMS" to="payment-system"/>
+        <transition on="PS_TARIFFS" to="payment-tariff"/>
+        <transition on="COUNTRIES" to="country"/>
+        <transition on="PAY_ACTIONS" to="pay-action"/>
+        <transition on="COUNTERAGENTS" to="counteragent"/>
+        <transition on="IDENTIFICATION_RULES" to="identification-rule"/>
+        <transition on="DOC_TYPES" to="document-type"/>
+        <transition on="RATES" to="rates"/>
+        <transition on="REPORT_TEMPLATES" to="report-template"/>
+        <transition on="PAYMENT_TRANSFER_INFO" to="payment-transfer-info"/>
+    </action-state>
+    <view-state id="currency" view="banking/currencies/currency.xhtml">
+        <var name="currencyView" class="web.view.administration.dictionary.custom.banking.currency.CurrencyView"/>
+        <on-entry>
+            <evaluate expression="currencyView.init()"/>
+            <set name="currencyView.dictionary" value="flowScope.FS_DICTIONARY"/>
+        </on-entry>
+        <transition on="add" to="edit-currency">
+            <set name="flowScope.FS_CURRENCY" value="currencyView.add()"/>
+        </transition>
+        <transition on="edit" to="edit-currency">
+            <set name="flowScope.FS_CURRENCY" value="currencyView.edit()"/>
+        </transition>
+    </view-state>
+    <view-state id="edit-currency" view="banking/currencies/edit.xhtml">
+        <var name="editView" class="web.view.administration.dictionary.custom.banking.currency.EditView"/>
+        <on-entry>
+            <set name="editView.currency" value="flowScope.FS_CURRENCY"/>
+            <set name="editView.dictionary" value="flowScope.FS_DICTIONARY"/>
+            <set name="editView.editing" value="flowScope.FS_CURRENCY.id != null"/>
+        </on-entry>
+        <transition on="save" to="currency"/>
+        <transition on="cancel" to="currency"/>
+    </view-state>
+    <view-state id="bank" view="banking/bank/bank.xhtml">
+        <var name="bankModel" class="web.view.administration.dictionary.custom.banking.bank.BankModel"/>
+        <var name="bankView" class="web.view.administration.dictionary.custom.banking.bank.BankView"/>
+        <on-entry>
+            <set name="bankView.filter" value="FS_BANK_FILTER"/>
+            <evaluate expression="bankView.init(bankModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="details" to="bank-details">
+            <set name="flowScope.FS_BANK" value="bankModel.selected"/>
+            <set name="FS_BANK_FILTER" value="bankModel.filter"/>
+        </transition>
+    </view-state>
+    <view-state id="bank-details" view="banking/bank/details.xhtml">
+        <var name="bank" class="web.entity.dict.Bank"/>
+        <on-entry>
+            <set name="bank" value="flowScope.FS_BANK"/>
+        </on-entry>
+        <transition on="back" to="bank"/>
+    </view-state>
+    <view-state id="account" view="banking/account/account.xhtml">
+        <var name="accountModel" class="web.view.administration.dictionary.custom.banking.account.AccountModel"/>
+        <var name="accountView" class="web.view.administration.dictionary.custom.banking.account.AccountView"/>
+        <on-entry>
+            <evaluate expression="accountView.init(accountModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+    </view-state>
+    <view-state id="department" view="banking/department/account-link.xhtml">
+        <var name="accountLinkModel" class="web.view.administration.dictionary.custom.banking.department.AccountLinkModel"/>
+        <var name="accountLinkView" class="web.view.administration.dictionary.custom.banking.department.AccountLinkView"/>
+        <on-entry>
+            <evaluate expression="accountLinkView.init(accountLinkModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+    </view-state>
+    <view-state id="payment-system" view="payment/system/system.xhtml">
+        <var name="paymentSystemView" class="web.view.administration.dictionary.custom.payment.system.PaymentSystemView"/>
+        <var name="paymentSystemModel" class="web.view.administration.dictionary.custom.payment.system.PaymentSystemModel"/>
+        <on-entry>
+            <set name="paymentSystemView.model" value="paymentSystemModel"/>
+            <set name="paymentSystemView.dictionary" value="flowScope.FS_DICTIONARY"/>
+        </on-entry>
+        <transition on="edit" to="payment-system-edit">
+            <set name="flowScope.FS_PAYMENT_SYSTEM" value="paymentSystemModel.selected"/>
+        </transition>
+    </view-state>
+    <view-state id="payment-system-edit" view="payment/system/edit.xhtml">
+        <var name="paymentSystemEditView" class="web.view.administration.dictionary.custom.payment.system.EditView"/>
+        <on-entry>
+            <set name="paymentSystemEditView.dictionary" value="flowScope.FS_DICTIONARY"/>
+            <set name="paymentSystemEditView.paymentSystem" value="flowScope.FS_PAYMENT_SYSTEM"/>
+        </on-entry>
+        <transition on="cancel" to="payment-system"/>
+        <transition on="save" to="payment-system"/>
+    </view-state>
+    <view-state id="payment-tariff" view="payment/tariff/tariff.xhtml">
+        <var name="paymentTariffView" class="web.view.administration.dictionary.custom.payment.tariff.PaymentTariffView"/>
+        <var name="paymentTariffModel" class="web.view.administration.dictionary.custom.payment.tariff.PaymentTariffModel"/>
+        <on-entry>
+            <evaluate expression="paymentTariffView.init(paymentTariffModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+    </view-state>
+    <view-state id="country" view="country/country.xhtml">
+        <var name="countryModel" class="web.view.administration.dictionary.custom.country.CountryModel"/>
+        <var name="countryView" class="web.view.administration.dictionary.custom.country.CountryView"/>
+        <on-entry>
+            <set name="countryView.filter" value="FS_COUNTRY_FILTER"/>
+            <evaluate expression="countryView.init(countryModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="add" to="country-edit">
+            <set name="FS_COUNTRY_FILTER" value="countryModel.filter"/>
+            <set name="flowScope.FS_COUNTRY" value="new web.entity.dict.Country()"/>
+        </transition>
+        <transition on="edit" to="country-edit">
+            <set name="FS_COUNTRY_FILTER" value="countryModel.filter"/>
+            <set name="flowScope.FS_COUNTRY" value="countryModel.selected"/>
+        </transition>
+    </view-state>
+    <view-state id="country-edit" view="country/edit.xhtml">
+        <var name="countryEditView" class="web.view.administration.dictionary.custom.country.EditView"/>
+        <on-entry>
+            <set name="countryEditView.dictionary" value="flowScope.FS_DICTIONARY"/>
+            <set name="countryEditView.country" value="flowScope.FS_COUNTRY"/>
+        </on-entry>
+        <transition on="cancel" to="country"/>
+        <transition on="save" to="country"/>
+    </view-state>
+    <view-state id="pay-action" view="pay-action/pay-action.xhtml">
+        <var name="payActionView" class="web.view.administration.dictionary.custom.payaction.PayActionView"/>
+        <var name="payActionModel" class="web.view.administration.dictionary.custom.payaction.PayActionModel"/>
+        <on-entry>
+            <set name="payActionView.filter" value="FS_PAY_ACTION_FILTER"/>
+            <evaluate expression="payActionView.init(payActionModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="add" to="edit-pay-action">
+            <set name="flowScope.FS_PAY_ACTION" value="new web.entity.dict.PayAction()"/>
+            <set name="FS_PAY_ACTION_FILTER" value="payActionModel.filter"/>
+        </transition>
+        <transition on="edit" to="edit-pay-action">
+            <set name="flowScope.FS_PAY_ACTION" value="payActionModel.selected"/>
+            <set name="FS_PAY_ACTION_FILTER" value="payActionModel.filter"/>
+        </transition>
+    </view-state>
+    <view-state id="edit-pay-action" view="pay-action/edit.xhtml">
+        <var name="payActionEditView" class="web.view.administration.dictionary.custom.payaction.EditView"/>
+        <on-entry>
+            <set name="payActionEditView.payAction" value="flowScope.FS_PAY_ACTION"/>
+            <set name="payActionEditView.dictionary" value="flowScope.FS_DICTIONARY"/>
+        </on-entry>
+        <transition on="save" to="pay-action"/>
+        <transition on="cancel" to="pay-action"/>
+    </view-state>
+    <view-state id="document-type" view="document-type/document-type.xhtml">
+        <var name="documentTypeView" class="web.view.administration.dictionary.custom.documenttype.DocumentTypeView"/>
+        <var name="documentTypeModel" class="web.view.administration.dictionary.custom.documenttype.DocumentTypeModel"/>
+        <on-entry>
+            <evaluate expression="documentTypeView.init(documentTypeModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="add" to="edit-document-type">
+            <set name="flowScope.FS_DOCUMENT_TYPE" value="new web.entity.dict.DocumentType()"/>
+        </transition>
+        <transition on="edit" to="edit-document-type">
+            <set name="flowScope.FS_DOCUMENT_TYPE" value="documentTypeModel.selected"/>
+        </transition>
+    </view-state>
+    <view-state id="edit-document-type" view="document-type/edit.xhtml">
+        <var name="documentTypeEditView" class="web.view.administration.dictionary.custom.documenttype.DocumentTypeEditView"/>
+        <on-entry>
+            <evaluate expression="documentTypeEditView.init(flowScope.FS_DOCUMENT_TYPE, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="save" to="document-type"/>
+        <transition on="cancel" to="document-type"/>
+    </view-state>
+    <view-state id="counteragent" view="counteragent/counteragent.xhtml">
+        <var name="counteragentView" class="web.view.administration.dictionary.custom.counteragent.CounteragentView"/>
+        <var name="counteragentModel" class="web.view.administration.dictionary.custom.counteragent.CounteragentModel"/>
+        <on-entry>
+            <set name="counteragentView.filter" value="FS_COUNTERAGENT_FILTER"/>
+            <evaluate expression="counteragentView.init(counteragentModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="add" to="edit-counteragent">
+            <set name="flowScope.FS_COUNTERAGENT" value="new web.entity.dict.Counteragent()"/>
+            <set name="flowScope.FS_NEW_VERSION" value="false"/>
+        </transition>
+        <transition on="edit" to="edit-counteragent">
+            <set name="flowScope.FS_COUNTERAGENT" value="counteragentModel.selected"/>
+            <set name="flowScope.FS_NEW_VERSION" value="false"/>
+        </transition>
+        <transition on="edit-version" to="edit-counteragent">
+            <set name="flowScope.FS_COUNTERAGENT" value="counteragentModel.selected"/>
+            <set name="flowScope.FS_NEW_VERSION" value="true"/>
+        </transition>
+    </view-state>
+    <view-state id="edit-counteragent" view="counteragent/edit.xhtml">
+        <var name="counteragentEditView" class="web.view.administration.dictionary.custom.counteragent.EditView"/>
+        <on-entry>
+            <set name="counteragentEditView.counteragent" value="flowScope.FS_COUNTERAGENT"/>
+            <set name="counteragentEditView.newVersion" value="flowScope.FS_NEW_VERSION"/>
+            <set name="counteragentEditView.dictionary" value="flowScope.FS_DICTIONARY"/>
+            <evaluate expression="counteragentEditView.init()"/>
+        </on-entry>
+        <transition on="save" to="counteragent"/>
+        <transition on="cancel" to="counteragent"/>
+    </view-state>
+    <view-state id="identification-rule" view="identification-rule/identification-rule.xhtml">
+        <var name="identificationRuleView" class="web.view.administration.dictionary.custom.identification.rule.IdentificationRuleView"/>
+        <on-entry>
+            <evaluate expression="identificationRuleView.init(flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="edit" to="edit-identification-rule">
+            <set name="flowScope.FS_IDENTIFICATION_RULE" value="identificationRuleView.selected"/>
+        </transition>
+    </view-state>
+    <view-state id="edit-identification-rule" view="identification-rule/edit.xhtml">
+        <var name="identificationRuleEditView" class="web.view.administration.dictionary.custom.identification.rule.EditView"/>
+        <on-entry>
+            <set name="identificationRuleEditView.rule" value="flowScope.FS_IDENTIFICATION_RULE"/>
+            <set name="identificationRuleEditView.dictionary" value="flowScope.FS_DICTIONARY"/>
+        </on-entry>
+        <transition on="save" to="identification-rule"/>
+        <transition on="cancel" to="identification-rule"/>
+    </view-state>
+    <view-state id="rates" view="banking/rates/rate.xhtml">
+        <var name="rateView" class="web.view.administration.dictionary.custom.banking.rate.ExtRateView"/>
+        <var name="rateModel" class="web.view.administration.dictionary.custom.banking.rate.ExtRateModel"/>
+        <on-entry>
+            <evaluate expression="rateView.init(rateModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+    </view-state>
+    <view-state id="payment-transfer-info" view="payment/system-info/system-info.xhtml">
+        <var name="regionModel" class="web.view.administration.dictionary.custom.payment.systeminfo.RegionModel"/>
+        <var name="paymentPointModel" class="web.view.administration.dictionary.custom.payment.systeminfo.PaymentPointModel"/>
+        <var name="systemInfoView" class="web.view.administration.dictionary.custom.payment.systeminfo.PaymentSystemInfoView"/>
+        <on-entry>
+            <evaluate
+                    expression="systemInfoView.init(regionModel, paymentPointModel, paymentSystemRepository.getOne(T(web.entity.dict.PaymentSystemName).MONEY_TRANSFER))"/>
+        </on-entry>
+    </view-state>
+    <view-state id="report-template" view="report-template/report-template.xhtml">
+        <var name="reportTemplateView" class="web.view.administration.dictionary.custom.reporttemplate.ReportTemplateView"/>
+        <var name="reportTemplateModel" class="web.view.administration.dictionary.custom.reporttemplate.ReportTemplateModel"/>
+        <on-entry>
+            <evaluate expression="reportTemplateView.init(reportTemplateModel, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="add" to="edit-report-template">
+            <set name="flowScope.FS_REPORT_TEMPLATE" value="new web.entity.dict.ReportTemplate()"/>
+        </transition>
+        <transition on="edit" to="edit-report-template">
+            <set name="flowScope.FS_REPORT_TEMPLATE" value="reportTemplateModel.selected"/>
+        </transition>
+    </view-state>
+    <view-state id="edit-report-template" view="report-template/edit.xhtml">
+        <var name="reportTemplateEditView" class="web.view.administration.dictionary.custom.reporttemplate.ReportTemplateEditView"/>
+        <on-entry>
+            <evaluate expression="reportTemplateEditView.init(flowScope.FS_REPORT_TEMPLATE, flowScope.FS_DICTIONARY)"/>
+        </on-entry>
+        <transition on="save" to="report-template"/>
+        <transition on="cancel" to="report-template"/>
+    </view-state>
+    <global-transitions>
+        <transition on="back" to="custom">
+            <set name="FS_BANK_FILTER" value="new web.view.administration.dictionary.custom.banking.bank.BankFilter()"/>
+            <set name="FS_COUNTRY_FILTER" value="new web.view.administration.dictionary.custom.country.CountryFilter()"/>
+            <set name="FS_PAY_ACTION_FILTER" value="new web.view.administration.dictionary.custom.payaction.PayActionFilter()"/>
+            <set name="FS_COUNTERAGENT_FILTER" value="new web.view.administration.dictionary.custom.counteragent.CounteragentFilter()"/>
+        </transition>
+    </global-transitions>
+</flow>

@@ -1,0 +1,184 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Audit Logs</h1>
+        <p:panel header="#{eventView.getHeaderView()}">
+            <div class="body_block">
+                <div class="grid_row">
+                    <div class="grid_cell w_50">
+                        <div class="grid_cell w_20">
+                            <p:outputLabel value="Result"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:selectCheckboxMenu value="#{eventView.filter.types}" converter="omnifaces.GenericEnumConverter" label=""
+                                                  updateLabel="true" styleClass="w_100">
+                                <f:selectItems value="#{eventStatusDictionary.findAll()}" var="unit" itemLabel="#{unit.value}"
+                                               itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_50">
+                        <div class="grid_cell w_20 r-label">
+                            <p:outputLabel value="Code"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:selectCheckboxMenu value="#{eventView.filter.codes}" converter="omnifaces.GenericEnumConverter" label="" filter="true"
+                                                  filterMatchMode="startsWith" updateLabel="true" styleClass="w_100">
+                                <f:selectItems value="#{eventCodeDictionary.findAll()}" var="unit" itemLabel="#{unit.code.code}: #{unit.value}"
+                                               itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_50">
+                        <div class="grid_cell w_20">
+                            <p:outputLabel for="@next" value="Event Date, from"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <div class="icon_box">
+                                <p:calendar value="#{eventView.filter.eventDateWith}" converter="javax.faces.Instant"
+                                            timeZone="#{userSession.user.department.zoneId}" pattern="dd.MM.yyyy HH:mm" showOn="button"
+                                            placeholder="dd.mm.yyyy hh:mm" mask="true" styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_50">
+                        <div class="grid_cell w_20 r-label">
+                            <p:outputLabel for="@next" value="to"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <div class="icon_box">
+                                <p:calendar value="#{eventView.filter.eventDate}" converter="javax.faces.Instant"
+                                            timeZone="#{userSession.user.department.zoneId}" pattern="dd.MM.yyyy HH:mm" showOn="button"
+                                            placeholder="dd.mm.yyyy hh:mm" mask="true" styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_50">
+                        <div class="grid_cell w_20">
+                            <p:outputLabel for="@next" value="Connection ID"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:inputText value="#{eventView.filter.eventId}" styleClass="w_100" converter="javax.faces.Long">
+                                <p:keyFilter regEx="/[0-9]/" preventPaste="false"/>
+                            </p:inputText>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_50">
+                        <div class="grid_cell w_20 r-label">
+                            <p:outputLabel value="User"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:selectCheckboxMenu value="#{eventView.filter.users}" label="" filter="true" filterMatchMode="startsWith"
+                                                  converter="omnifaces.SelectItemsConverter" updateLabel="true" styleClass="w_100">
+                                <f:selectItems value="#{FS_USERS}" var="user" itemValue="#{user}"
+                                               itemLabel="#{utils.strings.capitalizeFio(user.lastname, user.firstname, user.patronymic)}
+                                               (#{user.login})"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_50">
+                        <div class="grid_cell w_20">
+                            <p:outputLabel value="Project"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:selectCheckboxMenu value="#{eventView.filter.projects}" label="" updateLabel="true" styleClass="w_100"
+                                                  converter="omnifaces.SelectItemsConverter">
+                                <f:selectItems value="#{FS_PROJECTS}" var="project" itemLabel="#{project.name}" itemValue="#{project}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_50">
+                        <div class="grid_cell w_20 r-label">
+                            <p:outputLabel value="Task"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:selectCheckboxMenu value="#{eventView.filter.tasks}" label="" filter="true" styleClass="w_100"
+                                                  filterMatchMode="startsWith" converter="omnifaces.SelectItemsConverter" updateLabel="true">
+                                <f:selectItems value="#{FS_TASKS}" var="task" itemLabel="#{task.name}" itemValue="#{task}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_50">
+                        <div class="grid_cell w_20">
+                            <p:outputLabel value="Department"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:selectCheckboxMenu value="#{eventView.filter.departments}" label="" filter="true" filterMatchMode="startsWith"
+                                                  converter="omnifaces.SelectItemsConverter" updateLabel="true" styleClass="w_100">
+                                <f:selectItems value="#{eventView.departments}" var="department" itemLabel="#{department.name}"
+                                               itemValue="#{department}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation_panel clearfix body_block">
+                <p:commandButton value="Search" action="#{eventView.updateFilter()}" update="@form" styleClass="blue-btn r-float_elem"/>
+                <p:commandButton value="To File" update="@widgetVar(dialog)" styleClass="green-btn" oncomplete="PF('dialog').show()"/>
+                <p:commandButton value="View" action="show" disabled="#{empty eventModel.selected}" styleClass="green-btn"/>
+            </div>
+            <p:dataTable id="events" value="#{eventModel}" var="event" lazy="true" rows="100" selectionMode="single" sortMode="multiple"
+                         scrollHeight="#{eventModel.rowCount gt 10 ? 400 : null}" scrollRows="50" selection="#{eventModel.selected}"
+                         scrollable="#{eventModel.rowCount gt 10}" virtualScroll="true" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@previous"/>
+                <p:ajax event="rowUnselect" update="@previous"/>
+                <p:ajax event="page" update="@previous" listener="#{eventModel.setSelected(null)}"/>
+                <p:column headerText="Event Date" width="120">
+                    <h:outputText value="#{event.date}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+                <p:importEnum type="web.entity.core.EventStatus"/>
+                <p:column headerText="Result" width="70">
+                    <span class="fix_row align-center">
+                        <i class="fa #{EventStatus.ERROR eq event.status ? 'fa-times-circle error'
+                            : EventStatus.SUCCESS eq event.status ? 'fa-check-circle success' : 'fa-exclamation-circle alert'} fa-2x"
+                           aria-hidden="true"/>
+                    </span>
+                </p:column>
+                <p:column headerText="Code" width="290">
+                    <span class="fix_row">#{event.code.code}: #{eventCodeDictionary.findOne(event.code).value}</span>
+                </p:column>
+                <p:column headerText="Login" width="110">
+                    #{event.user.login}
+                </p:column>
+                <p:column headerText="Full Name">
+                    #{event.user.lastname} #{event.user.firstname} #{event.user.patronymic}
+                </p:column>
+                <p:column headerText="Project">
+                    #{event.project.name}
+                </p:column>
+                <p:column headerText="Task">
+                    #{event.task.name}
+                </p:column>
+            </p:dataTable>
+            <p:confirmDialog header="Question" widgetVar="dialog" showEffect="fade" hideEffect="fade" closable="false" severity="help"
+                             message="Number of records #{eventView.model.rowCount}, do you really want to export?">
+                <p:commandButton value="Yes" ajax="false" styleClass="blue-btn r-float_elem" onclick="PF('dialog').hide();">
+                    <p:fileDownload value="#{eventView.fileDownload()}"/>
+                </p:commandButton>
+                <p:button value="No" styleClass="orange-btn" onclick="PF('dialog').hide(); return"/>
+            </p:confirmDialog>
+        </p:panel>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="2.0.0" failOnError="true">
+        <sql>CREATE SCHEMA DICT</sql>
+        
+        <!-- COUNTRIES table based on Country entity -->
+        <createTable schemaName="DICT" tableName="COUNTRIES" remarks="Countries">
+            <column name="COUNTRIES_ISO" type="VARCHAR(10)" remarks="Country ISO code">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="COUNTRIES_ISO_PK"/>
+            </column>
+            <column name="NAME" type="VARCHAR(200)" remarks="Name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ALPHA2" type="VARCHAR(2)" remarks="Alpha-2 code"/>
+            <column name="ALPHA3" type="VARCHAR(3)" remarks="Alpha-3 code"/>
+            <column name="ENABLE" type="BIT" remarks="Enabled">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <!-- CURRENCIES table based on Currency entity -->
+        <createTable schemaName="DICT" tableName="CURRENCIES" remarks="Currency Types">
+            <column name="CURRENCIES_KD" type="VARCHAR(3)" remarks="Currency code">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CURRENCIES_KD_PK"/>
+            </column>
+            <column name="ISO" type="VARCHAR(10)" remarks="ISO code">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR(100)" remarks="Name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="RATIO" type="INT" remarks="Currency units per base currency">
+                <constraints nullable="false"/>
+            </column>
+            <column name="GENDER" type="BIT" remarks="Gender">
+                <constraints nullable="false"/>
+            </column>
+            <column name="INTEGRAL_VAL1" type="VARCHAR(100)" remarks="Integral (value 1)"/>
+            <column name="INTEGRAL_VAL2" type="VARCHAR(100)" remarks="Integral (value 2)"/>
+            <column name="INTEGRAL_VAL3" type="VARCHAR(100)" remarks="Integral (value 3)"/>
+            <column name="FRACTIONAL_VAL1" type="VARCHAR(100)" remarks="Fractional (value 1)"/>
+            <column name="FRACTIONAL_VAL2" type="VARCHAR(100)" remarks="Fractional (value 2)"/>
+            <column name="FRACTIONAL_VAL3" type="VARCHAR(100)" remarks="Fractional (value 3)"/>
+            <column name="IMG" type="VARBINARY(MAX)" remarks="Image"/>
+            <column name="ENABLE" type="BIT" remarks="Usage flag" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="POSITION" type="INT" remarks="Display position">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ALTERNATIVE_KD" type="VARCHAR(3)" remarks="Alternative currency code">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint schemaName="DICT" tableName="CURRENCIES" columnNames="ALTERNATIVE_KD" constraintName="ALTERNATIVE_KD_UN"/>
+        
+        <!-- ACCOUNTS table based on Account entity -->
+        <createTable schemaName="DICT" tableName="ACCOUNTS" remarks="Accounts">
+            <column name="ACCOUNT" type="VARCHAR(50)" remarks="Account number">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ACCOUNTS_ACCOUNT_PK"/>
+            </column>
+            <column name="CURRENCY" type="VARCHAR(3)" remarks="Currency code">
+                <constraints nullable="false" foreignKeyName="ACCOUNTS_CURRENCY_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="ACCOUNTS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="NAME" type="VARCHAR(200)" remarks="Name"/>
+            <column name="STATUS" type="BIT" remarks="Status">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <!-- ACCOUNT_LINKS table based on AccountLink entity -->
+        <createTable schemaName="DICT" tableName="ACCOUNT_LINKS" remarks="Account Links">
+            <column name="ACCOUNT_LINKS_ID" type="INT" remarks="Account link identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ACCOUNT_LINKS_ID_PK"/>
+            </column>
+            <column name="ACCOUNT" type="VARCHAR(50)" remarks="Account number">
+                <constraints nullable="false" foreignKeyName="ACCOUNT_LINKS_ACCOUNT_FK" references="DICT.ACCOUNTS(ACCOUNT)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="ACCOUNT_LINKS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="OBJ_TYPE" type="VARCHAR(20)" remarks="Object type"/>
+            <column name="TYPE" type="VARCHAR(50)" remarks="Type"/>
+            <column name="NIGHTLY" type="BIT" remarks="Nightly">
+                <constraints nullable="false"/>
+            </column>
+            <column name="OPEN_DATE" type="DATETIME2" remarks="Open date"/>
+            <column name="CLOSE_DATE" type="DATETIME2" remarks="Close date"/>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="ACCOUNT_LINKS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- PS_SYSTEMS table based on PaymentSystem entity -->
+        <createTable schemaName="DICT" tableName="PS_SYSTEMS" remarks="Payment Systems">
+            <column name="SYSTEMS_NAME" type="VARCHAR(50)" remarks="System name">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PS_SYSTEMS_SYSTEMS_NAME_PK"/>
+            </column>
+            <column name="NAME" type="VARCHAR(200)" remarks="Name"/>
+            <column name="AGENT_COMMISSION" type="DECIMAL(18,2)" remarks="Agent commission"/>
+            <column name="ENABLE" type="BIT" remarks="Enabled">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <!-- Insert 2 test payment systems -->
+        <!-- Payment System 1: Western Union -->
+        <insert schemaName="DICT" tableName="PS_SYSTEMS">
+            <column name="SYSTEMS_NAME" value="WESTERN_UNION"/>
+            <column name="NAME" value="Western Union"/>
+            <column name="AGENT_COMMISSION" valueNumeric="2.50"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+        
+        <!-- Payment System 2: MoneyGram -->
+        <insert schemaName="DICT" tableName="PS_SYSTEMS">
+            <column name="SYSTEMS_NAME" value="MONEYGRAM"/>
+            <column name="NAME" value="MoneyGram"/>
+            <column name="AGENT_COMMISSION" valueNumeric="2.00"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+        
+        <!-- PS_POINTS table based on PaymentPoint entity -->
+        <createTable schemaName="DICT" tableName="PS_POINTS" remarks="Payment Points">
+            <column name="POINTS_ID" type="INT" remarks="Point identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PS_POINTS_POINTS_ID_PK"/>
+            </column>
+            <column name="SYSTEMS_NAME" type="VARCHAR(50)" remarks="System name">
+                <constraints nullable="false" foreignKeyName="PS_POINTS_SYSTEMS_NAME_FK" references="DICT.PS_SYSTEMS(SYSTEMS_NAME)"/>
+            </column>
+            <column name="CODE" type="VARCHAR(50)" remarks="Code"/>
+            <column name="NAME" type="VARCHAR(200)" remarks="Name"/>
+            <column name="ADDRESS" type="VARCHAR(500)" remarks="Address"/>
+            <column name="COUNTRIES_ISO" type="VARCHAR(10)" remarks="Country ISO">
+                <constraints foreignKeyName="PS_POINTS_COUNTRIES_ISO_FK" references="DICT.COUNTRIES(COUNTRIES_ISO)"/>
+            </column>
+            <column name="REGIONS_ID" type="INT" remarks="Region ID"/>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="PS_POINTS_ID_SEQ" startValue="1" incrementBy="20"/>
+        
+        <!-- PS_POINTS_CURRENCYS join table -->
+        <createTable schemaName="DICT" tableName="PS_POINTS_CURRENCYS" remarks="Payment Points Currencies">
+            <column name="POINTS_ID" type="INT" remarks="Point ID">
+                <constraints nullable="false" foreignKeyName="PS_POINTS_CURRENCYS_POINTS_ID_FK" references="DICT.PS_POINTS(POINTS_ID)"/>
+            </column>
+            <column name="CURRENCIES_KD" type="VARCHAR(3)" remarks="Currency code">
+                <constraints nullable="false" foreignKeyName="PS_POINTS_CURRENCYS_CURRENCIES_KD_FK" references="DICT.CURRENCIES(CURRENCIES_KD)"/>
+            </column>
+        </createTable>
+        
+        <!-- DEPARTMENT_PS_SYSTEMS table based on DepartmentPaymentSystem entity -->
+        <createTable schemaName="CORE" tableName="DEPARTMENT_PS_SYSTEMS" remarks="Payment Systems Available to Department">
+            <column name="DEPARTMENT_PS_SYSTEMS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CORE_DEPARTMENT_PS_SYSTEMS_ID_PK"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="CORE_DEPARTMENT_PS_SYSTEMS_DEPARTMENTS_ID_FK"
+                             references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="PS_SYSTEMS_NAME" type="VARCHAR(50)" remarks="Payment system system name">
+                <constraints nullable="false" foreignKeyName="CORE_DEPARTMENT_PS_SYSTEMS_PS_SYSTEMS_NAME_FK"
+                             references="DICT.PS_SYSTEMS(SYSTEMS_NAME)"/>
+            </column>
+            <column name="CODE" type="VARCHAR(20)" remarks="Department code in payment system">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CAN_SEND" type="BIT" remarks="Send available">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CAN_PAYOUT" type="BIT" remarks="Payout available">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="DEPARTMENT_PS_SYSTEMS_PK_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex indexName="CORE_DEPARTMENT_PS_SYSTEMS_DEPARTMENTS_ID_IDX" schemaName="CORE" tableName="DEPARTMENT_PS_SYSTEMS">
+            <column name="DEPARTMENTS_ID"/>
+        </createIndex>
+        <createIndex indexName="CORE_DEPARTMENT_PS_SYSTEMS_PS_SYSTEMS_NAME_IDX" schemaName="CORE" tableName="DEPARTMENT_PS_SYSTEMS">
+            <column name="PS_SYSTEMS_NAME"/>
+        </createIndex>
+        
+        <!-- DICTIONARY_PARAMS table based on DictionaryParameter entity -->
+        <createTable schemaName="DICT" tableName="DICTIONARY_PARAMS" remarks="Dictionary Parameters">
+            <column name="DICTIONARY_PARAMS_ID" type="INT" remarks="Dictionary parameter identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="DICTIONARY_PARAMS_ID_PK"/>
+            </column>
+            <column name="GROUP_NAME" type="VARCHAR(200)" remarks="Group"/>
+            <column name="SYSTEM_NAME" type="VARCHAR(100)" remarks="System name"/>
+            <column name="NAME" type="VARCHAR(200)" remarks="Name"/>
+            <column name="ENABLE" type="BIT" remarks="Enabled"/>
+            <column name="UPDATE_TYPE" type="VARCHAR(20)" remarks="Update type"/>
+            <column name="UPDATE_FREQUENCY" type="VARCHAR(50)" remarks="Update frequency"/>
+            <column name="LAST_UPDATE_DATE" type="DATETIME2" remarks="Last update date"/>
+            <column name="SOURCE_UPDATE_DATE" type="DATETIME2" remarks="Source update date"/>
+            <column name="VERSION" type="BIGINT" remarks="Version"/>
+            <column name="LAST_UPDATE_STATUS" type="INT" remarks="Last update status"/>
+            <column name="LAST_UPDATE_RESULT" type="VARCHAR(2000)" remarks="Last update result"/>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="DICTIONARY_PARAMS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- Extended Dictionaries: initial rows so Custom Dictionaries > Extended Dictionaries table is not empty -->
+        <insert schemaName="DICT" tableName="DICTIONARY_PARAMS">
+            <column name="DICTIONARY_PARAMS_ID" valueComputed="NEXT VALUE FOR DICT.DICTIONARY_PARAMS_ID_SEQ"/>
+            <column name="GROUP_NAME" value="Reference"/>
+            <column name="SYSTEM_NAME" value="BANKS"/>
+            <column name="NAME" value="Banks"/>
+            <column name="ENABLE" valueBoolean="true"/>
+            <column name="UPDATE_TYPE" value="VARIOUS"/>
+            <column name="UPDATE_FREQUENCY" value="0 0 * * * ?"/>
+        </insert>
+        <insert schemaName="DICT" tableName="DICTIONARY_PARAMS">
+            <column name="DICTIONARY_PARAMS_ID" valueComputed="NEXT VALUE FOR DICT.DICTIONARY_PARAMS_ID_SEQ"/>
+            <column name="GROUP_NAME" value="Reference"/>
+            <column name="SYSTEM_NAME" value="COUNTRIES"/>
+            <column name="NAME" value="Countries"/>
+            <column name="ENABLE" valueBoolean="true"/>
+            <column name="UPDATE_TYPE" value="VARIOUS"/>
+            <column name="UPDATE_FREQUENCY" value="0 0 * * * ?"/>
+        </insert>
+        
+        <!-- BANKS table based on Bank entity -->
+        <createTable schemaName="DICT" tableName="BANKS" remarks="Bank Directory">
+            <column name="BANK_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="BANK_ID_PK"/>
+            </column>
+            <column name="FULL_NAME" type="VARCHAR(200)" remarks="Full name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SHORT_NAME" type="VARCHAR(100)" remarks="Short name"/>
+            <column name="ROUTING_NUMBER" type="VARCHAR(9)" remarks="Routing Number">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CORR_ACCOUNT" type="VARCHAR(20)" remarks="Correspondent account number"/>
+            <column name="POSTAL_CODE" type="VARCHAR(6)" remarks="Postal code"/>
+            <column name="ADDRESS" type="VARCHAR(500)" remarks="Address"/>
+            <column name="PHONE" type="VARCHAR(25)" remarks="Phone"/>
+            <column name="UPDATE_DATE" type="DATE" remarks="Change date"/>
+            <column name="CREATE_DATE" type="DATE" remarks="Record creation date"/>
+            <column name="ACTUAL_DATE" type="DATE" remarks="Actual date"/>
+        </createTable>
+        <createSequence schemaName="DICT" sequenceName="BANK_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- ADDRESS_ABBREVIATIONS table based on Abbreviation entity -->
+        <!-- This table stores address object type abbreviations (State, City, Street, Avenue, etc.) -->
+        <!-- Used by AddressAutoComplete component for dropdown lists of address types -->
+        <!-- Note: This is different from CRM.ADDRESS table which stores actual addresses -->
+        <createTable schemaName="DICT" tableName="ADDRESS_ABBREVIATIONS" remarks="Address object type abbreviations">
+            <column name="LEVEL" type="VARCHAR(20)" remarks="Object level of this type (REGION, DISTRICT, CITY, LOCALITY, STREET)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SCNAME" type="VARCHAR(10)" remarks="Short name of object type (e.g., 'St', 'Ave', 'State')">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SOCRNAME" type="VARCHAR(29)" remarks="Full name of object type (e.g., 'Street', 'Avenue', 'State')"/>
+            <column name="KOD_T_ST" type="VARCHAR(3)" remarks="Object type code"/>
+        </createTable>
+        <addPrimaryKey schemaName="DICT" tableName="ADDRESS_ABBREVIATIONS" columnNames="LEVEL,SCNAME" constraintName="ADDRESS_ABBREVIATIONS_PK"/>
+        
+        <!-- One abbreviation per level so Region, District, City, Locality, Street dropdowns have data -->
+        <insert schemaName="DICT" tableName="ADDRESS_ABBREVIATIONS">
+            <column name="LEVEL" value="REGION"/>
+            <column name="SCNAME" value="State"/>
+            <column name="SOCRNAME" value="State"/>
+        </insert>
+        <insert schemaName="DICT" tableName="ADDRESS_ABBREVIATIONS">
+            <column name="LEVEL" value="DISTRICT"/>
+            <column name="SCNAME" value="Dist"/>
+            <column name="SOCRNAME" value="District"/>
+        </insert>
+        <insert schemaName="DICT" tableName="ADDRESS_ABBREVIATIONS">
+            <column name="LEVEL" value="CITY"/>
+            <column name="SCNAME" value="City"/>
+            <column name="SOCRNAME" value="City"/>
+        </insert>
+        <insert schemaName="DICT" tableName="ADDRESS_ABBREVIATIONS">
+            <column name="LEVEL" value="LOCALITY"/>
+            <column name="SCNAME" value="Loc"/>
+            <column name="SOCRNAME" value="Locality"/>
+        </insert>
+        <insert schemaName="DICT" tableName="ADDRESS_ABBREVIATIONS">
+            <column name="LEVEL" value="STREET"/>
+            <column name="SCNAME" value="St"/>
+            <column name="SOCRNAME" value="Street"/>
+        </insert>
+        
+        <!-- ADDRESS_ELEMENTS table based on AbstractLeveledAddressElement entity -->
+        <!-- This table stores address elements: regions, districts, cities, localities -->
+        <!-- CODE format: REGION(2) + DISTRICT(3) + CITY(3) + LOCALITY(3) + ACTUALITY(2) = 13 chars (column VARCHAR(18) for longer codes) -->
+        <createTable schemaName="DICT" tableName="ADDRESS_ELEMENTS" remarks="Address elements: regions, districts, localities">
+            <column name="NAME" type="VARCHAR(40)" remarks="Name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SOCR" type="VARCHAR(10)" remarks="Short name of object type"/>
+            <column name="CODE" type="VARCHAR(18)" remarks="Code">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ADDRESS_ELEMENTS_CODE_PK"/>
+            </column>
+            <column name="IND" type="VARCHAR(6)" remarks="Postal code"/>
+            <column name="GNINMB" type="VARCHAR(4)" remarks="Tax office code"/>
+            <column name="UNO" type="VARCHAR(4)" remarks="Tax office territorial unit code"/>
+            <column name="OCATD" type="VARCHAR(11)" remarks="OKATO code"/>
+            <column name="STATUS" type="VARCHAR(1)" remarks="Object status"/>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE DICT.ADDRESS_ELEMENTS
+              ADD REGION AS SUBSTRING(ADDRESS_ELEMENTS.CODE, 1, 2);
+            
+            ALTER TABLE DICT.ADDRESS_ELEMENTS
+              ADD DISTRICT AS SUBSTRING(ADDRESS_ELEMENTS.CODE, 3, 3);
+            
+            ALTER TABLE DICT.ADDRESS_ELEMENTS
+              ADD CITY AS SUBSTRING(ADDRESS_ELEMENTS.CODE, 6, 3);
+            
+            ALTER TABLE DICT.ADDRESS_ELEMENTS
+              ADD LOCALITY AS SUBSTRING(ADDRESS_ELEMENTS.CODE, 9, 3);
+            
+            ALTER TABLE DICT.ADDRESS_ELEMENTS
+              ADD ACTUALITY AS SUBSTRING(ADDRESS_ELEMENTS.CODE, 12, 2);
+            
+            ALTER TABLE DICT.ADDRESS_ELEMENTS
+              ADD LEVEL AS (CASE
+                            WHEN SUBSTRING(ADDRESS_ELEMENTS.CODE, 9, 3) != '000'
+                              THEN 4
+                            WHEN SUBSTRING(ADDRESS_ELEMENTS.CODE, 6, 3) != '000'
+                              THEN 3
+                            WHEN SUBSTRING(ADDRESS_ELEMENTS.CODE, 3, 3) != '000'
+                              THEN 2
+                            WHEN SUBSTRING(ADDRESS_ELEMENTS.CODE, 1, 2) != '00'
+                              THEN 1 END);
+        ]]></sql>
+        <createIndex schemaName="DICT" tableName="ADDRESS_ELEMENTS" indexName="ADDRESS_ELEMENTS_LEVEL_ACTUALITY_IDX">
+            <column name="LEVEL"/>
+            <column name="ACTUALITY"/>
+        </createIndex>
+        <createIndex schemaName="DICT" tableName="ADDRESS_ELEMENTS" indexName="ADDRESS_ELEMENTS_LEVEL_REGION_ACTUALITY_IDX">
+            <column name="LEVEL"/>
+            <column name="REGION"/>
+            <column name="ACTUALITY"/>
+        </createIndex>
+        <createIndex schemaName="DICT" tableName="ADDRESS_ELEMENTS" indexName="ADDRESS_ELEMENTS_LEVEL_REGION_DISTRICT_ACTUALITY_IDX">
+            <column name="LEVEL"/>
+            <column name="REGION"/>
+            <column name="DISTRICT"/>
+            <column name="ACTUALITY"/>
+        </createIndex>
+        <createIndex schemaName="DICT" tableName="ADDRESS_ELEMENTS" indexName="ADDRESS_ELEMENTS_LEVEL_REGION_DISTRICT_CITY_ACTUALITY_IDX">
+            <column name="LEVEL"/>
+            <column name="REGION"/>
+            <column name="DISTRICT"/>
+            <column name="CITY"/>
+            <column name="ACTUALITY"/>
+        </createIndex>
+        
+        <!-- Insert 2 test address elements from USA -->
+        <!-- Element 1: New York State (REGION, LEVEL=1) -->
+        <!-- CODE: 0100000000000 = REGION(01) + DISTRICT(000) + CITY(000) + LOCALITY(000) + ACTUALITY(00) -->
+        <insert schemaName="DICT" tableName="ADDRESS_ELEMENTS">
+            <column name="CODE" value="0100000000000"/>
+            <column name="NAME" value="New York"/>
+            <column name="SOCR" value="State"/>
+            <column name="IND" value=""/>
+            <column name="STATUS" value="0"/>
+        </insert>
+        
+        <!-- Element 2: California State (REGION, LEVEL=1) -->
+        <!-- CODE: 0200000000000 = REGION(02) + DISTRICT(000) + CITY(000) + LOCALITY(000) + ACTUALITY(00) -->
+        <insert schemaName="DICT" tableName="ADDRESS_ELEMENTS">
+            <column name="CODE" value="0200000000000"/>
+            <column name="NAME" value="California"/>
+            <column name="SOCR" value="State"/>
+            <column name="IND" value=""/>
+            <column name="STATUS" value="0"/>
+        </insert>
+        
+        <!-- Element: District (LEVEL=2) - one district under New York -->
+        <!-- CODE: 0100010000000 = REGION(01) + DISTRICT(001) + CITY(000) + LOCALITY(000) + ACTUALITY(00) -->
+        <insert schemaName="DICT" tableName="ADDRESS_ELEMENTS">
+            <column name="CODE" value="0100010000000"/>
+            <column name="NAME" value="Manhattan"/>
+            <column name="SOCR" value="District"/>
+            <column name="IND" value="10001"/>
+            <column name="STATUS" value="0"/>
+        </insert>
+        
+        <!-- Element 3: New York City (CITY, LEVEL=3) -->
+        <!-- CODE: 0100000100000 = REGION(01) + DISTRICT(000) + CITY(001) + LOCALITY(000) + ACTUALITY(00) -->
+        <insert schemaName="DICT" tableName="ADDRESS_ELEMENTS">
+            <column name="CODE" value="0100000100000"/>
+            <column name="NAME" value="New York"/>
+            <column name="SOCR" value="City"/>
+            <column name="IND" value="10001"/>
+            <column name="STATUS" value="0"/>
+        </insert>
+        
+        <!-- Element 4: Los Angeles (CITY, LEVEL=3) -->
+        <!-- CODE: 0200000100000 = REGION(02) + DISTRICT(000) + CITY(001) + LOCALITY(000) + ACTUALITY(00) -->
+        <insert schemaName="DICT" tableName="ADDRESS_ELEMENTS">
+            <column name="CODE" value="0200000100000"/>
+            <column name="NAME" value="Los Angeles"/>
+            <column name="SOCR" value="City"/>
+            <column name="IND" value="90001"/>
+            <column name="STATUS" value="0"/>
+        </insert>
+        
+        <!-- Element: Locality (LEVEL=4) - one locality under New York City -->
+        <!-- CODE: 01000001000100 = REGION(01) + DISTRICT(000) + CITY(001) + LOCALITY(001) + ACTUALITY(00) -->
+        <insert schemaName="DICT" tableName="ADDRESS_ELEMENTS">
+            <column name="CODE" value="01000001000100"/>
+            <column name="NAME" value="Downtown"/>
+            <column name="SOCR" value="Locality"/>
+            <column name="IND" value="10001"/>
+            <column name="STATUS" value="0"/>
+        </insert>
+        
+        <!-- ADDRESS_STREETS table based on Street entity -->
+        <!-- This table stores city and locality streets -->
+        <!-- CODE format: REGION(2) + DISTRICT(3) + CITY(3) + LOCALITY(3) + STREET(4) + ACTUALITY(2) = 18 chars -->
+        <createTable schemaName="DICT" tableName="ADDRESS_STREETS" remarks="City and locality streets">
+            <column name="NAME" type="VARCHAR(40)" remarks="Name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SOCR" type="VARCHAR(10)" remarks="Short name of object type"/>
+            <column name="CODE" type="VARCHAR(18)" remarks="Code">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ADDRESS_STREETS_CODE_PK"/>
+            </column>
+            <column name="IND" type="VARCHAR(6)" remarks="Postal code"/>
+            <column name="GNINMB" type="VARCHAR(4)" remarks="Tax office code"/>
+            <column name="UNO" type="VARCHAR(4)" remarks="Tax office territorial unit code"/>
+            <column name="OCATD" type="VARCHAR(11)" remarks="OKATO code"/>
+        </createTable>
+        <sql><![CDATA[
+            ALTER TABLE DICT.ADDRESS_STREETS
+              ADD REGION AS SUBSTRING(ADDRESS_STREETS.CODE, 1, 2);
+
+            ALTER TABLE DICT.ADDRESS_STREETS
+              ADD DISTRICT AS SUBSTRING(ADDRESS_STREETS.CODE, 3, 3);
+
+            ALTER TABLE DICT.ADDRESS_STREETS
+              ADD CITY AS SUBSTRING(ADDRESS_STREETS.CODE, 6, 3);
+
+            ALTER TABLE DICT.ADDRESS_STREETS
+              ADD LOCALITY AS SUBSTRING(ADDRESS_STREETS.CODE, 9, 3);
+
+            ALTER TABLE DICT.ADDRESS_STREETS
+              ADD ACTUALITY AS SUBSTRING(ADDRESS_STREETS.CODE, 16, 2);
+        ]]></sql>
+        <createIndex schemaName="DICT" tableName="ADDRESS_STREETS" indexName="ADDRESS_STREETS_REGION_ACTUALITY_IDX">
+            <column name="REGION"/>
+            <column name="ACTUALITY"/>
+        </createIndex>
+        <createIndex schemaName="DICT" tableName="ADDRESS_STREETS" indexName="ADDRESS_STREETS_REGION_DISTRICT_ACTUALITY_IDX">
+            <column name="REGION"/>
+            <column name="DISTRICT"/>
+            <column name="ACTUALITY"/>
+        </createIndex>
+        <createIndex schemaName="DICT" tableName="ADDRESS_STREETS" indexName="ADDRESS_STREETS_REGION_DISTRICT_CITY_ACTUALITY_IDX">
+            <column name="REGION"/>
+            <column name="DISTRICT"/>
+            <column name="CITY"/>
+            <column name="ACTUALITY"/>
+        </createIndex>
+        <createIndex schemaName="DICT" tableName="ADDRESS_STREETS" indexName="ADDRESS_STREETS_REGION_DISTRICT_CITY_LOCALITY_ACTUALITY_IDX">
+            <column name="REGION"/>
+            <column name="DISTRICT"/>
+            <column name="CITY"/>
+            <column name="LOCALITY"/>
+            <column name="ACTUALITY"/>
+        </createIndex>
+        
+        <!-- Insert 2 test streets from USA -->
+        <!-- Street 1: Broadway, New York City -->
+        <!-- CODE: 010000010000000100 = REGION(01) + DISTRICT(000) + CITY(001) + LOCALITY(000) + STREET(0001) + ACTUALITY(00) -->
+        <insert schemaName="DICT" tableName="ADDRESS_STREETS">
+            <column name="CODE" value="010000010000000100"/>
+            <column name="NAME" value="Broadway"/>
+            <column name="SOCR" value="St"/>
+            <column name="IND" value="10001"/>
+        </insert>
+        
+        <!-- Street 2: Sunset Boulevard, Los Angeles -->
+        <!-- CODE: 020000010000000200 = REGION(02) + DISTRICT(000) + CITY(001) + LOCALITY(000) + STREET(0002) + ACTUALITY(00) -->
+        <insert schemaName="DICT" tableName="ADDRESS_STREETS">
+            <column name="CODE" value="020000010000000200"/>
+            <column name="NAME" value="Sunset Boulevard"/>
+            <column name="SOCR" value="Blvd"/>
+            <column name="IND" value="90028"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

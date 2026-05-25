@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template/template.xhtml">
+    <ui:define name="menu">
+        <ui:fragment rendered="#{CS_MENU.isTaskEnabled('menu-administration-settings-module-user')}">
+            <div class="menu_box">
+                <h4><i class="fa fa-caret-down fa-rotate-270" aria-hidden="true"/>System Settings</h4>
+                <div>
+                    <p:commandLink value="Module Users" action="menu-administration-settings-module-user" immediate="true"
+                                   process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-settings-module-user')}"/>
+                </div>
+            </div>
+        </ui:fragment>
+        <ui:fragment rendered="#{CS_MENU.isTaskEnabled('menu-administration-user-management', 'menu-administration-user-group',
+        'menu-administration-user-security-profile', 'menu-administration-user-security-certificate')}">
+            <div class="menu_box">
+                <h4><i class="fa fa-caret-down fa-rotate-270" aria-hidden="true"/>Users</h4>
+                <div>
+                    <p:commandLink value="User Management" action="menu-administration-user-management" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-user-management')}"/>
+                    <p:commandLink value="User Groups" action="menu-administration-user-group" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-user-group')}"/>
+                    <p:commandLink value="Security Profiles" action="menu-administration-user-security-profile" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-user-security-profile')}"/>
+                    <p:commandLink value="Security Certificates" action="menu-administration-user-security-certificate" immediate="true"
+                                   process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-user-security-certificate')}"/>
+                </div>
+            </div>
+        </ui:fragment>
+        <ui:fragment rendered="#{CS_MENU.isTaskEnabled('menu-administration-department-management', 'menu-administration-department-group')}">
+            <div class="menu_box">
+                <h4><i class="fa fa-caret-down fa-rotate-270" aria-hidden="true"/>Organizational Structure</h4>
+                <div>
+                    <p:commandLink value="Department Management" action="menu-administration-department-management" immediate="true"
+                                   process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-department-management')}"/>
+                    <p:commandLink value="Department Groups" action="menu-administration-department-group" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-department-group')}"/>
+                </div>
+            </div>
+        </ui:fragment>
+        <ui:fragment rendered="#{CS_MENU.isTaskEnabled('menu-administration-permission-role', 'menu-administration-permission-right')}">
+            <div class="menu_box">
+                <h4><i class="fa fa-caret-down fa-rotate-270" aria-hidden="true"/>Roles and Permissions</h4>
+                <div>
+                    <p:commandLink value="Roles" action="menu-administration-permission-role" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-permission-role')}"/>
+                    <p:commandLink value="Permissions" action="menu-administration-permission-right" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-permission-right')}"/>
+                </div>
+            </div>
+        </ui:fragment>
+        <ui:fragment rendered="#{CS_MENU.isTaskEnabled('menu-administration-dictionary-standard', 'menu-administration-dictionary-custom')}">
+            <div class="menu_box">
+                <h4><i class="fa fa-caret-down fa-rotate-270" aria-hidden="true"/>Dictionaries</h4>
+                <div>
+                    <p:commandLink value="Standard Dictionaries" action="menu-administration-dictionary-standard" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-dictionary-standard')}"/>
+                    <p:commandLink value="Extended Dictionaries" action="menu-administration-dictionary-custom" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-dictionary-custom')}"/>
+                </div>
+            </div>
+        </ui:fragment>
+        <ui:fragment rendered="#{CS_MENU.isTaskEnabled('menu-administration-audit-management')}">
+            <div class="menu_box">
+                <h4><i class="fa fa-caret-down fa-rotate-270" aria-hidden="true"/>Audit</h4>
+                <div>
+                    <p:commandLink value="Audit Settings" action="menu-administration-audit-management" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-audit-management')}"/>
+                </div>
+            </div>
+        </ui:fragment>
+        <ui:fragment rendered="#{CS_MENU.isTaskEnabled('menu-administration-auditlogs-io', 'menu-administration-auditlogs-standard',
+        'menu-administration-auditlogs-user')}">
+            <div class="menu_box">
+                <h4><i class="fa fa-caret-down fa-rotate-270" aria-hidden="true"/>Audit Log</h4>
+                <div>
+                    <p:commandLink value="Login/Logout" action="menu-administration-auditlogs-io" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-auditlogs-io')}"/>
+                    <p:commandLink value="System Events" action="menu-administration-auditlogs-system" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-auditlogs-system')}"/>
+                    <p:commandLink value="User Events" action="menu-administration-auditlogs-user" immediate="true" process="@this"
+                                   styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                                   rendered="#{CS_MENU.isTaskEnabled('menu-administration-auditlogs-user')}"/>
+                </div>
+            </div>
+        </ui:fragment>
+    </ui:define>
+    <ui:define name="content">
+        <section><ui:insert name="content-body"/></section>
+    </ui:define>
+</ui:composition>

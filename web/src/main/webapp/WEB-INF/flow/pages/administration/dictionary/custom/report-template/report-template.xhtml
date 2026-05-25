@@ -1,0 +1,54 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{reportTemplateView.dictionary.group} > #{reportTemplateView.dictionary.name}">
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="edit" disabled="#{empty reportTemplateModel.selected}" styleClass="blue-btn"/>
+                <p:commandButton value="Delete" onclick="PF('confirm').show()" update="@next"
+                                 disabled="#{not empty reportTemplateModel.selected.systemName or empty reportTemplateModel.selected}"
+                                 styleClass="orange-btn"/>
+            </div>
+            <p:dataTable id="report-templates" value="#{reportTemplateModel}" var="template" lazy="true" rows="100" sortMode="multiple"
+                         virtualScroll="true" scrollable="#{reportTemplateModel.rowCount gt 10}" scrollRows="50" selectionMode="single"
+                         scrollHeight="#{reportTemplateModel.rowCount gt 10 ? 400 : null}" selection="#{reportTemplateModel.selected}"
+                         emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.ui-button)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-button)"/>
+                <p:ajax event="page" update="@(.ui-button)" listener="#{documentTypeModel.setSelected(null)}"/>
+                <p:column headerText="Group">
+                    #{template.group}
+                </p:column>
+                <p:column headerText="Name">
+                    #{template.name}
+                </p:column>
+                <p:column headerText="Update Date">
+                    <p:outputLabel value="#{template.date}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </p:outputLabel>
+                </p:column>
+                <p:column headerText="System">
+                    #{not empty template.systemName}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn"/>
+        </div>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{reportTemplateView.delete()}" onclick="PF('confirm').hide()" update="@form"
+                             styleClass="blue-btn r-float_elem"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

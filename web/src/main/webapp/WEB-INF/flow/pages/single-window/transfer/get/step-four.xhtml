@@ -1,0 +1,66 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Issue required amount to client and complete operation" styleClass="transaction_page check_form">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span class="current">4</span>
+                </div>
+            </f:facet>
+            <div class="title_block">
+                <p class="type_text">Operation Type</p>
+                <p class="name_text">Payout funds to individual</p>
+                <p class="type_text">Payment System</p>
+                <p:importEnum type="web.entity.dict.PaymentSystemName"/>
+                <p class="name_text">
+                    #{stepFourView.payoutTransfer.paymentSystem.name}
+                    <h:graphicImage library="img" name="#{PaymentSystemName.MONEY_TRANSFER eq stepFourView.payoutTransfer.paymentSystem.id ? 'payment-transfer' : 'payment-system'}.png"
+                                    height="40" styleClass="r-float_elem payment_system_img"/>
+                </p>
+                <p class="type_text">Payout Amount and Currency</p>
+                <p class="name_text currency_row">
+                    <h:outputText value="#{stepFourView.payoutTransfer.amount}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText> #{stepFourView.payoutTransfer.currency.iso} (#{stepFourView.payoutTransfer.currency.name})
+                    <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                    styleClass="currency_img r-float_elem">
+                        <f:param name="id" value="#{stepFourView.payoutTransfer.currency.id}"/>
+                    </p:graphicImage>
+                </p>
+            </div>
+            <p class="sub_title"><span>1</span>Generate required documents and provide to client for signature</p>
+            <p class="sub_title"><span>2</span>Receive signed documents from client</p>
+            <p class="sub_title"><span>3</span>Issue required amount to client and complete operation</p>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Issue" action="#{stepFourView.next()}" disabled="#{empty stepFourView.transferOperation}"
+                             styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Print" actionListener="#{stepFourView.setShowReport(true)}" disabled="#{empty stepFourView.transferOperation}"
+                             update="@form" styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Back" action="#{stepFourView.back()}" styleClass="big_btn orange-btn"/>
+            <p:commandButton value="Cancel" action="#{stepFourView.cancel()}" styleClass="big_btn orange-btn"/>
+        </div>
+        <p:dialog modal="true" closable="true" visible="true" rendered="#{stepFourView.showReport}" resizable="false" draggable="false"
+                  closeOnEscape="true" appendTo="@(body)" positionType="absolute" position="top">
+            <p:ajax event="close" listener="#{stepFourView.closeReport}" update="@form"/>
+            <p:tabView value="#{stepFourView.reports}" var="document">
+                <p:tab title="#{document.first}">
+                    <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="560">
+                        <f:param name="path" value="#{document.second}"/>
+                    </p:media>
+                </p:tab>
+            </p:tabView>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

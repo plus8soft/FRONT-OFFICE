@@ -1,0 +1,42 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# IntelliJ / Gradle metadata
+.gradle/
+
+# Gradle build outputs
+**/build/
+**/out/
+
+# Logs
+*.log
+
+# Local runtime config (contains credentials)
+front-office.properties
+
+# Local keystores / keys (should not be committed)
+*.jks
+*.p12
+*.pfx
+*.keystore
+*.pem
+id_rsa
+id_ed25519

@@ -1,0 +1,66 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{rateView.dictionary.group} > #{rateView.dictionary.name}">
+            <div class="grid_row">
+                <div class="grid_cell w_10"><p:outputLabel value="Currency" for="@next"/></div>
+                <div class="grid_cell w_20">
+                    <p:selectOneMenu value="#{rateView.filter.currency}" converter="omnifaces.SelectItemsConverter" filter="true"
+                                     filterMatchMode="startsWith" autoWidth="false" styleClass="w_100">
+                        <f:selectItem itemValue="#{null}" itemLabel=""/>
+                        <f:selectItems value="#{rateView.currencies}" var="currency" itemLabel="#{currency.name}" itemValue="#{currency}"/>
+                    </p:selectOneMenu>
+                </div>
+                <div class="grid_cell w_10 r-label"><p:outputLabel value="Central Bank Rate Date" for="@next"/></div>
+                <div class="grid_cell w_20">
+                    <p:calendar value="#{rateView.filter.date}" converter="javax.faces.LocalDateTimeConverter" pattern="dd.MM.yyyy HH:mm"
+                                showOn="button" placeholder="dd.mm.yyyy hh:mm" mask="true" styleClass="w_100"/>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10"><p:outputLabel value="Denomination" for="@next"/></div>
+                <div class="grid_cell w_20"><p:inputText value="#{rateView.filter.ratio}" styleClass="w_100"/></div>
+                <div class="grid_cell w_10 r-label"><p:outputLabel value="Buy" for="@next"/></div>
+                <div class="grid_cell w_20"><p:inputText value="#{rateView.filter.buyRate}" styleClass="w_100"/></div>
+                <div class="grid_cell w_10 r-label"><p:outputLabel value="Sell" for="@next"/></div>
+                <div class="grid_cell w_20"><p:inputText value="#{rateView.filter.sellRate}"/></div>
+            </div>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Search" styleClass="blue-btn r-float_elem" action="#{rateView.updateFilter()}" update="@form"/>
+            </div>
+            <p:dataTable id="extRates" value="#{rateView.model}" var="rate" lazy="true" rows="100" scrollRows="50"
+                         scrollHeight="#{rateModel.rowCount gt 10 ? 400 : null}" virtualScroll="true" scrollable="#{rateModel.rowCount gt 10}"
+                         sortMode="multiple" emptyMessage="No data">
+                <p:column headerText="Name">
+                    #{rate.currency.name}
+                </p:column>
+                <p:column headerText="Central Bank Rate Date">
+                    <h:outputText value="#{rate.date}">
+                        <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Denomination">
+                    #{rate.ratio}
+                </p:column>
+                <p:column headerText="Buy">
+                    #{rate.buyRate}
+                </p:column>
+                <p:column headerText="Sell">
+                    #{rate.sellRate}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

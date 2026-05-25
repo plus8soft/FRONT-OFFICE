@@ -1,0 +1,44 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{paymentSystemEditView.dictionary.group} > #{paymentSystemEditView.dictionary.name}">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Name" for="@next"/>
+                </div>
+                <div class="grid_cell w_25">
+                    <p:inputText value="#{paymentSystemEditView.paymentSystem.name}" styleClass="w_100">
+                        <f:passThroughAttribute name="focus-priority" value="1"/>
+                    </p:inputText>
+                    <script>focusByPriority();</script>
+                </div>
+                <div class="grid_cell w_10 ml-w_10">
+                    <p:outputLabel value="Agent Commission" for="@next"/>
+                </div>
+                <div class="grid_cell w_20">
+                    <p:inputNumber value="#{paymentSystemEditView.paymentSystem.commission}" symbol="%" symbolPosition="s"
+                                   emptyValue="zero" styleClass="w_100"/>
+                </div>
+                <div class="grid_cell w_10 ml-w_10">
+                    <p:outputLabel value="Used" for="@next"/>
+                </div>
+                <div class="grid_cell">
+                    <p:selectBooleanCheckbox value="#{paymentSystemEditView.paymentSystem.enabled}" styleClass="w_100"/>
+                </div>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Save" action="#{paymentSystemEditView.save()}" styleClass="r-float_elem blue-btn big_btn"/>
+            <p:commandButton value="Cancel" action="cancel" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

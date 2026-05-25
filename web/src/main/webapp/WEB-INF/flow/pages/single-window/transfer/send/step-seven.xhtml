@@ -1,0 +1,59 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Generate required documents and complete operation" styleClass="transaction_page access_form">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5</span>
+                    <span>6</span>
+                    <span class="current">7</span>
+                </div>
+            </f:facet>
+            <h2 class="transaction_access green-text"><i class="fa fa-check-circle-o" aria-hidden="true"/>Transfer completed successfully</h2>
+            <div class="title_block">
+                <p class="type_text">Unique identifier required to receive transfer</p>
+                <p class="name_text">#{stepSevenView.paymentTransfer.transferOperation.number}</p>
+                <p class="type_text">Payment System</p>
+                <p:importEnum type="web.entity.dict.PaymentSystemName"/>
+                <p class="name_text">
+                    #{stepSevenView.paymentTransfer.paymentSystem.name}
+                    <h:graphicImage library="img" name="#{PaymentSystemName.MONEY_TRANSFER eq stepSevenView.paymentTransfer.paymentSystem.id ? 'payment-transfer' : 'payment-system'}.png"
+                                    height="40" styleClass="r-float_elem payment_system_img"/>
+                </p>
+                <p class="type_text">Transfer Amount and Currency</p>
+                <p class="name_text currency_row">
+                    <h:outputText value="#{stepSevenView.paymentTransfer.amount}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText> #{stepSevenView.paymentTransfer.transferCurrency.iso} (#{stepSevenView.paymentTransfer.transferCurrency.name})
+                    <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                    styleClass="currency_img r-float_elem">
+                        <f:param name="id" value="#{stepSevenView.paymentTransfer.transferCurrency.id}"/>
+                    </p:graphicImage>
+                </p>
+                <p class="type_text">Receiving Address</p>
+                <p class="name_text">
+                    <h:outputText value="Non-Addressed Transfer" rendered="#{empty stepSevenView.paymentTransfer.paymentPoint}"/>
+                    <h:outputText
+                            value="#{stepSevenView.paymentTransfer.paymentPoint.name}, #{stepSevenView.paymentTransfer.paymentPoint.address}"
+                            rendered="#{not empty stepSevenView.paymentTransfer.paymentPoint}"/>
+                </p>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Complete" action="cancel" styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Print" rendered="false"/>
+        </div>
+    </ui:define>
+</ui:composition>

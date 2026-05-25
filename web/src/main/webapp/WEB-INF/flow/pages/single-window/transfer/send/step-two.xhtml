@@ -1,0 +1,118 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:o="http://omnifaces.org/ui"
+                template="../../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Select Payment System" styleClass="transaction_page">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span class="current">2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5</span>
+                    <span>6</span>
+                    <span>7</span>
+                </div>
+            </f:facet>
+            <div class="title_block">
+                <p class="type_text">Operation Type</p>
+                <p class="name_text">Transfer funds to individual (send)</p>
+                <p class="type_text">Transfer Amount and Currency</p>
+                <p class="name_text">
+                    <h:outputText value="#{stepTwoView.paymentTransfer.amount}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText> #{stepTwoView.paymentTransfer.transferCurrency.iso} (#{stepTwoView.paymentTransfer.transferCurrency.name})
+                </p>
+                <p class="type_text">Transfer Country and City (Location)</p>
+                <p class="name_text">#{stepTwoView.paymentTransfer.destinationCountry.name}, #{stepTwoView.paymentTransfer.destinationRegion.name}</p>
+            </div>
+            <div class="paysystem_list">
+                <p:selectOneRadio id="payment-system" value="#{stepTwoView.selected}" layout="custom" converter="omnifaces.SelectItemsConverter">
+                    <f:selectItems value="#{stepTwoView.paymentSystemItems}" var="item" itemLabel="#{item.paymentSystem.name}" itemValue="#{item}"/>
+                    <p:ajax update="@form"/>
+                </p:selectOneRadio>
+                <p:importEnum type="web.entity.dict.PaymentSystemName"/>
+                <ul class="list_enabled_sys">
+                    <p:repeat value="#{stepTwoView.paymentSystemItems}" var="item" varStatus="status">
+                        <li>
+                            <p:radioButton for="@form:payment-system" styleClass="check_box" itemIndex="#{status.index}"
+                                           disabled="#{empty item.paymentSystemFee}"/>
+                            <p:outputLabel for="@previous">
+                                <div class="img_box #{not empty item.paymentSystemFee and item.paymentSystem eq stepTwoView.selected.paymentSystem
+                                    ? 'enabled' : 'disabled'}">
+                                    <h:graphicImage library="img" name="#{PaymentSystemName.MONEY_TRANSFER eq item.paymentSystem.id ? 'payment-transfer' : 'payment-system'}#{empty item.paymentSystemFee
+                                            or item.paymentSystem ne stepTwoView.selected.paymentSystem ? '_grey' : ''}.png"/>
+                                </div>
+                                <div class="data_box">
+                                    <ui:fragment rendered="#{not empty item.paymentSystemFee}">
+                                        <ui:fragment rendered="#{not empty item.paymentSystemFee.conversion}">
+                                            <div class="grid_row">
+                                                <div class="grid_cell w_30">Conversion Rate</div>
+                                                <div class="grid_cell w_70">
+                                                    <h:outputText value="#{item.paymentSystemFee.conversion}">
+                                                        <o:converter converterId="javax.faces.BigDecimal" minFractionDigits="2"
+                                                                     maxFractionDigits="#{item.paymentSystemFee.conversion.scale()}"/>
+                                                    </h:outputText> #{stepTwoView.paymentTransfer.acceptedCurrency.iso} = 1
+                                                    #{stepTwoView.paymentTransfer.transferCurrency.iso}
+                                                </div>
+                                            </div>
+                                        </ui:fragment>
+                                        <div class="grid_row">
+                                            <div class="grid_cell w_30">Payment System Commission</div>
+                                            <div class="grid_cell w_70">
+                                                <h:outputText value="#{item.paymentSystemFee.paymentSystemCommission}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText> #{stepTwoView.paymentTransfer.acceptedCurrency.iso}
+                                            </div>
+                                        </div>
+                                        <div class="grid_row">
+                                            <div class="grid_cell w_30">Bank Commission</div>
+                                            <div class="grid_cell w_70">
+                                                <h:outputText value="#{item.paymentSystemFee.bankCommission}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText> #{stepTwoView.paymentTransfer.acceptedCurrency.iso}
+                                            </div>
+                                        </div>
+                                        <div class="grid_row total_row">
+                                            <div class="grid_cell w_30">Total to Pay</div>
+                                            <div class="grid_cell w_70">
+                                                <h:outputText value="#{item.paymentSystemFee.sum}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText> <span class="cur">#{stepTwoView.paymentTransfer.acceptedCurrency.iso}</span>
+                                                <div class="hint">
+                                                    (including commission
+                                                    <h:outputText value="#{item.paymentSystemFee.commission}">
+                                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                                    </h:outputText> #{stepTwoView.paymentTransfer.acceptedCurrency.iso})
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{empty item.paymentSystemFee}">
+                                        <div class="grid_row">
+                                            <div class="grid_cell error w_100">commission calculation error</div>
+                                        </div>
+                                    </ui:fragment>
+                                </div>
+                            </p:outputLabel>
+                        </li>
+                    </p:repeat>
+                </ul>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Next" action="#{stepTwoView.next()}" styleClass="r-float_elem big_btn blue-btn"
+                             disabled="#{empty stepTwoView.selected}"/>
+            <p:commandButton value="Back" action="#{stepTwoView.back()}" styleClass="big_btn orange-btn"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" process="@this" styleClass="orange-btn big_btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

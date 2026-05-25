@@ -1,0 +1,44 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Roles</h1>
+        <p:panel header="Select a role and perform the necessary actions">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="edit" disabled="#{empty roleView.roleItem}" styleClass="blue-btn"/>
+                <p:commandButton value="Delete" disabled="#{empty roleView.roleItem or roleView.roleItem.role.system}" styleClass="orange-btn"
+                                 onclick="PF('confirm').show()"/>
+            </div>
+            <p:dataTable id="roles" value="#{roleModel}" var="roleItem" lazy="true" virtualScroll="true" rows="100" scrollRows="50"
+                         sortMode="multiple" scrollHeight="#{roleModel.rowCount gt 10 ? 400 : null}" scrollable="#{roleModel.rowCount gt 10}"
+                         selection="#{roleView.roleItem}" selectionMode="single" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.ui-button)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-button)"/>
+                <p:ajax event="page" update="@(.ui-button)" listener="#{roleView.setRoleItem(null)}"/>
+                <p:column headerText="Group">#{roleItem.role.groupName}</p:column>
+                <p:column headerText="Name">#{roleItem.role.name}</p:column>
+                <p:column headerText="Type">#{roleItem.role.system ? 'System' : 'User'}</p:column>
+                <p:column headerText="Users"><span class="fix_row align-right">#{roleItem.usersCount}</span></p:column>
+                <p:column headerText="Groups"><span class="fix_row align-right">#{roleItem.groupsCount}</span></p:column>
+                <p:column headerText="Tasks"><span class="fix_row align-right">#{roleItem.tasksCount}</span></p:column>
+                <p:column headerText="Rights"><span class="fix_row align-right">#{roleItem.rightsCount}</span></p:column>
+            </p:dataTable>
+        </p:panel>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{roleView.delete()}" onclick="PF('confirm').hide()"
+                             styleClass="blue-btn r-float_elem" update="@form"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

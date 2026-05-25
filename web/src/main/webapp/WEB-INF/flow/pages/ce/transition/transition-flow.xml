@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/transition" abstract="true">
+    <end-state id="menu-ce-arm"/>
+    <end-state id="menu-ce-currency"/>
+    <end-state id="menu-ce-department-currency"/>
+    <end-state id="menu-ce-rule"/>
+    <end-state id="menu-ce-commission"/>
+    <end-state id="menu-ce-convertion"/>
+    <end-state id="menu-ce-rate"/>
+    <end-state id="menu-ce-order"/>
+    <global-transitions>
+        <transition on="menu-ce-arm" to="menu-ce-arm"/>
+        <transition on="menu-ce-currency" to="menu-ce-currency"/>
+        <transition on="menu-ce-department-currency" to="menu-ce-department-currency"/>
+        <transition on="menu-ce-rule" to="menu-ce-rule"/>
+        <transition on="menu-ce-commission" to="menu-ce-commission"/>
+        <transition on="menu-ce-convertion" to="menu-ce-convertion"/>
+        <transition on="menu-ce-rate" to="menu-ce-rate"/>
+        <transition on="menu-ce-order" to="menu-ce-order"/>
+    </global-transitions>
+</flow>

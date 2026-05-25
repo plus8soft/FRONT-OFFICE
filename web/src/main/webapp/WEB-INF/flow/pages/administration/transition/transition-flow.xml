@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/transition" abstract="true">
+    <end-state id="menu-administration-settings-module-user"/>
+    <end-state id="menu-administration-user-management"/>
+    <end-state id="menu-administration-user-group"/>
+    <end-state id="menu-administration-user-security-profile"/>
+    <end-state id="menu-administration-user-security-certificate"/>
+    <end-state id="menu-administration-department-management"/>
+    <end-state id="menu-administration-department-group"/>
+    <end-state id="menu-administration-permission-role"/>
+    <end-state id="menu-administration-permission-right"/>
+    <end-state id="menu-administration-dictionary-standard"/>
+    <end-state id="menu-administration-dictionary-custom"/>
+    <end-state id="menu-administration-audit-management"/>
+    <end-state id="menu-administration-auditlogs-io"/>
+    <end-state id="menu-administration-auditlogs-system"/>
+    <end-state id="menu-administration-auditlogs-user"/>
+    <global-transitions>
+        <transition on="menu-administration-settings-module-user" to="menu-administration-settings-module-user"/>
+        <transition on="menu-administration-user-management" to="menu-administration-user-management"/>
+        <transition on="menu-administration-user-group" to="menu-administration-user-group"/>
+        <transition on="menu-administration-user-security-profile" to="menu-administration-user-security-profile"/>
+        <transition on="menu-administration-user-security-certificate" to="menu-administration-user-security-certificate"/>
+        <transition on="menu-administration-department-management" to="menu-administration-department-management"/>
+        <transition on="menu-administration-department-group" to="menu-administration-department-group"/>
+        <transition on="menu-administration-permission-role" to="menu-administration-permission-role"/>
+        <transition on="menu-administration-permission-right" to="menu-administration-permission-right"/>
+        <transition on="menu-administration-dictionary-standard" to="menu-administration-dictionary-standard"/>
+        <transition on="menu-administration-dictionary-custom" to="menu-administration-dictionary-custom"/>
+        <transition on="menu-administration-audit-management" to="menu-administration-audit-management"/>
+        <transition on="menu-administration-auditlogs-io" to="menu-administration-auditlogs-io"/>
+        <transition on="menu-administration-auditlogs-system" to="menu-administration-auditlogs-system"/>
+        <transition on="menu-administration-auditlogs-user" to="menu-administration-auditlogs-user"/>
+    </global-transitions>
+</flow>

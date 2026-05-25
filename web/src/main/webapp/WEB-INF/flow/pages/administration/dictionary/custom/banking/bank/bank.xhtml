@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{bankView.dictionary.group} > #{bankView.dictionary.name}">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="body_block">
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel value="Bank Name" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_45">
+                        <p:autoComplete value="#{bankView.filter.name}" completeMethod="#{bankView.completeName}" scrollHeight="300"
+                                        styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_10 ml-w_5">
+                        <p:outputLabel value="Correspondent Account Number" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <p:inputMask value="#{bankView.filter.correspondentAccount}" mask="9?9999 – 999 – 9 – 9999 – 9999999"
+                                     converter="CorrespondentAccount" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel value="City"/>
+                    </div>
+                    <div class="grid_cell w_45">
+                        <p:selectCheckboxMenu value="#{bankView.filter.localities}" label="" updateLabel="true" filter="true"
+                                              filterMatchMode="startsWith" styleClass="w_100">
+                            <f:selectItems value="#{bankView.localities}"/>
+                        </p:selectCheckboxMenu>
+                    </div>
+                    <div class="grid_cell w_10 ml-w_5">
+                        <p:outputLabel for="@next" value="BIC"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <p:inputText value="#{bankView.filter.routingNumber}" placeholder="Routing Number" styleClass="w_100" maxlength="9"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel value="Status"/>
+                    </div>
+                    <div class="grid_cell w_45">
+                    </div>
+                </div>
+            </div>
+            <div class="navigation_panel clearfix body_block">
+                <p:commandButton value="Search" update="@form" action="#{bankView.updateFilter()}" styleClass="blue-btn r-float_elem"/>
+                <p:commandButton value="Details" disabled="#{empty bankModel.selected}" action="details" styleClass="blue-btn"/>
+            </div>
+            <p:dataTable id="banks" value="#{bankModel}" var="bank" lazy="true" rows="100" scrollRows="50" selection="#{bankModel.selected}"
+                         scrollHeight="#{bankModel.rowCount gt 10 ? 400 : null}" virtualScroll="true" scrollable="#{bankModel.rowCount gt 10}"
+                         selectionMode="single" sortMode="multiple" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.blue-btn:last)"/>
+                <p:ajax event="rowUnselect" update="@(.blue-btn:last)"/>
+                <p:ajax event="page" update="@(.blue-btn:last)" listener="#{bankModel.setSelected(null)}"/>
+                <p:column headerText="Routing Number" width="100">
+                    #{bank.routingNumber}
+                </p:column>
+                <p:column headerText="Corr. Account #" width="190">
+                    <h:outputText value="#{bank.correspondentAccount}" converter="CorrespondentAccount"/>
+                </p:column>
+                <p:column headerText="Name" width="500">
+                    #{bank.name}
+                </p:column>
+                <p:column headerText="Address" width="300">
+                    #{bank.postalCode}, #{bank.address}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

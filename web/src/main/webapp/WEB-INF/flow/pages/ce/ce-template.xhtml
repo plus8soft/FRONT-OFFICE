@@ -1,0 +1,35 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template/template.xhtml">
+    <ui:define name="menu">
+        <p:commandLink value="Currencies" action="menu-ce-currency" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-ce-currency')}"/>
+        <p:commandLink value="Department Currencies" action="menu-ce-department-currency" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-ce-department-currency')}"/>
+        <p:commandLink value="Rules" action="menu-ce-rule" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-ce-rule')}"/>
+        <p:commandLink value="Commission Rules" action="menu-ce-commission" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-ce-commission')}"/>
+        <p:commandLink value="Conversion Rules" action="menu-ce-convertion" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-ce-convertion')}"/>
+        <p:commandLink value="Exchange Rates" action="menu-ce-rate" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-ce-rate')}"/>
+        <p:commandLink value="Order Registry" action="menu-ce-order" immediate="true" process="@this"
+                       styleClass="#{component.action.expressionString eq CS_MENU.task.systemName ? 'current' : ''}"
+                       rendered="#{CS_MENU.isTaskEnabled('menu-ce-order')}"/>
+    </ui:define>
+    <ui:define name="content">
+        <section><ui:insert name="content-body"/></section>
+    </ui:define>
+</ui:composition>

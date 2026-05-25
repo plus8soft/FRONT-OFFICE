@@ -1,0 +1,38 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Specify Transfer Number" styleClass="transaction_page">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span class="current">2</span>
+                    <span>3</span>
+                    <span>4</span>
+                </div>
+            </f:facet>
+            <div class="grid_row">
+                <div class="grid_cell w_25"><p:outputLabel value="Control Transfer Number (CTN)" for="@next"/></div>
+                <div class="grid_cell w_20">
+                    <div class="icon_box">
+                        <p:inputText value="#{stepTwoView.payoutTransfer.controlNumber}" required="true" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <p:importEnum type="web.entity.dict.PaymentSystemName"/>
+            <ui:include src="step-two/step-two-transfer.xhtml"/>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Next" action="next" disabled="#{not stepTwoView.transferFounded}" styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Back" action="back" immediate="true" process="@this" styleClass="big_btn orange-btn"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" process="@this" styleClass="big_btn orange-btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

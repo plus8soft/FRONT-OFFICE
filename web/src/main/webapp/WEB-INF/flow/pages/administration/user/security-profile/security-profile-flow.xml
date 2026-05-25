@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <view-state id="security-profile">
+        <var name="securityProfileView" class="web.view.administration.user.security.profile.SecurityProfileView"/>
+        <var name="securityProfileModel" class="web.view.administration.user.security.profile.SecurityProfileModel"/>
+        <on-entry>
+            <evaluate expression="securityProfileView.init(securityProfileModel)"/>
+        </on-entry>
+        <transition on="add" to="edit">
+            <set name="flowScope.FS_SECURITY_PROFILE" value="new web.entity.core.SecurityProfile()"/>
+        </transition>
+        <transition on="edit" to="edit">
+            <set name="flowScope.FS_SECURITY_PROFILE" value="securityProfileView.selected.securityProfile"/>
+        </transition>
+    </view-state>
+    <view-state id="edit">
+        <var name="securityProfileEditView" class="web.view.administration.user.security.profile.edit.SecurityProfileEditView"/>
+        <on-entry>
+            <set name="securityProfileEditView.securityProfile" value="FS_SECURITY_PROFILE"/>
+        </on-entry>
+        <transition on="to-security-profile" to="security-profile"/>
+    </view-state>
+</flow>

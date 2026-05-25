@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <o:importConstants type="web.entity.AuthorizationResult"/>
+        <h1 class="title-page">Audit Logs > Login (Logout) > Details</h1>
+        <div>
+            <table class="custom_table">
+                <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Connection ID</td>
+                    <td>#{connectEventDetails.connectionEvent.id}</td>
+                </tr>
+                <tr>
+                    <td>User ID</td>
+                    <td>#{connectEventDetails.connectionEvent.user.id}</td>
+                </tr>
+                <tr>
+                    <td>Login</td>
+                    <td>#{connectEventDetails.connectionEvent.login}</td>
+                </tr>
+                <tr>
+                    <td>Date and Time</td>
+                    <td>
+                        <h:outputText value="#{connectEventDetails.connectionEvent.date}">
+                            <f:converter converterId="javax.faces.Instant"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                            <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Login Result</td>
+                    <td>
+                        <i class="l-float_elem fa #{AuthorizationResult.SUCCESS eq connectEventDetails.connectionEvent.authorizationResult
+                                ? 'fa-check-circle success' : 'fa-times-circle-o error'}" aria-hidden="true"/>
+                        <span>#{AuthorizationResult.SUCCESS eq connectEventDetails.connectionEvent.authorizationResult ? 'Successful login' : 'Login failed'}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Code</td>
+                    <td>#{connectEventDetails.connectionEvent.authorizationResult.message}</td>
+                </tr>
+                <tr>
+                    <td>IP Address</td>
+                    <td>#{connectEventDetails.connectionEvent.ip}</td>
+                </tr>
+                <tr>
+                    <td>User Time Zone</td>
+                    <td>#{timeZoneDictionary.findOne(connectEventDetails.connectionEvent.zoneId).value}</td>
+                </tr>
+                <tr>
+                    <td>User Agent String</td>
+                    <td>#{connectEventDetails.connectionEvent.userAgent}</td>
+                </tr>
+                <tr>
+                    <td>Logout Date</td>
+                    <td>
+                        <h:outputText value="#{connectEventDetails.connectionEvent.logoffDate}">
+                            <f:converter converterId="javax.faces.Instant"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                            <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Proper Logout</td>
+                    <td>
+                        #{empty connectEventDetails.connectionEvent.logoffDate ? null : connectEventDetails.connectionEvent.manualLogoff ? 'Yes' : 'No'}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Export to File" ajax="false" styleClass="r-float_elem green-btn big_btn">
+                <p:fileDownload value="#{connectEventDetails.fileDownload()}"/>
+            </p:commandButton>
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

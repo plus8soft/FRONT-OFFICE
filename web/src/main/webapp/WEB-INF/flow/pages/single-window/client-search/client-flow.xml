@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow-2.4.xsd"
+      parent="pages/single-window/transition">
+    <var name="FS_CLIENT_SEARCH_VIEW" class="web.view.ce.clientsearch.ClientSearchView"/>
+    <input name="stepNumber"/>
+    <input name="stepsCount"/>
+    <input name="headerLabel"/>
+    <input name="readOnly"/>
+    <input name="personId"/>
+    <input name="validators" type="java.util.List"/>
+    <view-state id="client-search">
+        <on-entry>
+            <set name="FS_CLIENT_SEARCH_VIEW.stepNumber" value="stepNumber"/>
+            <set name="FS_CLIENT_SEARCH_VIEW.stepsCount" value="stepsCount"/>
+            <set name="FS_CLIENT_SEARCH_VIEW.headerLabel" value="headerLabel"/>
+            <set name="FS_CLIENT_SEARCH_VIEW.personId" value="personId"/>
+            <set name="FS_CLIENT_SEARCH_VIEW.validators" value="validators"/>
+            <evaluate expression="FS_CLIENT_SEARCH_VIEW.init(conversationScope.CS_CLIENT_ID != null ? conversationScope.CS_CLIENT_ID : personId)"/>
+        </on-entry>
+        <transition on="to-edit-client" to="edit-client"/>
+        <transition on="to-document-copy" to="document-copy"/>
+        <transition on="next" to="next"/>
+        <transition on="back" to="back"/>
+        <transition on="to-edit-document-copy" to="edit-document-copy">
+            <set name="flowScope.FS_DOCUMENT_COPY" value="FS_CLIENT_SEARCH_VIEW.selectedInvalidDocument"/>
+            <set name="readOnly" value="true"/>
+        </transition>
+        <transition on="start-client-session" to="client-search">
+            <set name="conversationScope.CS_CLIENT_ID" value="FS_CLIENT_SEARCH_VIEW.person.id"/>
+            <set name="personId" value="null"/>
+        </transition>
+        <transition on="non-session-client" to="client-search">
+            <set name="personId" value="FS_CLIENT_SEARCH_VIEW.personId"/>
+        </transition>
+        <transition on="end" to="client-search">
+            <set name="conversationScope.CS_CLIENT_ID" value="null"/>
+            <set name="personId" value="null"/>
+        </transition>
+        <transition on="to-client-history" to="client-history"/>
+        <transition on="cancel" to="cancel"/>
+    </view-state>
+    <view-state id="document-copy">
+        <var name="documentCopyView" class="web.view.ce.clientedit.DocumentCopyView"/>
+        <on-entry>
+            <set name="readOnly" value="false"/>
+            <evaluate expression="documentCopyView.init(FS_CLIENT_SEARCH_VIEW.person)"/>
+        </on-entry>
+        <transition on="add-document-copy" to="edit-document-copy">
+            <set name="flowScope.FS_DOCUMENT_COPY" value="new web.entity.crm.DocumentCopy()"/>
+        </transition>
+        <transition on="edit" to="edit-document-copy">
+            <set name="flowScope.FS_DOCUMENT_COPY" value="documentCopyView.selected"/>
+        </transition>
+        <transition on="to-edit-client" to="client-search"/>
+    </view-state>
+    <view-state id="edit-document-copy">
+        <var name="editDocumentCopyView" class="web.view.ce.clientedit.EditDocumentCopyView"/>
+        <on-entry>
+            <set name="editDocumentCopyView.readOnly" value="readOnly"/>
+            <evaluate expression="editDocumentCopyView.init(FS_CLIENT_SEARCH_VIEW.person, flowScope.FS_DOCUMENT_COPY)"/>
+        </on-entry>
+        <transition on="to-document-copy" to="document-copy"/>
+        <transition on="to-client-search" to="client-search">
+            <set name="personId" value="FS_CLIENT_SEARCH_VIEW.person.id"/>
+        </transition>
+    </view-state>
+    <end-state id="next">
+        <output name="personIdOut" value="FS_CLIENT_SEARCH_VIEW.person.id"/>
+    </end-state>
+    <end-state id="back">
+        <output name="personIdOut" value="FS_CLIENT_SEARCH_VIEW.person?.id"/>
+    </end-state>
+    <end-state id="cancel"/>
+    <subflow-state id="edit-client" subflow="pages/single-window/edit-client">
+        <input name="personId" value="FS_CLIENT_SEARCH_VIEW.person.id"/>
+        <input name="documentType" value="FS_CLIENT_SEARCH_VIEW.document.type"/>
+        <input name="documentSeries" value="FS_CLIENT_SEARCH_VIEW.document.series"/>
+        <input name="documentNumber" value="FS_CLIENT_SEARCH_VIEW.document.number"/>
+        <output name="personIdOut"/>
+        <transition on="next" to="client-search">
+            <set name="conversationScope.CS_CLIENT_ID" value="personIdOut"/>
+            <set name="personId" value="personIdOut"/>
+        </transition>
+        <transition on="back" to="client-search">
+            <set name="personId" value="personIdOut"/>
+        </transition>
+    </subflow-state>
+    <subflow-state id="client-history" subflow="pages/single-window/client-history">
+        <input name="person" value="FS_CLIENT_SEARCH_VIEW.person"/>
+        <transition on="back" to="client-search"/>
+    </subflow-state>
+</flow>

@@ -1,0 +1,108 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                template="../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{countryView.dictionary.group} > #{countryView.dictionary.name}">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel box_big_subpanel clearfix">
+                <div class="search_box">
+                    <p:outputLabel value="Search:" for="@next"/>
+                    <p:inputText value="#{countryView.filter.name}" placeholder="Search by name"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}"/>
+                    <p:remoteCommand name="updateTable" action="#{countryView.fastSearch()}" update="@form"/>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                </div>
+            </div>
+            <p:panel toggleable="true" header="Advanced Search" collapsed="#{not countryView.filter.extendedSearch}" styleClass="subpanel">
+                <div class="grid_row">
+                    <div class="grid_cell w_25">
+                        <div class="grid_cell w_20">
+                            <p:outputLabel value="Status" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:selectOneMenu value="#{countryView.filter.status}" styleClass="w_100">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItem itemValue="true" itemLabel="Active"/>
+                                <f:selectItem itemValue="false" itemLabel="Not Used"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <div class="grid_cell w_20 r-label">
+                            <p:outputLabel value="ISO" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:inputText value="#{countryView.filter.iso}" maxlength="3" styleClass="w_100">
+                                <p:keyFilter regEx="/[0-9]/" preventPaste="false"/>
+                            </p:inputText>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <div class="grid_cell w_20 r-label">
+                            <p:outputLabel value="Alpha2" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:inputText value="#{countryView.filter.alpha2}" maxlength="2" styleClass="w_100">
+                                <p:keyFilter regEx="/[a-zA-Z]/" preventPaste="false"/>
+                            </p:inputText>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <div class="grid_cell w_20 r-label">
+                            <p:outputLabel value="Alpha3" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:inputText value="#{countryView.filter.alpha3}" maxlength="3" styleClass="w_100">
+                                <p:keyFilter regEx="/[a-zA-Z]/" preventPaste="false"/>
+                            </p:inputText>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn_box clearfix">
+                    <p:defaultCommand target="@next" scope="@parent"/>
+                    <p:commandButton value="Search" action="#{countryView.extendedSearch()}" update="@form" styleClass="blue-btn r-float_elem"/>
+                </div>
+            </p:panel>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="edit" disabled="#{empty countryModel.selected}"
+                                 styleClass="action-button blue-btn"/>
+                <p:commandButton value="Delete" action="#{countryView.delete()}" disabled="#{empty countryModel.selected}"
+                                 styleClass="action-button orange-btn" update="countries"/>
+            </div>
+            <p:dataTable id="countries" value="#{countryModel}" var="country" lazy="true" rows="100" selection="#{countryModel.selected}"
+                         selectionMode="single" sortMode="multiple" virtualScroll="true" scrollable="#{countryModel.rowCount gt 10}" scrollRows="50"
+                         scrollHeight="#{countryModel.rowCount gt 10 ? 400 : null}" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.action-button)"/>
+                <p:ajax event="rowUnselect" update="@(.action-button)"/>
+                <p:ajax event="page" update="@(.action-button)" listener="#{countryModel.setSelected(null)}"/>
+                <p:column headerText="Name">
+                    #{country.name}
+                </p:column>
+                <p:column headerText="Alpha 2">
+                    #{country.alpha2}
+                </p:column>
+                <p:column headerText="Alpha 3">
+                    #{country.alpha3}
+                </p:column>
+                <p:column headerText="ISO">
+                    #{country.id}
+                </p:column>
+                <p:column headerText="Status">
+                    #{country.enabled ? "Active" : "Not Used"}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

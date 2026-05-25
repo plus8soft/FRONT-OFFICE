@@ -1,0 +1,81 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui" xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Classifiers > #{dictionaryValueEdit.dictionaryValue.dictionary.id} (#{dictionaryValueEdit.dictionaryValue.dictionary.group}) >
+            <h:outputText rendered="#{empty dictionaryValueEdit.dictionaryValue.id}" value="Adding New Dictionary Element"/>
+            <h:outputText rendered="#{not empty dictionaryValueEdit.dictionaryValue.id}"
+                          value="#{dictionaryValueEdit.dictionaryValue.shortValue} (#{dictionaryValueEdit.dictionaryValue.code})"/>
+        </h1>
+        <p:panel header="Basic Parameters">
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel for="@next" value="Code"/>
+                </div>
+                <div class="grid_cell w_50">
+                    <div class="icon_box">
+                        <p:inputText value="#{dictionaryValueEdit.dictionaryValue.code}"
+                                     readonly="#{dictionaryValueEdit.dictionaryValue.dictionary.system or
+                                     dictionaryValueEdit.dictionaryValue.system}" required="true" styleClass="w_100">
+                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                            <f:validator binding="#{dictionaryValueValidator}"/>
+                            <f:attribute name="dictionary" value="#{dictionaryValueEdit.dictionaryValue.dictionary}"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel for="@next" value="Short Value"/>
+                </div>
+                <div class="grid_cell w_50">
+                    <div class="icon_box">
+                        <p:inputText value="#{dictionaryValueEdit.dictionaryValue.shortValue}" styleClass="w_100"
+                                     readonly="#{dictionaryValueEdit.dictionaryValue.dictionary.system or
+                                     dictionaryValueEdit.dictionaryValue.system}" required="true"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel for="@next" value="Extended Value"/>
+                </div>
+                <div class="grid_cell w_50">
+                    <div class="icon_box">
+                        <p:inputTextarea value="#{dictionaryValueEdit.dictionaryValue.value}"
+                                         readonly="#{dictionaryValueEdit.dictionaryValue.dictionary.system or
+                                         dictionaryValueEdit.dictionaryValue.system}" required="true" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel for="@next" value="Not Used"/>
+                </div>
+                <div class="grid_cell w_50">
+                    <p:selectBooleanCheckbox value="#{dictionaryValueEdit.dictionaryValue.unused}" styleClass="w_100"
+                                             disabled="#{dictionaryValueEdit.dictionaryValue.dictionary.system or
+                                             dictionaryValueEdit.dictionaryValue.system}"/>
+
+                </div>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:defaultCommand target="@next" scope="@previous"/>
+            <p:commandButton value="Save" action="#{dictionaryValueEdit.save()}" styleClass="r-float_elem blue-btn big_btn"
+                             rendered="#{not (dictionaryValueEdit.dictionaryValue.dictionary.system or dictionaryValueEdit.dictionaryValue.system)}"
+                             update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

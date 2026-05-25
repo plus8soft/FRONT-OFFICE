@@ -1,0 +1,142 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../ce-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Rules</h1>
+        <p:panel header="System Rules" toggleable="true">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Edit" action="edit-system" disabled="#{empty ruleView.selectedSystemRule}" styleClass="blue-btn"/>
+            </div>
+            <p:dataTable value="#{ruleView.systemRules}" var="rule" selectionMode="single" selection="#{ruleView.selectedSystemRule}"
+                         rowKey="#{rule.id}" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.ui-button)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-button)"/>
+                <p:columnGroup type="header">
+                    <p:row>
+                        <p:column rowspan="2" headerText="Rule Description"/>
+                        <p:column colspan="2" headerText="Rule Range"/>
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="Minimum Amount, USD"/>
+                        <p:column headerText="Maximum Amount, USD"/>
+                    </p:row>
+                </p:columnGroup>
+                <p:column>
+                    #{rule.name}
+                </p:column>
+                <p:column>
+                    <h:outputText value="#{rule.min}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText>
+                </p:column>
+                <p:column>
+                    <h:outputText value="#{rule.max}" rendered="#{not empty rule.max}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText>
+                    <h:outputText value="&#8734;" rendered="#{empty rule.max}"/>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <p:panel header="Conversion Rules" toggleable="true">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add-currency" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="edit-currency" disabled="#{empty ruleView.selectedConversionRule}"
+                                 styleClass="blue-btn"/>
+                <p:commandButton value="Delete" action="#{ruleView.deleteRule(ruleView.selectedConversionRule)}" update="@form"
+                                 disabled="#{empty ruleView.selectedConversionRule}" styleClass="orange-btn"/>
+            </div>
+            <p:dataTable value="#{ruleView.conversionRules}" var="rule" selectionMode="single" selection="#{ruleView.selectedConversionRule}"
+                         rowKey="#{rule.id}" draggableRows="true" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.ui-button)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-button)"/>
+                <p:ajax event="rowReorder" listener="#{ruleView.onRowReorder}"/>
+                <p:columnGroup type="header">
+                    <p:row>
+                        <p:column rowspan="2" styleClass="active_cell" headerText="Rule Active"/>
+                        <p:column rowspan="2" headerText="Rule Description"/>
+                        <p:column colspan="2" styleClass="value_range_cell" headerText="Rule Range"/>
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="Minimum Amount"/>
+                        <p:column headerText="Maximum Amount"/>
+                    </p:row>
+                </p:columnGroup>
+                <p:column>
+                    <p:selectBooleanCheckbox value="#{rule.enabled}" disabled="true"/>
+                </p:column>
+                <p:column>
+                    #{rule.name}
+                </p:column>
+                <p:column styleClass="align-right">
+                    <h:outputText value="#{rule.min}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText>
+                </p:column>
+                <p:column styleClass="align-right">
+                    <h:outputText value="#{rule.max}" rendered="#{not empty rule.max}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText>
+                    <h:outputText value="&#8734;" rendered="#{empty rule.max}"/>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <p:panel header="Commission Rules" toggleable="true">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add-commission" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="edit-commission" disabled="#{empty ruleView.selectedCommissionRule}"
+                                 styleClass="blue-btn"/>
+                <p:commandButton value="Delete" action="#{ruleView.deleteRule(ruleView.selectedCommissionRule)}" update="@form"
+                                 disabled="#{empty ruleView.selectedCommissionRule}" styleClass="orange-btn"/>
+            </div>
+            <p:dataTable value="#{ruleView.commissionRules}" var="rule" selectionMode="single" selection="#{ruleView.selectedCommissionRule}"
+                         rowKey="#{rule.id}" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.ui-button)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-button)"/>
+                <p:columnGroup type="header">
+                    <p:row>
+                        <p:column rowspan="2" styleClass="active_cell" headerText="Rule Active"/>
+                        <p:column rowspan="2" headerText="Rule Description"/>
+                        <p:column colspan="2" styleClass="value_range_cell" headerText="Rule Range"/>
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="Minimum Amount, USD"/>
+                        <p:column headerText="Maximum Amount, USD"/>
+                    </p:row>
+                </p:columnGroup>
+                <p:column>
+                    <p:selectBooleanCheckbox value="#{rule.enabled}" disabled="true"/>
+                </p:column>
+                <p:column>
+                    #{rule.name}
+                </p:column>
+                <p:column styleClass="align-right">
+                    <h:outputText value="#{rule.min}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText>
+                </p:column>
+                <p:column styleClass="align-right">
+                    <h:outputText value="#{rule.max}" rendered="#{not empty rule.max}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText>
+                    <h:outputText value="&#8734;" rendered="#{empty rule.max}"/>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/single-window/transition">
+    <input name="person"/>
+    <view-state id="client-history">
+        <var name="clientHistoryView" class="web.view.ce.clienthistory.ClientHistoryView"/>
+        <on-entry>
+            <evaluate expression="clientHistoryView.init(person)"/>
+        </on-entry>
+        <transition on="back" to="back"/>
+    </view-state>
+    <end-state id="back"/>
+</flow>

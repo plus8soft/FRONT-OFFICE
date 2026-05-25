@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/transition" start-state="start-task">
+    <subflow-state id="menu-single-window-currency-exchange" subflow="pages/single-window/currency-exchange" parent="pages/transition#task"/>
+    <subflow-state id="menu-single-window-operation-log" subflow="pages/single-window/operation-log" parent="pages/transition#task"/>
+    <subflow-state id="menu-single-window-client-search" subflow="pages/single-window/client-search" parent="pages/transition#task"/>
+    <subflow-state id="menu-single-window-transfer" subflow="pages/single-window/transfer" parent="pages/transition#task"/>
+    <subflow-state id="menu-single-window-payments-woa" subflow="pages/single-window/payment-woa" parent="pages/transition#task"/>
+    <global-transitions>
+        <transition on="menu-single-window-currency-exchange" to="menu-single-window-currency-exchange"/>
+        <transition on="menu-single-window-operation-log" to="menu-single-window-operation-log"/>
+        <transition on="menu-single-window-client-search" to="menu-single-window-client-search"/>
+        <transition on="menu-single-window-transfer" to="menu-single-window-transfer"/>
+        <transition on="menu-single-window-payments-woa" to="menu-single-window-payments-woa"/>
+    </global-transitions>
+</flow>

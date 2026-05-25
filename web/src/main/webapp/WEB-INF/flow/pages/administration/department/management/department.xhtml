@@ -1,0 +1,66 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Organizational Structure Management</h1>
+        <p:panel header="Select a department and perform the necessary actions or use drag'n'drop to change the structure">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" styleClass="blue-btn" action="#{departmentView.tryAdd()}"/>
+                <p:commandButton value="Edit" styleClass="blue-btn" action="edit" disabled="#{empty departmentView.selected}"/>
+                <p:commandButton value="Delete" styleClass="orange-btn" disabled="#{empty departmentView.selected}" onclick="PF('confirm').show()"/>
+                <div class="w_10 r-float_elem align-right">
+                    <p:outputLabel for="@next" value="Status" styleClass="mr-w_15"/>
+                    <p:selectBooleanCheckbox value="#{departmentView.enabled}">
+                        <p:ajax listener="#{departmentView.init()}" update="@form"/>
+                    </p:selectBooleanCheckbox>
+                </div>
+            </div>
+            <div class="tree_bg">
+                <div class="header_tree">
+                    <div class="additional_col grid-w_15">Status</div>
+                    <div class="additional_col grid-w_15">Users</div>
+                    <div class="main_col">Department List</div>
+                </div>
+                <p:tree value="#{departmentView.tree}" var="item" selection="#{departmentView.selected}" selectionMode="single" draggable="true"
+                        droppable="true" styleClass="w_100" animate="true">
+                    <p:ajax event="select" update="@(.ui-button)"/>
+                    <p:ajax event="unselect" update="@(.ui-button)"/>
+                    <p:ajax event="dragdrop" listener="#{departmentView.onDragDrop}" oncomplete="PF('confirmDragDrop').show()"
+                            update="@widgetVar(confirmDragDrop)"/>
+                    <p:treeNode type="empty">#{item}</p:treeNode>
+                    <p:treeNode>
+                        <span class="float_cell grid-w_15">#{item.department.enabled? 'Active' : 'Inactive'}</span>
+                        <span class="float_cell grid-w_15">#{item.usersCount}</span>
+                        <span class="main_cell">#{item.department.name}</span>
+                    </p:treeNode>
+                </p:tree>
+                <p:contextMenu for="@previous">
+                    <p:menuitem value="Edit" action="edit"/>
+                    <p:menuitem value="Delete" onclick="PF('confirm').show()"/>
+                </p:contextMenu>
+            </div>
+        </p:panel>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{departmentView.delete()}" onclick="PF('confirm').hide()"
+                             styleClass="blue-btn r-float_elem" update="@form"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+        <p:confirmDialog widgetVar="confirmDragDrop" showEffect="fade" hideEffect="fade" header="Confirmation" closable="false" severity="info"
+                         message="Position #{departmentView.dragNode.data.department.name} will be moved.">
+            <p:commandButton value="Cancel" action="#{departmentView.cancelDragDrop}" onclick="PF('confirmDragDrop').hide()" update="@(.ui-tree)"
+                             styleClass="blue-btn r-float_elem"/>
+            <p:commandButton value="OK" action="#{departmentView.confirmDragDrop}" onclick="PF('confirmDragDrop').hide()" update="@(.ui-tree)"
+                             styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

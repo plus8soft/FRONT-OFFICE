@@ -1,0 +1,374 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:fo="http://xmlns.jcp.org/jsf/composite/component"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <section class="edit_page">
+            <h1 class="title-page">
+                <h:outputText value="New Department" rendered="#{empty editView.department.id}"/>
+                <h:outputText value="#{editView.department.fullName}" rendered="#{not empty editView.department.id}"/>
+            </h1>
+            <p:panel id="mainPanel" header="Basic Parameters" toggleable="true">
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Status"/>
+                    </div>
+                    <div class="grid_cell">
+                        <div class="icon_box">
+                            <p:selectBooleanCheckbox value="#{editView.department.enabled}" styleClass="w_100">
+                                <f:validator binding="#{departmentStatusValidator}"/>
+                                <f:attribute name="departmentId" value="#{editView.department.id}"/>
+                            </p:selectBooleanCheckbox>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Time Zone"/>
+                    </div>
+                    <div class="grid_cell w_35">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{editView.department.zoneId}" converter="javax.faces.ZoneId" required="true" autoWidth="false"
+                                             styleClass="w_100">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{timeZoneDictionary.findAll()}" var="zoneId" itemValue="#{zoneId.code}"
+                                               itemLabel="#{zoneId.value}"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Operating Hours, from"/>
+                    </div>
+                    <div class="grid_cell mr-w_5 w_20">
+                        <div class="grid_cell w_40">
+                            <div class="icon_box">
+                                <p:calendar value="#{editView.department.startOperationDay}" converter="javax.faces.LocalTimeConverter"
+                                            pattern="HH:mm" timeOnly="true" showOn="button" readonlyInput="true" placeholder="hh:mm" required="true"
+                                            styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                        <div class="grid_cell ml-w_5 w_15">
+                            <p:outputLabel for="@next" value="to"/>
+                        </div>
+                        <div class="grid_cell w_40">
+                            <div class="icon_box">
+                                <p:calendar value="#{editView.department.endOperationDay}" converter="javax.faces.LocalTimeConverter" pattern="HH:mm"
+                                            timeOnly="true" showOn="button" readonlyInput="true" placeholder="hh:mm" required="true"
+                                            styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <p:selectBooleanCheckbox value="#{editView.department.nightCash}" styleClass="mr-w_5"/>
+                        <p:outputLabel for="@previous" value="Evening Cash Desk"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Department Type"/>
+                    </div>
+                    <div class="grid_cell mr-w_5 w_20">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{editView.department.type}" converter="javax.faces.Integer" required="true" autoWidth="false"
+                                             styleClass="w_100">
+                                <f:selectItems value="#{departmentTypeDictionary.findAll()}" var="departament" itemLabel="#{departament.value}"
+                                               itemValue="#{departament.code}" itemDisabled="#{departament.unused}"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Department Code"/>
+                    </div>
+                    <div class="grid_cell w_10 align-right">
+                        <div class="icon_box">
+                            <p:inputText value="#{editView.department.unitCode}" required="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Short Name"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:inputText value="#{editView.department.name}" required="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Full Name"/>
+                    </div>
+                    <div class="grid_cell w_85">
+                        <p:inputText value="#{editView.department.fullName}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Contacts</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Phone"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputMask value="#{editView.department.workPhone}" mask="9 (999) 999-9999" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Mobile Phone"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputMask value="#{editView.department.mobilePhone}" mask="9 (999) 999-9999" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Email"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:inputText value="#{editView.department.email}" styleClass="w_100">
+                                <p:keyFilter regEx="/^[_A-Za-z0-9-@\\.]/" preventPaste="false"/>
+                                <f:validator binding="#{departmentEmailValidator}"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Address</span></p>
+                <fo:address value="#{editView.addressAutoComplete}"/>
+                <p class="strike_title"><span>External System Connection</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell mr-w_5 w_20">
+                        <div class="grid_cell w_30">
+                            <p:outputLabel for="@next" value="ID" styleClass="w_100"/>
+                        </div>
+                        <div class="grid_cell w_70 align-right">
+                            <div class="icon_box">
+                                <p:inputNumber value="#{editView.department.externalId}" decimalPlaces="0" thousandSeparator="" required="true"
+                                               styleClass="w_100">
+                                    <f:validator binding="#{departmentExternalIdValidator}"/>
+                                </p:inputNumber>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+            <p:panel header="Cash Accounts" toggleable="true">
+                <p:tabView>
+                    <p:tab title="Day">
+                        <p:dataTable value="#{editView.accounts}" var="account" emptyMessage="No data">
+                            <p:column headerText="Account Number">
+                                #{account.id}
+                            </p:column>
+                            <p:column headerText="Currency">
+                                <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                                styleClass="currency_img">
+                                    <f:param name="id" value="#{account.currency.id}"/>
+                                </p:graphicImage>
+                                #{account.currency.iso}
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                    <p:tab title="Evening">
+                        <p:dataTable value="#{editView.nightAccounts}" var="account" emptyMessage="No data">
+                            <p:column headerText="Account Number">
+                                #{account.id}
+                            </p:column>
+                            <p:column headerText="Currency">
+                                <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                                styleClass="currency_img">
+                                    <f:param name="id" value="#{account.currency.id}"/>
+                                </p:graphicImage>
+                                #{account.currency.iso}
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                </p:tabView>
+            </p:panel>
+            <p:panel header="Users" toggleable="true">
+                <div class="navigation_panel box_big_subpanel clearfix">
+                    <div class="search_box">
+                        <p:outputLabel for="@next" value="Search:"/>
+                        <p:inputText value="#{editView.filter.textFilter}" placeholder="Search by name, login"
+                                     onkeypress="if(event.keyCode === 13) { updateTable(); return false;}"/>
+                        <p:remoteCommand name="updateTable" action="#{editView.fastSearch}" update="@parent"/>
+                        <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                    </div>
+                </div>
+                <p:panel toggleable="true" styleClass="subpanel" collapsed="true" header="Advanced Search">
+                    <div class="grid_row">
+                        <div class="grid_cell w_15">
+                            <p:outputLabel for="@next" value="Activity Date, until"/>
+                        </div>
+                        <div class="grid_cell w_15">
+                            <div class="icon_box">
+                                <p:calendar value="#{editView.filter.lastLoginEventDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                            timeZone="#{userSession.user.department.zoneId}" showOn="button" placeholder="dd.mm.yyyy hh:mm"
+                                            mask="true" styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                        <div class="grid_cell w_5 ml-w_5">
+                            <p:outputLabel for="@next" value="Status"/>
+                        </div>
+                        <div class="grid_cell w_25">
+                            <p:selectOneMenu value="#{editView.filter.status}" styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{userStatusDictionary.findAll()}" var="status" itemLabel="#{status.value}"
+                                               itemValue="#{status.code}" itemDisabled="#{status.unused}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="grid_cell w_10 ml-w_5">
+                            <p:outputLabel for="@next" value="Position"/>
+                        </div>
+                        <div class="grid_cell w_20">
+                            <p:selectOneMenu styleClass="w_100" value="#{editView.filter.position}" converter="javax.faces.Integer"
+                                             autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{userJobPositionDictionary.findAll()}" var="position" itemValue="#{position.code}"
+                                               itemLabel="#{position.value}" itemDisabled="#{position.unused}"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="btn_box clearfix">
+                        <p:defaultCommand target="@next" scope="@parent:@parent"/>
+                        <p:commandButton value="Search" action="#{editView.extendedSearch}" update="@parent:@parent"
+                                         styleClass="blue-btn r-float_elem"/>
+                    </div>
+                </p:panel>
+                <p:dataTable id="users" value="#{editView.model}" var="user" lazy="true" rows="100" scrollRows="50"
+                             scrollable="#{editView.model.rowCount gt 10}" virtualScroll="true"
+                             scrollHeight="#{editView.model.rowCount gt 10 ? 400 : null}" sortMode="multiple" emptyMessage="No data">
+                    <p:column headerText="Login">
+                        #{user.login}
+                    </p:column>
+                    <p:column headerText="Name, Position">
+                        #{user.lastname} #{user.firstname} #{user.patronymic}<br/>#{userJobPositionDictionary.findOne(user.position).value}
+                    </p:column>
+                    <p:column headerText="Activity Date">
+                        <h:outputText value="#{user.lastLoginEventDate}">
+                            <f:converter converterId="javax.faces.Instant"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                            <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Status">
+                        #{userStatusDictionary.findOne(user.status).value}
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            <p:panel header="Payment Systems" toggleable="true">
+                <div class="navigation_panel clearfix">
+                    <p:commandButton id="psAdd" value="Add" actionListener="#{editView.addDepartmentPaymentSystem}" immediate="true"
+                                     process="@this" update="@next" disabled="#{empty editView.paymentSystems or editView.paymentSystems.size() eq 0}"
+                                     oncomplete="setTimeout(function() { try { var widget = PF('paymentSystems'); if (widget &amp;&amp; typeof widget.switchToRowEdit === 'function' &amp;&amp; widget.getJQ &amp;&amp; widget.getJQ().find('tbody tr').length &gt; 0) { var rows = widget.getJQ().find('tbody tr'); var lastRow = rows.last(); if (lastRow &amp;&amp; lastRow.length &gt; 0) { widget.switchToRowEdit(lastRow[0]); } } } catch(e) { console.error('Error switching to row edit:', e); } }, 200);"
+                                     styleClass="blue-btn"/>
+                </div>
+                <p:dataTable value="#{editView.departmentPaymentSystems}" var="ps" rowIndexVar="row" editable="true" widgetVar="paymentSystems"
+                             emptyMessage="No data" rowKey="#{editView.departmentPaymentSystems.indexOf(ps)}">
+                    <p:ajax event="rowEditInit" listener="#{editView.onInitDepartmentPaymentSystemEdit}" update="@(.ui-datatable .ui-selectonemenu)"/>
+                    <p:ajax event="rowEditCancel" listener="#{editView.onCancelDepartmentPaymentSystemEdit}"/>
+                    <p:ajax event="rowEdit" listener="#{editView.onConfirmDepartmentPaymentSystemEdit}"
+                            oncomplete="if (!PF('paymentSystems').getJQ().find('.ui-state-error').length) updatePs()"/>
+                    <p:column headerText="Payment System">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{ps.paymentSystem.name}
+                            </f:facet>
+                            <f:facet name="input">
+                                <div class="icon_box">
+                                    <p:selectOneMenu value="#{ps.paymentSystem}" converter="omnifaces.SelectItemsConverter" required="true"
+                                                     autoWidth="false" styleClass="w_100">
+                                        <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                        <f:selectItems value="#{editView.paymentSystems}" var="paySystem" itemValue="#{paySystem}"
+                                                       itemLabel="#{paySystem.name}"/>
+                                    </p:selectOneMenu>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Department Identifier" width="230">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{ps.code}
+                            </f:facet>
+                            <f:facet name="input">
+                                <div class="icon_box">
+                                    <p:inputText value="#{ps.code}" required="true" styleClass="w_100">
+                                        <p:keyFilter regEx="/[0-9A-Z]/" preventPaste="false"/>
+                                    </p:inputText>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Send" width="120">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <ui:fragment rendered="#{ps.send}">
+                                    <i class="fa fa-check" aria-hidden="true"/>
+                                </ui:fragment>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectBooleanCheckbox value="#{ps.send}"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Payout" width="120">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <ui:fragment rendered="#{ps.payOut}">
+                                    <i class="fa fa-check" aria-hidden="true"/>
+                                </ui:fragment>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectBooleanCheckbox value="#{ps.payOut}"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column width="60">
+                        <p:rowEditor editTitle="Edit" saveTitle="Save" cancelTitle="Cancel"/>
+                        <p:commandLink actionListener="#{editView.onDepartmentPaymentSystemRowDelete(row)}" immediate="true"
+                                       update="@parent:@parent @form:psAdd" styleClass="delete-link ml-w_10">
+                            <i class="fa fa-trash" aria-hidden="true"/>
+                        </p:commandLink>
+                    </p:column>
+                </p:dataTable>
+                <p:remoteCommand name="updatePs" update="@previous psAdd"/>
+            </p:panel>
+            <p:panel header="Department Groups" toggleable="true">
+                <p:tree value="#{editView.groupTree}" var="item" selection="#{editView.selectedGroups}" selectionMode="checkbox"
+                        propagateSelectionDown="false" propagateSelectionUp="false" animate="true">
+                    <p:treeNode type="empty">#{item}</p:treeNode>
+                    <p:treeNode>
+                        #{item.name}
+                    </p:treeNode>
+                </p:tree>
+            </p:panel>
+            <div class="navigation_panel bottom clearfix">
+                <p:defaultCommand target="@next" scope="mainPanel"/>
+                <p:commandButton value="Save" styleClass="r-float_elem big_btn blue-btn" action="#{editView.save()}"
+                                 update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"/>
+                <p:commandButton value="Cancel" styleClass="big_btn orange-btn" action="cancel" immediate="true" process="@this"/>
+            </div>
+        </section>
+    </ui:define>
+</ui:composition>

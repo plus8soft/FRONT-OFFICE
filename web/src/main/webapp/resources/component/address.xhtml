@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:fo="http://front-office/ui"
+      xmlns:composite="http://xmlns.jcp.org/jsf/composite">
+<composite:interface>
+    <composite:attribute name="value" type="web.view.component.AddressAutoComplete" required="true"/>
+    <composite:attribute name="tabindex" type="java.lang.Integer"/>
+</composite:interface>
+<composite:implementation>
+    <div jsf:id="address">
+        <div class="grid_row">
+            <div class="grid_cell w_15"><p:outputLabel value="Country" for="@next"/></div>
+            <div class="grid_cell w_45 mr-w_5">
+                <div class="icon_box">
+                    <p:selectOneMenu value="#{cc.attrs.value.address.country}" autoWidth="false" required="true" filter="true"
+                                     filterMatchMode="startsWith" styleClass="w_100" panelStyleClass="country_panel" tabindex="#{cc.attrs.tabindex}">
+                        <f:selectItem itemValue="#{null}" itemLabel=""/>
+                        <f:selectItems value="#{cc.attrs.value.countries}" var="country" itemValue="#{country.id}" itemLabel="#{country.name}"
+                                       itemDisabled="#{!country.enabled}"/>
+                        <p:ajax update="resume"/>
+                    </p:selectOneMenu>
+                    <p:message for="@previous" display="icon"/>
+                </div>
+            </div>
+            <div class="grid_cell w_5">Postal code</div>
+            <div class="grid_cell w_15 align-right">
+                <p:inputMask mask="999999" value="#{cc.attrs.value.address.postalCode}" autocomplete="off" styleClass="w_85 align-left"
+                             tabindex="#{cc.attrs.tabindex}">
+                    <p:ajax update="resume"/>
+                </p:inputMask>
+            </div>
+        </div>
+        <div class="grid_row">
+            <div class="grid_cell w_15">Region, Territory, District</div>
+            <div class="grid_cell w_30 mr-w_10">
+                <p:tooltip for="@next" value="Address type selection for known values is performed automatically" position="top" showDelay="2000"/>
+                <p:selectOneMenu value="#{cc.attrs.value.address.regionType}" styleClass="w_100" autoWidth="false"
+                                 tabindex="#{cc.attrs.tabindex}">
+                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                    <f:selectItems value="#{cc.attrs.value.regions}" var="abbreviation" itemValue="#{abbreviation.type}"
+                                   itemLabel="#{abbreviation.name}"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address"/>
+                </p:selectOneMenu>
+            </div>
+            <div class="grid_cell w_30">
+                <p:tooltip for="@next"
+                           value="Enter the first letters of the Region name and select from the suggested options.&lt;br/&gt;If the desired option is not available, continue typing"
+                           position="top" escape="false" showDelay="2000"/>
+                <fo:autoComplete value="#{cc.attrs.value.address.region}" completeMethod="#{cc.attrs.value.completeRegion}" var="address"
+                                 itemValue="#{address}" itemLabel="#{address.region}" converter="#{cc.attrs.value.converter}"
+                                 valueConverter="#{cc.attrs.value.regionValueConverter}" styleClass="w_100" panelStyle="width: 30%;"
+                                 tabindex="#{cc.attrs.tabindex}">
+                    <p:ajax event="query" global="false"/>
+                    <p:ajax event="itemSelect" listener="#{cc.attrs.value.onSelectListener}" update="address" process="address"
+                            oncomplete="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == this.source)[0];
+                                        widget.itemSelectTimeout = true;
+                                        setTimeout(() => widget.itemSelectTimeout = null, 100)"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address" process="address"
+                            onstart="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == cfg.source)[0];
+                                     if (widget.itemSelectTimeout || widget.panel.is(':visible')) return false"/>
+                    <p:column>
+                        #{utils.addresses.formatAddress(address)}
+                    </p:column>
+                </fo:autoComplete>
+            </div>
+        </div>
+        <div class="grid_row">
+            <div class="grid_cell w_15">District</div>
+            <div class="grid_cell w_30 mr-w_10">
+                <p:tooltip for="@next" value="Address type selection for known values is performed automatically" position="top" showDelay="2000"/>
+                <p:selectOneMenu value="#{cc.attrs.value.address.districtType}" styleClass="w_100" autoWidth="false" tabindex="#{cc.attrs.tabindex}">
+                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                    <f:selectItems value="#{cc.attrs.value.districts}" var="abbreviation" itemValue="#{abbreviation.type}"
+                                   itemLabel="#{abbreviation.name}"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address"/>
+                </p:selectOneMenu>
+            </div>
+            <div class="grid_cell w_30">
+                <p:tooltip for="@next"
+                           value="Enter the first letters of the District name and select from the suggested options.&lt;br/&gt;If the desired option is not available, continue typing"
+                           position="top" escape="false" showDelay="2000"/>
+                <fo:autoComplete value="#{cc.attrs.value.address.district}" completeMethod="#{cc.attrs.value.completeDistrict}" var="address"
+                                 itemValue="#{address}" itemLabel="#{address.district}" converter="#{cc.attrs.value.converter}"
+                                 valueConverter="#{cc.attrs.value.districtValueConverter}" styleClass="w_100" panelStyle="width: 30%;"
+                                 tabindex="#{cc.attrs.tabindex}">
+                    <p:ajax event="query" global="false"/>
+                    <p:ajax event="itemSelect" listener="#{cc.attrs.value.onSelectListener}" update="address" process="address"
+                            oncomplete="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == this.source)[0];
+                                        widget.itemSelectTimeout = true;
+                                        setTimeout(() => widget.itemSelectTimeout = null, 100)"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address" process="address"
+                            onstart="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == cfg.source)[0];
+                                     if (widget.itemSelectTimeout || widget.panel.is(':visible')) return false"/>
+                    <p:column>
+                        #{utils.addresses.formatAddress(address)}
+                    </p:column>
+                </fo:autoComplete>
+            </div>
+        </div>
+        <div class="grid_row">
+            <div class="grid_cell w_15">City</div>
+            <div class="grid_cell w_30 mr-w_10">
+                <p:tooltip for="@next" value="Address type selection for known values is performed automatically" position="top" showDelay="2000"/>
+                <p:selectOneMenu value="#{cc.attrs.value.address.cityType}" styleClass="w_100" autoWidth="false"
+                                 tabindex="#{cc.attrs.tabindex}">
+                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                    <f:selectItems value="#{cc.attrs.value.cities}" var="abbreviation" itemValue="#{abbreviation.type}"
+                                   itemLabel="#{abbreviation.name}"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address"/>
+                </p:selectOneMenu>
+            </div>
+            <div class="grid_cell w_30">
+                <p:tooltip for="@next"
+                           value="Enter the first letters of the City name and select from the suggested options.&lt;br/&gt;If the desired option is not available, continue typing"
+                           position="top" escape="false" showDelay="2000"/>
+                <fo:autoComplete value="#{cc.attrs.value.address.city}" completeMethod="#{cc.attrs.value.completeCity}" var="address"
+                                 itemValue="#{address}" itemLabel="#{address.city}" converter="#{cc.attrs.value.converter}"
+                                 valueConverter="#{cc.attrs.value.cityValueConverter}" styleClass="w_100" panelStyle="width: 30%;"
+                                 tabindex="#{cc.attrs.tabindex}">
+                    <p:ajax event="query" global="false"/>
+                    <p:ajax event="itemSelect" listener="#{cc.attrs.value.onSelectListener}" update="address" process="address"
+                            oncomplete="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == this.source)[0];
+                                        widget.itemSelectTimeout = true;
+                                        setTimeout(() => widget.itemSelectTimeout = null, 100)"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address" process="address"
+                            onstart="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == cfg.source)[0];
+                                     if (widget.itemSelectTimeout || widget.panel.is(':visible')) return false"/>
+                    <p:column>
+                        #{utils.addresses.formatAddress(address)}
+                    </p:column>
+                </fo:autoComplete>
+            </div>
+        </div>
+        <div class="grid_row">
+            <div class="grid_cell w_15">Locality</div>
+            <div class="grid_cell w_30 mr-w_10">
+                <p:tooltip for="@next" value="Address type selection for known values is performed automatically" position="top" showDelay="2000"/>
+                <p:selectOneMenu value="#{cc.attrs.value.address.localityType}" styleClass="w_100" autoWidth="false"
+                                 tabindex="#{cc.attrs.tabindex}">
+                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                    <f:selectItems value="#{cc.attrs.value.localities}" var="abbreviation" itemValue="#{abbreviation.type}"
+                                   itemLabel="#{abbreviation.name}"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address"/>
+                </p:selectOneMenu>
+            </div>
+            <div class="grid_cell w_30">
+                <p:tooltip for="@next"
+                           value="Enter the first letters of the Locality name and select from the suggested options.&lt;br/&gt;If the desired option is not available, continue typing"
+                           position="top" escape="false" showDelay="2000"/>
+                <fo:autoComplete value="#{cc.attrs.value.address.locality}" completeMethod="#{cc.attrs.value.completeLocality}" var="address"
+                                 itemValue="#{address}" itemLabel="#{address.locality}" converter="#{cc.attrs.value.converter}"
+                                 valueConverter="#{cc.attrs.value.localityValueConverter}" styleClass="w_100" panelStyle="width: 30%;"
+                                 tabindex="#{cc.attrs.tabindex}">
+                    <p:ajax event="query" global="false"/>
+                    <p:ajax event="itemSelect" listener="#{cc.attrs.value.onSelectListener}" update="address" process="address"
+                            oncomplete="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == this.source)[0];
+                                        widget.itemSelectTimeout = true;
+                                        setTimeout(() => widget.itemSelectTimeout = null, 100)"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address" process="address"
+                            onstart="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == cfg.source)[0];
+                                     if (widget.itemSelectTimeout || widget.panel.is(':visible')) return false"/>
+                    <p:column>
+                        #{utils.addresses.formatAddress(address)}
+                    </p:column>
+                </fo:autoComplete>
+            </div>
+        </div>
+        <div class="grid_row">
+            <div class="grid_cell w_15">Street</div>
+            <div class="grid_cell w_30 mr-w_10">
+                <p:tooltip for="@next" value="Address type selection for known values is performed automatically" position="top" showDelay="2000"/>
+                <p:selectOneMenu value="#{cc.attrs.value.address.streetType}" styleClass="w_100" autoWidth="false"
+                                 tabindex="#{cc.attrs.tabindex}">
+                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                    <f:selectItems value="#{cc.attrs.value.streets}" var="abbreviation" itemValue="#{abbreviation.type}"
+                                   itemLabel="#{abbreviation.name}"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address"/>
+                </p:selectOneMenu>
+            </div>
+            <div class="grid_cell w_30">
+                <p:tooltip for="@next"
+                           value="Enter the first letters of the Street name and select from the suggested options.&lt;br/&gt;If the desired option is not available, continue typing"
+                           position="top" escape="false" showDelay="2000"/>
+                <fo:autoComplete value="#{cc.attrs.value.address.street}" completeMethod="#{cc.attrs.value.completeStreet}" var="address"
+                                 itemValue="#{address}" itemLabel="#{address.street}" converter="#{cc.attrs.value.converter}"
+                                 valueConverter="#{cc.attrs.value.streetValueConverter}" styleClass="w_100" panelStyle="width: 30%;"
+                                 tabindex="#{cc.attrs.tabindex}">
+                    <p:ajax event="query" global="false"/>
+                    <p:ajax event="itemSelect" listener="#{cc.attrs.value.onSelectListener}" update="address" process="address"
+                            oncomplete="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == this.source)[0];
+                                        widget.itemSelectTimeout = true;
+                                        setTimeout(() => widget.itemSelectTimeout = null, 100)"/>
+                    <p:ajax listener="#{cc.attrs.value.resetCode}" update="address" process="address"
+                            onstart="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == cfg.source)[0];
+                                     if (widget.itemSelectTimeout || widget.panel.is(':visible')) return false"/>
+                    <p:column>
+                        #{utils.addresses.formatAddress(address)}
+                    </p:column>
+                </fo:autoComplete>
+            </div>
+        </div>
+        <div class="grid_row">
+            <div class="grid_cell w_25">
+                <div class="grid_cell w_30">House</div>
+                <div class="grid_cell w_70 align-right">
+                    <p:inputText value="#{cc.attrs.value.address.house}" autocomplete="off" styleClass="w_75 align-left"
+                                 tabindex="#{cc.attrs.tabindex}">
+                        <p:ajax update="resume"/>
+                    </p:inputText>
+                </div>
+            </div>
+            <div class="grid_cell w_20">
+                <div class="grid_cell w_30 align-right">building</div>
+                <div class="grid_cell w_70 align-right">
+                    <p:inputText value="#{cc.attrs.value.address.housing}" autocomplete="off" styleClass="w_90 align-left"
+                                 tabindex="#{cc.attrs.tabindex}">
+                        <p:ajax update="resume"/>
+                    </p:inputText>
+                </div>
+            </div>
+            <div class="grid_cell w_20">
+                <div class="grid_cell w_30 align-right">structure</div>
+                <div class="grid_cell w_70 align-right">
+                    <p:inputText value="#{cc.attrs.value.address.structure}" autocomplete="off" styleClass="w_90 align-left"
+                                 tabindex="#{cc.attrs.tabindex}">
+                        <p:ajax update="resume"/>
+                    </p:inputText>
+                </div>
+            </div>
+            <div class="grid_cell w_20">
+                <div class="grid_cell w_30 align-right">apartment</div>
+                <div class="grid_cell w_70 align-right">
+                    <p:inputText value="#{cc.attrs.value.address.flat}" autocomplete="off" styleClass="w_90 align-left"
+                                 tabindex="#{cc.attrs.tabindex}">
+                        <p:ajax update="resume"/>
+                    </p:inputText>
+                </div>
+            </div>
+        </div>
+        <div jsf:id="resume">
+            <ui:param name="currentAddressText" value="#{utils.addresses.formatAddress(cc.attrs.value.address)}"/>
+            <div class="grid_row">
+                <div class="grid_cell w_80 resume_address">
+                    <div class="grid_cell w_10">Address:</div>
+                    <div class="grid_cell w_90">#{currentAddressText}
+                    </div>
+                </div>
+                <div class="grid_cell w_10 align-center">
+                    <ui:fragment rendered="#{not empty cc.attrs.value.address.code}">
+                        <span class="address-code"><i class="fa fa-check with_link-r"/>Address Code</span>
+                    </ui:fragment>
+                </div>
+                <div class="grid_cell w_10 align-right">
+                    <p:commandLink process="#{cc.clientId.concat(':address')}" update="#{cc.clientId.concat(':address')}"
+                                   tabindex="#{cc.attrs.tabindex}">
+                        <i class="fa fa-undo with_link-r"/>Clear
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.code}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.postalCode}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.country}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.regionType}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.region}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.districtType}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.district}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.cityType}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.city}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.localityType}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.locality}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.streetType}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.street}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.house}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.housing}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.structure}"/>
+                        <f:setPropertyActionListener value="#{null}" target="#{cc.attrs.value.address.flat}"/>
+                    </p:commandLink>
+                </div>
+            </div>
+            <ui:fragment rendered="#{not empty cc.attrs.value.addressText and cc.attrs.value.addressText ne currentAddressText}">
+                <div class="grid_row">
+                    <div class="grid_cell w_100 resume_address">
+                        <div class="grid_cell w_15">Old Value:</div>
+                        <div class="grid_cell w_85">#{cc.attrs.value.addressText}</div>
+                    </div>
+                </div>
+            </ui:fragment>
+        </div>
+    </div>
+</composite:implementation>
+</html>

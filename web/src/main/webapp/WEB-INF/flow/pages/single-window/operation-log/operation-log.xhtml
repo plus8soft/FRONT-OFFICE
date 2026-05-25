@@ -1,0 +1,210 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Operation Log</h1>
+        <p:panel header="Select an operation and view detailed information">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel">
+                <div class="grid_row">
+                    <div class="grid_cell w_10">Operation Date</div>
+                    <div class="grid_cell w_5 r-label">
+                        <p:outputLabel for="@next" value="from"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:calendar value="#{operationView.filter.startDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                        showOn="button" placeholder="dd.mm.yyyy hh:mm" mask="true"
+                                        onkeypress="if(event.keyCode === 13) { updateTable(); return false;}" styleClass="w_100">
+                                <f:passThroughAttribute name="focus-priority" value="1"/>
+                            </p:calendar>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_5 r-label">
+                        <p:outputLabel for="@next" value="to"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:calendar value="#{operationView.filter.endDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                        showOn="button" placeholder="dd.mm.yyyy hh:mm" mask="true" onkeypress="if(event.keyCode === 13) {
+                                            updateTable(); return false;}" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p:remoteCommand name="updateTable" action="#{operationView.fastSearch()}" update="@form"/>
+            <script>focusByPriority();</script>
+            <p:panel toggleable="true" collapsed="#{not operationView.filter.extendedSearch}" header="Advanced Search" styleClass="subpanel">
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel value="Operation Status"/>
+                    </div>
+                    <div class="grid_cell w_45">
+                        <p:selectCheckboxMenu value="#{operationView.filter.statuses}" converter="omnifaces.GenericEnumConverter" label=""
+                                              updateLabel="true" styleClass="w_100">
+                            <f:selectItems value="#{operationStatusDictionary.findAll()}" var="unit" itemLabel="#{unit.value}"
+                                           itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                        </p:selectCheckboxMenu>
+                    </div>
+                    <div class="grid_cell w_15 r-label">
+                        <p:outputLabel for="@next" value="Module Name"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <p:selectOneMenu value="#{operationView.filter.task}" styleClass="w_100" converter="omnifaces.SelectItemsConverter"
+                                         autoWidth="false">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{operationView.tasks}" var="task" itemLabel="#{task.name}" itemValue="#{task}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel value="Operation Name"/>
+                    </div>
+                    <div class="grid_cell w_85">
+                        <p:selectCheckboxMenu value="#{operationView.filter.codes}" styleClass="w_100" label="" updateLabel="true"
+                                              converter="omnifaces.GenericEnumConverter">
+                            <f:selectItems value="#{operationCodeDictionary.findAll()}" var="code" itemLabel="#{code.value}" itemValue="#{code.code}"
+                                           itemDisabled="#{code.unused}"/>
+                        </p:selectCheckboxMenu>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Client Parameters</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Last Name"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{operationView.filter.lastname}" styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_10 r-label">
+                        <p:outputLabel for="@next" value="First Name"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{operationView.filter.firstname}" styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_15 r-label">
+                        <p:outputLabel for="@next" value="Middle Name"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{operationView.filter.patronymic}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Birth Date"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:calendar value="#{operationView.filter.birthdate}" converter="javax.faces.LocalDateConverter" pattern="dd.MM.yyyy"
+                                        showOn="button" placeholder="dd.mm.yyyy" mask="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_10 r-label">
+                        <p:outputLabel for="@next" value="ID Document, Series"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{operationView.filter.documentSeries}" styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_15 r-label">
+                        <p:outputLabel for="@next" value="Number"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{operationView.filter.documentNumber}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <ui:fragment rendered="#{userSession.rights.contains('single-window-operation-log-department') or
+                userSession.rights.contains('single-window-operation-log-group-department') or
+                userSession.rights.contains('single-window-operation-log-all')}">
+                    <p class="strike_title"><span>User Performing Operation Parameters</span></p>
+                    <div class="grid_row">
+                        <div class="grid_cell w_15">
+                            <p:outputLabel for="@next" value="User Full Name"/>
+                        </div>
+                        <div class="grid_cell w_45">
+                            <p:selectCheckboxMenu value="#{operationView.filter.users}" filter="true" filterMatchMode="contains"
+                                                  styleClass="w_100" label="" converter="omnifaces.SelectItemsConverter" updateLabel="true">
+                                <f:selectItems value="#{operationView.users}" var="user"
+                                               itemLabel="#{user.lastname} #{user.firstname} #{user.patronymic}" itemValue="#{user}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                    <ui:fragment rendered="#{userSession.rights.contains('single-window-operation-log-group-department') or
+                    userSession.rights.contains('single-window-operation-log-all')}">
+                        <div class="grid_row">
+                            <div class="grid_cell w_15">
+                                <p:outputLabel value="Department"/>
+                            </div>
+                            <div class="grid_cell w_45">
+                                <p:selectCheckboxMenu value="#{operationView.filter.departmentsByName}" filter="true" filterMatchMode="contains"
+                                                      styleClass="w_100" label="" converter="omnifaces.SelectItemsConverter" updateLabel="true">
+                                    <f:selectItems value="#{operationView.departments}" var="department" itemLabel="#{department.name}"
+                                                   itemValue="#{department}"/>
+                                </p:selectCheckboxMenu>
+                            </div>
+                        </div>
+                    </ui:fragment>
+                </ui:fragment>
+                <div class="btn_box clearfix">
+                    <p:defaultCommand target="@next" scope="@parent"/>
+                    <p:commandButton value="Search" action="#{operationView.extendedSearch}" update="@form" styleClass="blue-btn r-float_elem"/>
+                </div>
+            </p:panel>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Details" action="show" disabled="#{empty operationModel.selected}" styleClass="blue-btn"/>
+            </div>
+            <p:dataTable id="operations" value="#{operationModel}" var="operation" lazy="true" rows="100" virtualScroll="true" scrollRows="50"
+                         scrollable="#{operationModel.rowCount gt 10}" scrollHeight="#{operationModel.rowCount gt 10 ? 400 : null}"
+                         selectionMode="single" selection="#{operationModel.selected}" sortMode="multiple" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.blue-btn:last)"/>
+                <p:ajax event="rowUnselect" update="@(.blue-btn:last)"/>
+                <p:ajax event="page" update="@(.blue-btn:last)" listener="#{operationModel.setSelected(null)}"/>
+                <p:column headerText="Operation Date and Time" width="63">
+                    <h:outputText value="#{operation.instant}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Performed By">
+                    <span class="fix_row">#{userJobPositionDictionary.findOne(operation.user.position).value}<br/>#{operation.user.lastname}
+                        #{operation.user.firstname} #{operation.user.patronymic}</span>
+                </p:column>
+                <p:column headerText="System Module Name" width="192">
+                    #{operation.task.name}
+                </p:column>
+                <p:column headerText="Operation Name">
+                    #{operationCodeDictionary.findOne(operation.code).value}
+                </p:column>
+                <p:column headerText="Client" styleClass="fix_cell">
+                    <span class="fix_row">
+                        #{utils.getStrings().joinFio(operation.personHistory.person.lastname, operation.personHistory.person.firstname,
+                                operation.personHistory.person.patronymic)}
+                        <h:outputText value="#{operation.personHistory.person.birthDate}">
+                            <f:converter converterId="javax.faces.LocalDateConverter"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                        </h:outputText>
+                    </span>
+                </p:column>
+                <p:column headerText="Status" width="85">
+                    <span class="fix_row #{OperationStatus.COMPLETED eq operation.status ? 'green-text'
+                        : OperationStatus.PERFORMED eq operation.status ? 'blue-text' : 'red-text'}">
+                        #{operationStatusDictionary.findOne(operation.status).value}
+                    </span>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      abstract="true">
+    <decision-state id="start-task">
+        <if test="true" then="#{CS_MENU.startTaskName}"/>
+    </decision-state>
+    <subflow-state id="task" subflow="pages">
+        <on-entry>
+            <evaluate expression="CS_MENU.setTaskByName(flowExecutionContext.activeSession.state.id)"/>
+            <evaluate expression="conversationScope.remove(T(web.audit.EventAspect).CS_EVENT_GROUP)"/>
+        </on-entry>
+    </subflow-state>
+    <end-state id="error"/>
+    <end-state id="logout"/>
+    <end-state id="menu-single-window"/>
+    <end-state id="menu-ce"/>
+    <end-state id="menu-administration"/>
+    <end-state id="change-password"/>
+    <global-transitions>
+        <transition on-exception="java.lang.Throwable" to="error"/>
+        <transition on="error" to="error"/>
+        <transition on="logout" to="logout"/>
+        <transition on="menu-single-window" to="menu-single-window"/>
+        <transition on="menu-ce" to="menu-ce"/>
+        <transition on="menu-administration" to="menu-administration"/>
+        <transition on="change-password" to="change-password"/>
+    </global-transitions>
+</flow>

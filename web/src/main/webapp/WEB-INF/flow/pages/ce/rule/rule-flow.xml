@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/ce/transition">
+    <var name="FS_RULE" class="web.entity.ce.Rule"/>
+    <view-state id="rule">
+        <var name="ruleView" class="web.view.ce.rule.RuleView"/>
+        <on-entry>
+            <evaluate expression="ruleView.init()"/>
+        </on-entry>
+        <transition on="edit-system" to="edit">
+            <set name="FS_RULE" value="ruleView.edit(ruleView.selectedSystemRule)"/>
+        </transition>
+        <transition on="add-currency" to="edit">
+            <set name="FS_RULE" value="ruleView.add(true, false)"/>
+        </transition>
+        <transition on="edit-currency" to="edit">
+            <set name="FS_RULE" value="ruleView.edit(ruleView.selectedConversionRule)"/>
+        </transition>
+        <transition on="add-commission" to="edit">
+            <set name="FS_RULE" value="ruleView.add(false, true)"/>
+        </transition>
+        <transition on="edit-commission" to="edit">
+            <set name="FS_RULE" value="ruleView.edit(ruleView.selectedCommissionRule)"/>
+        </transition>
+    </view-state>
+    <view-state id="edit">
+        <var name="ruleEditView" class="web.view.ce.rule.RuleEditView"/>
+        <on-entry>
+            <set name="ruleEditView.rule" value="FS_RULE"/>
+        </on-entry>
+        <transition on="save" to="rule"/>
+        <transition on="cancel" to="rule">
+            <evaluate expression="ruleEditView.rule.id == null ? null : ruleEditView.rule" result="FS_RULE"/>
+        </transition>
+    </view-state>
+</flow>

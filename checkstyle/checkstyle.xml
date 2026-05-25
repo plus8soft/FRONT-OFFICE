@@ -1,0 +1,355 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<!DOCTYPE module PUBLIC
+        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java, properties, xml"/>
+    <property name="charset" value="UTF-8"/>
+
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value=".*_\.java$"/>
+    </module>
+
+    <!-- Filters -->
+    <module name="SeverityMatchFilter">
+        <!-- report all violations except ignore -->
+        <property name="severity" value="ignore"/>
+        <property name="acceptOnMatch" value="false"/>
+    </module>
+    <module name="SuppressionCommentFilter">
+        <property name="checkFormat" value="IGNORETHIS"/>
+        <property name="offCommentFormat" value="CSOFF\: .*"/>
+        <property name="onCommentFormat" value="CSON\: .*"/>
+    </module>
+    <module name="SuppressWarningsFilter"/>
+    <module name="SuppressWithNearbyCommentFilter">
+        <property name="commentFormat" value="-@cs\[(\w{8,})\] \w[\(\)\-\.\'\`\,\:\;\w ]{10,}"/>
+        <property name="checkFormat" value="$1"/>
+        <property name="influenceFormat" value="3"/>
+    </module>
+
+    <!-- Headers -->
+    <module name="Header">
+        <property name="header"
+                  value="/*\n * Copyright AxiomaSoft LLC (d/b/a Plus8Soft)\n */"/>
+        <property name="fileExtensions" value="java"/>
+    </module>
+
+    <!-- Miscellaneous -->
+    <module name="NewlineAtEndOfFile"/>
+    <module name="Translation">
+        <property name="requiredTranslations" value="de, fr, fi, es, pt, ja, tr, zh"/>
+    </module>
+    <module name="UniqueProperties"/>
+
+    <!-- Regexp -->
+    <module name="RegexpMultiline"/>
+    <module name="RegexpMultiline">
+        <property name="format" value="\r?\n[\t ]*\r?\n[\t ]*\r?\n"/>
+        <property name="fileExtensions" value="java,xml,properties"/>
+        <property name="message" value="Unnecessary consecutive lines"/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="format" value="/\*\*\W+\* +\p{javaLowerCase}"/>
+        <property name="fileExtensions" value="java"/>
+        <property name="message" value="First sentence in a comment should start with a capital letter"/>
+    </module>
+    <module name="RegexpSingleline">
+        <property name="format" value="\s+$"/>
+        <property name="minimum" value="0"/>
+        <property name="maximum" value="0"/>
+    </module>
+    <module name="RegexpSingleline">
+        <property name="format" value="/\*\* +\p{javaLowerCase}"/>
+        <property name="fileExtensions" value="java"/>
+        <property name="message" value="First sentence in a comment should start with a capital letter"/>
+    </module>
+    <module name="RegexpSingleline">
+        <property name="format" value="^(?!(.*http|import)).{101,}$"/>
+        <property name="fileExtensions" value="g, g4"/>
+        <property name="message" value="Line should not be longer then 100 symbols"/>
+    </module>
+    <module name="RegexpOnFilename"/>
+    <module name="RegexpOnFilename">
+        <property name="folderPattern" value="[\\/]src[\\/]\w+[\\/]java[\\/]"/>
+        <property name="fileNamePattern" value="\.java$"/>
+        <property name="match" value="false"/>
+        <message key="regexp.filepath.mismatch" value="Only java files should be located in the ''src/*/java'' folders."/>
+    </module>
+    <module name="RegexpOnFilename">
+        <property name="folderPattern" value="[\\/]src[\\/]xdocs[\\/]"/>
+        <property name="fileNamePattern" value="\.(xml)|(vm)$"/>
+        <property name="match" value="false"/>
+        <message key="regexp.filepath.mismatch" value="All files in the ''src/xdocs'' folder should have the ''xml'' or ''vm'' extension."/>
+    </module>
+    <module name="RegexpOnFilename">
+        <property name="folderPattern" value="[\\/]src[\\/]it[\\/]java[\\/]"/>
+        <property name="fileNamePattern" value="^((\w+Test)|(Base\w+))\.java$"/>
+        <property name="match" value="false"/>
+        <message key="regexp.filepath.mismatch" value="All files in the ''src/it/java'' folder should be named ''*Test.java'' or ''Base*.java''."/>
+    </module>
+
+    <!-- Size Violations -->
+    <module name="FileLength">
+        <property name="fileExtensions" value="java"/>
+    </module>
+
+    <!-- Whitespace -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="false"/>
+    </module>
+
+    <module name="TreeWalker">
+        <property name="tabWidth" value="4"/>
+
+        <!-- Annotations -->
+        <module name="AnnotationLocation">
+            <property name="allowSamelineSingleParameterlessAnnotation" value="false"/>
+        </module>
+        <module name="AnnotationUseStyle"/>
+        <module name="MissingDeprecated"/>
+        <module name="MissingOverride">
+            <property name="javaFiveCompatibility" value="true"/>
+        </module>
+        <module name="PackageAnnotation"/>
+        <module name="SuppressWarnings"/>
+        <module name="SuppressWarningsHolder"/>
+
+        <!-- Block Checks -->
+        <module name="AvoidNestedBlocks">
+            <property name="allowInSwitchCase" value="true"/>
+        </module>
+        <module name="EmptyBlock">
+            <property name="option" value="text"/>
+        </module>
+        <module name="EmptyCatchBlock"/>
+        <module name="LeftCurly">
+            <property name="maxLineLength" value="100"/>
+        </module>
+        <module name="NeedBraces"/>
+        <module name="RightCurly">
+            <property name="option" value="same"/>
+        </module>
+
+        <!-- Class Design -->
+        <module name="FinalClass"/>
+        <module name="HideUtilityClassConstructor"/>
+        <module name="InnerTypeLast"/>
+        <module name="InterfaceIsType"/>
+        <module name="MutableException"/>
+        <module name="OneTopLevelClass"/>
+        <module name="ThrowsCount">
+            <property name="max" value="2"/>
+        </module>
+        <module name="VisibilityModifier"/>
+
+        <!-- Coding -->
+        <module name="CovariantEquals"/>
+        <module name="DeclarationOrder"/>
+        <module name="DefaultComesLast"/>
+        <module name="EmptyStatement"/>
+        <module name="EqualsAvoidNull"/>
+        <module name="EqualsHashCode"/>
+        <module name="ExplicitInitialization"/>
+        <module name="IllegalInstantiation"/>
+        <module name="IllegalThrows"/>
+        <module name="IllegalToken"/>
+        <module name="IllegalTokenText"/>
+        <module name="IllegalType"/>
+        <module name="ModifiedControlVariable"/>
+        <module name="MultipleVariableDeclarations"/>
+        <module name="NestedForDepth">
+            <property name="max" value="2"/>
+        </module>
+        <module name="NestedIfDepth">
+            <property name="max" value="3"/>
+        </module>
+        <module name="NestedTryDepth"/>
+        <module name="NoFinalizer"/>
+        <module name="OneStatementPerLine"/>
+        <module name="OverloadMethodsDeclarationOrder"/>
+        <module name="PackageDeclaration"/>
+        <module name="ParameterAssignment"/>
+        <module name="RequireThis"/>
+        <module name="ReturnCount">
+            <property name="maxForVoid" value="0"/>
+        </module>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+        <module name="StringLiteralEquality"/>
+        <module name="SuperClone"/>
+        <module name="SuperFinalize"/>
+        <module name="VariableDeclarationUsageDistance"/>
+
+        <!-- Imports -->
+        <module name="AvoidStarImport"/>
+        <module name="AvoidStaticImport"/>
+        <module name="IllegalImport"/>
+        <module name="RedundantImport"/>
+        <module name="UnusedImports"/>
+
+        <!-- Javadoc Comments -->
+        <module name="AtclauseOrder"/>
+        <module name="JavadocParagraph"/>
+        <module name="JavadocTagContinuationIndentation"/>
+        <module name="NonEmptyAtclauseDescription"/>
+        <module name="SingleLineJavadoc"/>
+        <module name="SummaryJavadoc"/>
+
+        <!-- Metrics -->
+        <module name="BooleanExpressionComplexity">
+            <property name="max" value="7"/>
+        </module>
+
+        <!-- Misc -->
+        <module name="ArrayTypeStyle"/>
+        <module name="AvoidEscapedUnicodeCharacters">
+            <property name="allowIfAllCharactersEscaped" value="true"/>
+        </module>
+        <module name="CommentsIndentation"/>
+        <module name="DescendantToken"/>
+        <module name="FileContentsHolder"/>
+        <module name="FinalParameters">
+            <!--
+              we will not use that fanatic validation, extra modifiers pollute a code
+              it is better to use extra validation(Check) that argument is reassigned
+              But this Check will exists as it was created by community demand.
+            -->
+            <property name="severity" value="ignore"/>
+        </module>
+        <module name="OuterTypeFilename"/>
+        <module name="TodoComment">
+            <property name="format" value="(TODO)|(FIXME)"/>
+        </module>
+        <module name="TrailingComment"/>
+        <module name="UncommentedMain">
+            <property name="excludedClasses" value="\.Main$"/>
+        </module>
+        <module name="UpperEll"/>
+
+        <!-- Modifiers -->
+        <module name="ModifierOrder"/>
+        <module name="RedundantModifier"/>
+
+        <!-- Naming Conventions -->
+        <module name="AbbreviationAsWordInName">
+            <property name="ignoreFinal" value="false"/>
+            <property name="allowedAbbreviationLength" value="1"/>
+            <property name="allowedAbbreviations" value="AST"/>
+        </module>
+        <module name="AbstractClassName"/>
+        <module name="ClassTypeParameterName"/>
+        <module name="ConstantName"/>
+        <module name="InterfaceTypeParameterName"/>
+        <module name="LocalFinalVariableName"/>
+        <module name="LocalVariableName">
+            <property name="format" value="^([a-z][a-zA-Z0-9]+)$"/>
+            <property name="allowOneCharVarInForLoop" value="true"/>
+        </module>
+        <module name="MemberName">
+            <property name="format" value="^([a-z][a-zA-Z0-9]+)$"/>
+        </module>
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9_]*$"/>
+        </module>
+        <module name="MethodTypeParameterName"/>
+        <module name="PackageName"/>
+        <module name="ParameterName">
+            <property name="format" value="^([a-z][a-zA-Z0-9]+)$"/>
+            <property name="ignoreOverridden" value="true"/>
+        </module>
+        <module name="StaticVariableName">
+            <property name="format" value="^([a-z][a-zA-Z0-9]+)$"/>
+        </module>
+        <module name="TypeName"/>
+
+        <!-- Regexp -->
+        <module name="RegexpSinglelineJava"/>
+        <module name="Regexp">
+            <property name="format"
+                      value="/\*(\r)?\n \* Copyright AxiomaSoft LLC \(d/b/a Plus8Soft\)(\r)?\n \*/"/>
+            <property name="duplicateLimit" value="0"/>
+            <property name="message" value="Header"/>
+        </module>
+
+        <!-- Size Violations -->
+        <module name="ExecutableStatementCount">
+            <property name="max" value="100"/>
+        </module>
+        <module name="LineLength">
+            <property name="max" value="150"/>
+            <property name="ignorePattern" value="^ *\* *[^ ]+$"/>
+        </module>
+        <module name="MethodCount">
+            <property name="maxTotal" value="50"/>
+        </module>
+        <module name="MethodLength"/>
+        <module name="OuterTypeNumber"/>
+        <module name="ParameterNumber">
+            <property name="max" value="15"/>
+        </module>
+
+        <!-- Whitespace -->
+        <module name="EmptyForInitializerPad"/>
+        <module name="EmptyForIteratorPad"/>
+        <module name="EmptyLineSeparator">
+            <property name="allowNoEmptyLineBetweenFields" value="true"/>
+            <property name="allowMultipleEmptyLinesInsideClassMembers" value="false"/>
+        </module>
+        <module name="GenericWhitespace"/>
+        <module name="MethodParamPad"/>
+        <module name="NoLineWrap"/>
+        <module name="NoWhitespaceAfter">
+            <property name="tokens" value="ARRAY_INIT"/>
+            <property name="tokens" value="BNOT"/>
+            <property name="tokens" value="DEC"/>
+            <property name="tokens" value="DOT"/>
+            <property name="tokens" value="INC"/>
+            <property name="tokens" value="LNOT"/>
+            <property name="tokens" value="UNARY_MINUS"/>
+            <property name="tokens" value="UNARY_PLUS"/>
+            <property name="tokens" value="ARRAY_DECLARATOR"/>
+        </module>
+        <module name="NoWhitespaceBefore"/>
+        <module name="NoWhitespaceBefore">
+            <property name="tokens" value="DOT"/>
+            <property name="allowLineBreaks" value="true"/>
+        </module>
+        <module name="OperatorWrap">
+            <property name="tokens" value="ASSIGN"/>
+            <property name="tokens" value="DIV_ASSIGN"/>
+            <property name="tokens" value="PLUS_ASSIGN"/>
+            <property name="tokens" value="MINUS_ASSIGN"/>
+            <property name="tokens" value="STAR_ASSIGN"/>
+            <property name="tokens" value="MOD_ASSIGN"/>
+            <property name="tokens" value="SR_ASSIGN"/>
+            <property name="tokens" value="BSR_ASSIGN"/>
+            <property name="tokens" value="SL_ASSIGN"/>
+            <property name="tokens" value="BXOR_ASSIGN"/>
+            <property name="tokens" value="BOR_ASSIGN"/>
+            <property name="tokens" value="BAND_ASSIGN"/>
+            <property name="option" value="eol"/>
+        </module>
+        <module name="ParenPad"/>
+        <module name="SeparatorWrap">
+            <property name="tokens" value="DOT"/>
+            <property name="option" value="nl"/>
+        </module>
+        <module name="SeparatorWrap">
+            <property name="tokens" value="COMMA"/>
+            <property name="option" value="EOL"/>
+        </module>
+        <module name="SingleSpaceSeparator">
+            <property name="validateComments" value="false"/>
+        </module>
+        <module name="TypecastParenPad"/>
+        <module name="WhitespaceAfter"/>
+        <module name="WhitespaceAround"/>
+    </module>
+</module>

@@ -1,0 +1,36 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Enter Payer Data">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span class="current">2</span>
+                    <span>3</span>
+                    <span>4</span>
+                </div>
+            </f:facet>
+            <div class="grid_row">
+                <div class="grid_cell w_10"><p:outputLabel value="Name" for="@next"/></div>
+                <div class="grid_cell w_90">
+                    <div class="icon_box">
+                        <p:inputText value="#{stepTwo.payment.payer}" required="true" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Next" action="next" update="@form" styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Back" action="back" immediate="true" styleClass="big_btn orange-btn"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" styleClass="orange-btn big_btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

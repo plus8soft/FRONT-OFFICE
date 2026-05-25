@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Audit Logs > #{eventDetails.getHeaderView()} > Details</h1>
+        <div>
+            <table class="custom_table">
+                <thead>
+                <tr>
+                    <th width="170">Parameter</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Date and Time</td>
+                    <td>
+                        <h:outputText value="#{eventDetails.event.date}">
+                            <f:converter converterId="javax.faces.Instant"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                            <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Result</td>
+                    <td>
+                        <p:importEnum type="web.entity.core.EventStatus"/>
+                        <i class="fa #{eventDetails.event.status eq EventStatus.ERROR ? 'fa-times-circle error' :
+                            eventDetails.event.status eq EventStatus.SUCCESS ? 'fa-check-circle success' : 'fa-exclamation-circle alert'} l-float_elem"
+                           aria-hidden="true"/>
+                        <span>#{eventStatusDictionary.findOne(eventDetails.event.status).value}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Code</td>
+                    <td>#{eventDetails.event.code.code}: #{eventCodeDictionary.findOne(eventDetails.event.code).value}</td>
+                </tr>
+                <tr>
+                    <td>Description</td>
+                    <td>#{eventDetails.eventSetting.description}</td>
+                </tr>
+                <tr>
+                    <td>Additional Information</td>
+                    <td>#{eventDetails.event.description}</td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td>#{utils.strings.capitalizeFio(eventDetails.event.user.lastname, eventDetails.event.user.firstname,
+                            eventDetails.event.user.patronymic)} (#{eventDetails.event.user.login})
+                    </td>
+                </tr>
+                <tr>
+                    <td>Department</td>
+                    <td>#{eventDetails.event.department.name}</td>
+                </tr>
+                <tr>
+                    <td>Project</td>
+                    <td>#{eventDetails.event.project.name}</td>
+                </tr>
+                <tr>
+                    <td>Task</td>
+                    <td>#{eventDetails.event.task.name}</td>
+                </tr>
+                <tr>
+                    <td>Connection ID</td>
+                    <td>#{eventDetails.event.connectionEvent.id}</td>
+                </tr>
+                <tr>
+                    <td>Event Group ID</td>
+                    <td>#{eventDetails.event.group}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Export to File" ajax="false" styleClass="r-float_elem green-btn big_btn">
+                <p:fileDownload value="#{eventDetails.fileDownload()}"/>
+            </p:commandButton>
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

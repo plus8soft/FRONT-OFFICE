@@ -1,0 +1,61 @@
+# =============================================
+# Front Office Application - Configuration Example
+# =============================================
+# Copy this file to front-office.properties and fill in your values.
+# Do not commit front-office.properties (it is in .gitignore).
+
+# --- Data sources ---
+datasource.url=jdbc:sqlserver://localhost:1433;DatabaseName=YOUR_DB;user=YOUR_USER;password=YOUR_PASSWORD
+lob.datasource.url=jdbc:sqlserver://localhost:1433;DatabaseName=YOUR_DB;user=YOUR_USER;password=YOUR_PASSWORD
+
+datasource.initialpoolsize=3
+datasource.maxpoolsize=15
+lob.datasource.initialpoolsize=3
+lob.datasource.maxpoolsize=15
+
+# --- Core-banking adapter toggle ---
+# false = posting steps (exchange / transfer / WOA / reports) return a friendly "Core banking is not connected"
+#         message; CRM, admin and Fineract (if enabled) work normally.
+# true  = the *BackService classes in web.service.back.* are expected to call your real core.
+#         Until you implement them, posting steps will still fail with the same message.
+# See INTEGRATION_AND_ARCHITECTURE.md for adapter implementation.
+integration.back.enabled=false
+
+# --- Mail (SMTP) ---
+mail.from=your-app@your-domain.com
+mail.sign.alias=mail-sign
+mail.sign.password=your-mail-sign-password
+smtp.host=smtp.example.com
+smtp.port=587
+smtp.username=your-smtp-user
+smtp.password=your-smtp-password
+smtp.auth=true
+smtp.tls=true
+smtp.ssl=false
+
+# --- Scheduling (dictionary/rate updates) ---
+scheduling=true
+
+# --- Production mode ---
+production=false
+
+# --- JKS keystore (TLS / signing) ---
+jks.store=file:jks-store
+jks.store.password=your-jks-password
+
+# --- Fineract (optional REST integration, does not replace back.datasource) ---
+# When enabled, new CRM clients are mirrored to Fineract after save (externalId FO-{personId}).
+integration.fineract.enabled=false
+integration.fineract.base-url=https://localhost:8443/fineract-provider/api/v1
+integration.fineract.tenant-id=default
+integration.fineract.username=your-fineract-user
+integration.fineract.password=your-fineract-password
+integration.fineract.office-id=1
+integration.fineract.legal-form-id=1
+# Dev only: trust self-signed Fineract HTTPS certificate
+integration.fineract.ssl-trust-all=false
+integration.fineract.connect-timeout-ms=10000
+integration.fineract.read-timeout-ms=30000
+# Default product ids when opening accounts (0 = first product from Fineract).
+integration.fineract.default-savings-product-id=0
+integration.fineract.default-loan-product-id=0

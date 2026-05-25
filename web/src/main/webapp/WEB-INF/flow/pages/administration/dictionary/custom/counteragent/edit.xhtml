@@ -1,0 +1,456 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:fo="http://front-office/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                template="../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel id="counteragent-data" header="#{counteragentEditView.dictionary.group} > #{counteragentEditView.dictionary.name}">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Name" for="@next"/>
+                </div>
+                <div class="grid_cell w_40">
+                    <div class="icon_box">
+                        <p:inputText value="#{counteragentEditView.counteragent.name}" required="true" styleClass="w_100">
+                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon"/>
+                        <script>focusByPriority();</script>
+                    </div>
+                </div>
+                <div class="grid_cell w_10 r-label">
+                    <p:outputLabel value="Address" for="@next"/>
+                </div>
+                <div class="grid_cell w_40">
+                    <div class="icon_box">
+                        <p:inputText value="#{counteragentEditView.counteragent.address}" required="true" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="TIN" for="@next"/>
+                </div>
+                <div class="grid_cell w_15">
+                    <div class="icon_box">
+                        <p:inputMask value="#{counteragentEditView.counteragent.ein}" mask="99-9999999" required="true"
+                                     disabled="#{counteragentEditView.newVersion or counteragentEditView.maxVersion ge 2}" styleClass=" w_100">
+                            <f:validator binding="#{companyEinValidator}"/>
+                        </p:inputMask>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+                <div class="grid_cell w_5 ml-w_5">
+                    <p:outputLabel value="Bank" for="@next"/>
+                </div>
+                <div class="grid_cell w_40">
+                    <div class="icon_box">
+                        <p:autoComplete value="#{counteragentEditView.bank}" completeMethod="#{counteragentEditView.completeName}" var="bank"
+                                        itemLabel="#{not empty bank ? utils.strings.join(' - ', bank.routingNumber, bank.name) : null}" itemValue="#{bank}"
+                                        converter="#{counteragentEditView.bankConverter}" scrollHeight="300" styleClass="w_100" required="true"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20">
+                    <p:outputLabel value="Contract signed with counterparty" for="@next"/>
+                </div>
+                <div class="grid_cell w_5">
+                    <p:selectBooleanCheckbox value="#{counteragentEditView.counteragent.contract}"/>
+                </div>
+                <div class="grid_cell w_25 ml-w_5">
+                    <p:outputLabel value="Data is outdated (do not use)" for="@next"/>
+                </div>
+                <div class="grid_cell w_5">
+                    <p:selectBooleanCheckbox value="#{counteragentEditView.counteragent.disabled}"/>
+                </div>
+            </div>
+        </p:panel>
+        <p:panel header="Counterparty Operations List">
+            <div class="navigation_panel">
+                <p:commandButton value="Add" actionListener="#{counteragentEditView.addCounteragentPayAction()}" process="@this" immediate="true"
+                                 oncomplete="PF('payActions').switchToRowEdit(PF('payActions').findRow(PF('payActions').getJQ().find('tr').length - 2))"
+                                 update="@next" styleClass="blue-btn"/>
+            </div>
+            <p:importEnum type="web.entity.dict.PayActionType"/>
+            <p:dataTable value="#{counteragentEditView.payActionItems}" var="item" rowIndexVar="row" editable="true" widgetVar="payActions"
+                         emptyMessage="No data">
+                <p:ajax event="rowEditInit" listener="#{counteragentEditView.onPayActionStartEdit}"/>
+                <p:ajax event="rowEditCancel" listener="#{counteragentEditView.onPayActionCancelEdit}"/>
+                <p:ajax event="rowEdit" oncomplete="if (!PF('payActions').getJQ().find('.ui-state-error').length) updatePayActions()"/>
+                <p:column headerText="Type" width="110">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="Budget" rendered="#{item.payAction.type eq PayActionType.PUBLIC_SECTOR}"/>
+                            <h:outputText value="Tax" rendered="#{item.payAction.type eq PayActionType.TAX}"/>
+                            <h:outputText value="Legal Entity" rendered="#{item.payAction.type eq PayActionType.COMPANY}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box">
+                                <p:selectOneMenu id="payActionType" value="#{item.payAction.type}" converter="omnifaces.SelectItemsConverter"
+                                                 required="true"
+                                                 autoWidth="false" styleClass="w_100">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItem itemValue="#{PayActionType.PUBLIC_SECTOR}" itemLabel="Budget"/>
+                                    <f:selectItem itemValue="#{PayActionType.TAX}" itemLabel="Tax"/>
+                                    <f:selectItem itemValue="#{PayActionType.COMPANY}" itemLabel="Legal Entity"/>
+                                </p:selectOneMenu>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Operation Name">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            #{item.payAction.name}
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box">
+                                <fo:autoComplete value="#{item.payAction.name}" converter="#{counteragentEditView.payActionConverter}"
+                                                 valueConverter="#{counteragentEditView.payActionValueConverter}" var="payAction"
+                                                 itemValue="#{payAction}" itemLabel="#{payAction.name}"
+                                                 completeMethod="#{counteragentEditView.completePayAction}" required="true"
+                                                 panelStyleClass="person_autocomplete" styleClass="w_100" panelStyle="width: 60%;">
+                                    <p:ajax event="query" global="false"/>
+                                    <p:ajax event="itemSelect" listener="#{counteragentEditView.onPayActionSelect}"
+                                            update="payActionType cashSymbol nds @this"
+                                            oncomplete="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == this.source)[0];
+                                                        widget.itemSelectTimeout = true;
+                                                        setTimeout(() => widget.itemSelectTimeout = null, 100)"/>
+                                    <p:ajax update="@this"
+                                            onstart="var widget = $.grep(Object.values(PrimeFaces.widgets), e => e.id == cfg.source)[0];
+                                                     if (widget.itemSelectTimeout || widget.panel.is(':visible')) return false"/>
+                                    <p:column>
+                                        <div>#{payAction.name} (#{payAction.cashSymbol})</div>
+                                    </p:column>
+                                </fo:autoComplete>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Account Number">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            #{item.payAction.account.id}
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box">
+                                <p:autoComplete value="#{item.payAction.account}" completeMethod="#{counteragentEditView.completeAccount}"
+                                                var="account"
+                                                itemLabel="#{not empty account ? utils.strings.join(' - ', account.id, account.name) : null}"
+                                                itemValue="#{account}" converter="#{counteragentEditView.accountConverter}" required="true"
+                                                scrollHeight="300" styleClass="w_100" panelStyle="width: 60%;"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Cash Symbol">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            #{item.payAction.cashSymbol}
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box">
+                                <p:selectOneMenu id="cashSymbol" value="#{item.payAction.cashSymbol}" required="true" autoWidth="false"
+                                                 styleClass="w_100"
+                                                 panelStyle="width: 70%;">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{cashSymbolDictionary.findAll()}" var="cashSymbol" itemValue="#{cashSymbol.code}"
+                                                   itemLabel="#{cashSymbol.code} - #{cashSymbol.value}"/>
+                                </p:selectOneMenu>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="VAT" width="150">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            #{ndsDictionary.findOne(item.payAction.nds).value}
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box">
+                                <p:selectOneMenu id="nds" value="#{item.payAction.nds}" autoWidth="false" styleClass="w_100">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{ndsDictionary.findAll()}" var="nds" itemValue="#{nds.code}" itemLabel="#{nds.value}"/>
+                                </p:selectOneMenu>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Primary" width="60">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <ui:fragment rendered="#{item.payAction.main}">
+                                <i class="fa fa-check" aria-hidden="true"/>
+                            </ui:fragment>
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box w_auto">
+                                <p:selectBooleanCheckbox value="#{item.payAction.main}">
+                                    <f:validator binding="#{hasMainPayActionValidator}"/>
+                                    <f:attribute name="hasMain" value="#{counteragentEditView.hasMainPayAction()}"/>
+                                </p:selectBooleanCheckbox>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column width="60">
+                    <p:rowEditor editTitle="Edit" saveTitle="Save" cancelTitle="Cancel"/>
+                    <p:commandLink actionListener="#{counteragentEditView.onPayActionRowDelete(row)}" immediate="true" update="@parent:@parent"
+                                   styleClass="delete-link ml-w_10">
+                        <i class="fa fa-trash" aria-hidden="true"/>
+                    </p:commandLink>
+                </p:column>
+            </p:dataTable>
+            <p:remoteCommand name="updatePayActions" update="@previous"/>
+        </p:panel>
+        <p:panel header="Payment Purpose Generation Parameters">
+            <div class="grid_row">
+                <div class="grid_cell purpose_template">
+                    <div class="grid_cell">#PARTNER_NAME#</div>
+                    <div class="grid_cell">#CLIENT_FIO#</div>
+                    <div class="grid_cell">#OPERATION#</div>
+                    <div class="grid_cell">#AMOUNT#</div>
+                    <div class="grid_cell">#NDS#</div>
+                </div>
+                <div class="grid_cell r-float_elem gray-text">Template</div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_100">
+                    <p:inputTextarea id="pattern" rows="5" cols="50" value="#{counteragentEditView.counteragent.purposeTemplate}" styleClass="w_100"/>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell">
+                    <p:commandButton value="Generate Example" actionListener="#{counteragentEditView.makePurpose()}" process="@parent"
+                                     update="@parent" styleClass="blue-btn"/>
+                </div>
+                <div class="grid_cell r-float_elem gray-text">Generation Example</div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_100">
+                    <p:inputTextarea rows="5" cols="50" value="#{counteragentEditView.purpose}" readonly="true" styleClass="w_100"/>
+                </div>
+            </div>
+        </p:panel>
+        <p:panel header="Commission Parameters">
+            <div class="navigation_panel">
+                <p:defaultCommand target="@next" scope="@parent"/>
+                <p:commandButton value="Add Date" actionListener="#{counteragentEditView.setStartCopy(true)}" process="@this"
+                                 update="dialog-panel" styleClass="blue-btn"/>
+                <p:commandButton value="Add Commission" actionListener="#{counteragentEditView.addCounteragentCommission()}"
+                                 disabled="#{not empty counteragentEditView.selectedCommissionDate
+                                    and counteragentEditView.selectedCommissionDate.isBefore(counteragentEditView.now)}"
+                                 process="@this" immediate="true" update="@parent" styleClass="blue-btn"
+                                 oncomplete="PF('commissionItems').switchToRowEdit(PF('commissionItems').findRow(PF('commissionItems').getJQ().find('tr').length - 3))"/>
+            </div>
+            <div class="commission-params">
+                <p:dataTable value="#{counteragentEditView.commissionItems.keySet()}" rowKey="#{commissionDate}" var="commissionDate"
+                             selection="#{counteragentEditView.selectedCommissionDate}" emptyMessage="No data">
+                    <p:ajax event="rowSelectRadio" update="@next @previous"/>
+                    <p:column selectionMode="single" styleClass="check_cell" width="17"/>
+                    <p:column headerText="Date">
+                        <h:outputText value="#{commissionDate}"
+                                      styleClass="#{commissionDate.isEqual(counteragentEditView.actualCommissionDate) ? 'green-text' : null}">
+                            <f:converter converterId="javax.faces.LocalDateConverter"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                        </h:outputText>
+                    </p:column>
+                </p:dataTable>
+                <p:dataTable value="#{counteragentEditView.commissionItems.get(counteragentEditView.selectedCommissionDate)}" rowIndexVar="row"
+                             editable="true" widgetVar="commissionItems" var="commissionItem" emptyMessage="No data">
+                    <p:ajax event="rowEditInit" listener="#{counteragentEditView.onCommissionStartEdit}"/>
+                    <p:ajax event="rowEditCancel" listener="#{counteragentEditView.onCommissionCancelEdit}"/>
+                    <p:ajax event="rowEdit" listener="#{counteragentEditView.onCommissionConfirmEdit}"
+                            oncomplete="if (!PF('commissionItems').getJQ().find('.ui-state-error').length) updateCommissions()"/>
+                    <p:columnGroup type="header">
+                        <p:row>
+                            <p:column rowspan="2" headerText="Payment Operation"/>
+                            <p:column rowspan="2" headerText="Payment Amount" width="100"/>
+                            <p:column rowspan="2" headerText="%" width="55"/>
+                            <p:column rowspan="2" headerText="Fixed Amount" width="95"/>
+                            <p:column colspan="2" headerText="Commission Range" width="270"/>
+                            <p:column rowspan="2" width="60"/>
+                        </p:row>
+                        <p:row>
+                            <p:column headerText="Minimum Amount"/>
+                            <p:column headerText="Maximum Amount"/>
+                        </p:row>
+                    </p:columnGroup>
+                    <p:column>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{empty commissionItem.payActionItem.payAction ? 'other': commissionItem.payActionItem.payAction.name}
+                            </f:facet>
+                            <f:facet name="input">
+                                <div class="icon_box">
+                                    <p:selectOneMenu value="#{commissionItem.payActionItem}" converter="omnifaces.SelectItemsConverter"
+                                                     autoWidth="false" styleClass="w_100">
+                                        <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                        <f:selectItems value="#{counteragentEditView.payActionItems}" var="item" itemValue="#{item}"
+                                                       itemLabel="#{item.payAction.cashSymbol} - #{item.payAction.name}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{commissionItem.commission.valueRange}
+                            </f:facet>
+                            <f:facet name="input">
+                                <div class="icon_box">
+                                    <p:inputNumber value="#{commissionItem.commission.valueRange}" required="true" styleClass="w_100"/>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{commissionItem.commission.percentage}
+                            </f:facet>
+                            <f:facet name="input">
+                                <div class="icon_box">
+                                    <p:inputNumber id="percent" value="#{commissionItem.commission.percentage}" maxValue="100" styleClass="w_100"/>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{commissionItem.commission.fixed}
+                            </f:facet>
+                            <f:facet name="input">
+                                <div class="icon_box">
+                                    <p:inputNumber id="fixed" value="#{commissionItem.commission.fixed}" styleClass="w_100"/>
+                                    <p:message for="@previous" display="icon"/>
+                                    <o:validateOne components="percent fixed" showMessageFor="@all"
+                                                   message="Either percentage or fixed amount must be filled"/>
+                                </div>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{commissionItem.commission.min}
+                            </f:facet>
+                            <f:facet name="input">
+                                <div class="icon_box">
+                                    <p:inputNumber id="min" value="#{commissionItem.commission.min}" styleClass="w_100">
+                                        <f:validator binding="#{minBigDecimalValidator}"/>
+                                        <f:attribute name="max" value="#{max}"/>
+                                    </p:inputNumber>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{commissionItem.commission.max}
+                            </f:facet>
+                            <f:facet name="input">
+                                <div class="icon_box">
+                                    <p:inputNumber id="max" binding="#{max}" value="#{commissionItem.commission.max}" styleClass="w_100"/>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column width="60">
+                        <p:rowEditor editTitle="Edit" saveTitle="Save" cancelTitle="Cancel"
+                                     rendered="#{(not empty counteragentEditView.selectedCommissionDate and not
+                                     counteragentEditView.selectedCommissionDate.isBefore(counteragentEditView.now)) or
+                                     counteragentEditView.commissionAdding}"/>
+                        <p:commandLink actionListener="#{counteragentEditView.onCommissionRowDelete(row)}"
+                                       disabled="#{empty counteragentEditView.selectedCommissionDate or
+                                       counteragentEditView.selectedCommissionDate.isBefore(counteragentEditView.now)}" immediate="true"
+                                       update="@(.ui-panel:last)" styleClass="delete-link ml-w_10">
+                            <i class="fa fa-trash" aria-hidden="true"/>
+                        </p:commandLink>
+                    </p:column>
+                </p:dataTable>
+                <p:remoteCommand name="updateCommissions" update="@parent"/>
+            </div>
+        </p:panel>
+        <div class="btn_box">
+            <p:defaultCommand target="@next" scope="counteragent-data"/>
+            <p:commandButton value="Save" action="#{counteragentEditView.save()}" update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"
+                             styleClass="r-float_elem blue-btn big_btn"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" process="@this" styleClass="orange-btn big_btn"/>
+        </div>
+        <h:panelGrid id="dialog-panel">
+            <p:confirmDialog widgetVar="confirmCopyCommission" visible="true" showEffect="fade" rendered="#{counteragentEditView.startCopy}"
+                             hideEffect="fade"                              header="Creating New Commission Effective Date" severity="help" closable="false">
+                <f:facet name="message">
+                    <div class="grid_row">
+                        <div class="grid_cell w_65"><p:outputLabel value="Select the start date for new commissions:" for="@next"/></div>
+                        <div class="grid_cell w_35">
+                            <div class="icon_box">
+                                <p:calendar value="#{counteragentEditView.copyCommissionDate}" converter="javax.faces.LocalDateConverter"
+                                            required="true" pattern="dd.MM.yyyy" showOn="button" placeholder="dd.mm.yyyy" mask="true"
+                                            styleClass="w_100">
+                                    <p:ajax event="dateSelect" update="from-dates" listener="#{counteragentEditView.updateCopyCommissionDates()}"/>
+                                    <f:validator binding="#{minCurrentLocalDateValidator}"/>
+                                    <f:attribute name="zoneId" value="#{userSession.user.department.zoneId}"/>
+                                    <f:validator binding="#{commissionDateExistsValidator}"/>
+                                    <f:attribute name="dates" value="#{counteragentEditView.commissionItems.keySet()}"/>
+                                </p:calendar>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_row">
+                        <div class="grid_cell w_65"><p:outputLabel value="Copy commission values from existing ones?" for="@next"/></div>
+                        <div class="grid_cell w_5">
+                            <p:selectBooleanCheckbox value="#{counteragentEditView.copyCommissions}"
+                                                     disabled="#{empty counteragentEditView.commissionItems}">
+                                <p:ajax update="@next"/>
+                            </p:selectBooleanCheckbox>
+                        </div>
+                        <div class="grid_cell w_30">
+                            <p:selectOneMenu id="from-dates" value="#{counteragentEditView.copyCommissionFromDate}"
+                                             converter="omnifaces.SelectItemsConverter" disabled="#{not counteragentEditView.copyCommissions}"
+                                             autoWidth="false" styleClass="w_100">
+                                <f:selectItems value="#{counteragentEditView.copyCommissionDates}" var="date" itemValue="#{date}"
+                                               itemLabel="#{date}"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                </f:facet>
+                <p:commandButton value="Yes" actionListener="#{counteragentEditView.copyCommission()}" process="@parent"
+                                 oncomplete="if(!args.validationFailed){PF('confirmCopyCommission').hide()}"
+                                 update="@(.ui-confirm-dialog) @(.ui-widget-overlay) @(.ui-panel:last)" styleClass="blue-btn r-float_elem"/>
+                <p:commandButton value="No" actionListener="#{counteragentEditView.cancelCopyCommission()}" immediate="true"
+                                 oncomplete="PF('confirmCopyCommission').hide()" update="@(.ui-confirm-dialog) @(.ui-widget-overlay)"
+                                 styleClass="orange-btn"/>
+            </p:confirmDialog>
+        </h:panelGrid>
+    </ui:define>
+</ui:composition>

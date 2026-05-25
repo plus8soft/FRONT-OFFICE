@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <on-start>
+        <set name="flowScope.FS_ENABLED" value="true" type="boolean"/>
+    </on-start>
+    <view-state id="department">
+        <var name="departmentView" class="web.view.administration.department.management.DepartmentView"/>
+        <on-entry>
+            <set name="departmentView.enabled" value="FS_ENABLED"/>
+            <evaluate expression="departmentView.init()"/>
+        </on-entry>
+        <transition on="add" to="edit">
+            <set name="flowScope.FS_DEPARTMENT" value="departmentView.add()"/>
+        </transition>
+        <transition on="edit" to="edit">
+            <set name="flowScope.FS_DEPARTMENT" value="departmentView.selected.data.department"/>
+        </transition>
+        <on-exit>
+            <set name="FS_ENABLED" value="departmentView.enabled"/>
+        </on-exit>
+    </view-state>
+    <view-state id="edit">
+        <var name="editView" class="web.view.administration.department.management.edit.EditView"/>
+        <var name="userModel" class="web.view.administration.model.UserModel"/>
+        <on-entry>
+            <set name="editView.department" value="flowScope.FS_DEPARTMENT"/>
+            <evaluate expression="editView.init(userModel)"/>
+        </on-entry>
+        <transition on="save" to="department"/>
+        <transition on="cancel" to="department"/>
+    </view-state>
+</flow>

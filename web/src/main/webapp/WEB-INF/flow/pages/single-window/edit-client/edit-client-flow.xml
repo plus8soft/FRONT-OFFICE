@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/single-window/transition">
+    <var name="FS_EDIT_CLIENT_VIEW" class="web.view.ce.clientedit.EditClientView"/>
+    <input name="personId"/>
+    <input name="documentType"/>
+    <input name="documentSeries"/>
+    <input name="documentNumber"/>
+    <view-state id="edit-client">
+        <on-entry>
+            <evaluate expression="FS_EDIT_CLIENT_VIEW.init(personId, documentType, documentSeries, documentNumber)"/>
+        </on-entry>
+        <transition on="cancel" to="edit-client"/>
+        <transition on="next" to="next"/>
+        <transition on="back" to="back"/>
+    </view-state>
+    <end-state id="next">
+        <output name="personIdOut" value="FS_EDIT_CLIENT_VIEW.person.id"/>
+    </end-state>
+    <end-state id="back">
+        <output name="personIdOut" value="FS_EDIT_CLIENT_VIEW.person.id"/>
+    </end-state>
+</flow>

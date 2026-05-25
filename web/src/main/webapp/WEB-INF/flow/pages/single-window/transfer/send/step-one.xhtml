@@ -1,0 +1,190 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:jsf="http://xmlns.jcp.org/jsf" xmlns:h="http://java.sun.com/jsf/html"
+                template="../../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Define main transfer parameters" styleClass="transaction_page">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span class="current">1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5</span>
+                    <span>6</span>
+                    <span>7</span>
+                </div>
+            </f:facet>
+            <div class="title_block">
+                <p class="type_text">Operation Type</p>
+                <p class="name_text">Transfer funds to individual (send)</p>
+            </div>
+            <div class="step_block">
+                <div class="grid_row">
+                    <div class="grid_cell w_100 label_cell">
+                        <p:outputLabel value="Country" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_100 data_cell">
+                        <span class="step_num">1.1</span>
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{stepOneView.paymentTransfer.destinationCountry}" required="true" filter="true"
+                                             filterMatchMode="startsWith" autoWidth="false" styleClass="w_100" panelStyleClass="country_panel"
+                                             converter="omnifaces.SelectItemsConverter">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{stepOneView.paymentPointsCountries}" var="country" itemLabel="#{country.name}"
+                                               itemValue="#{country}"/>
+                                <p:ajax listener="#{stepOneView.selectDestinationCountry()}"
+                                        update="destinationRegion transferCurrency payment-systems"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_100 label_cell">
+                        <p:outputLabel value="City (Region)" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_100 data_cell">
+                        <span class="step_num">1.2</span>
+                        <div class="icon_box">
+                            <p:selectOneMenu id="destinationRegion" value="#{stepOneView.paymentTransfer.destinationRegion}" required="true"
+                                             filter="true" filterMatchMode="startsWith" styleClass="w_100" panelStyleClass="country_panel"
+                                             converter="omnifaces.SelectItemsConverter" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{stepOneView.regions}" var="region" itemLabel="#{region.name}" itemValue="#{region}"/>
+                                <p:ajax listener="#{stepOneView.selectDestinationRegion()}" update="transferCurrency payment-systems"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_100 label_cell">
+                        <div class="grid_cell w_45 label_cell">
+                            <p:outputLabel value="Payment Currency" for="@next:@next"/>
+                        </div>
+                        <div class="grid_cell w_45 ml-w_10 label_cell">
+                            <p:outputLabel value="Transfer Currency (Payout)" for="transferCurrency"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_100 data_cell">
+                        <span class="step_num">1.3</span>
+                        <div class="grid_cell w_45">
+                            <div class="icon_box">
+                                <p:selectOneMenu value="#{stepOneView.paymentTransfer.acceptedCurrency}" required="true" styleClass="w_100"
+                                                 converter="omnifaces.SelectItemsConverter" autoWidth="false">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{stepOneView.acceptedCurrencies}" var="currency"
+                                                   itemLabel="#{currency.name} (#{currency.iso})" itemValue="#{currency}"/>
+                                </p:selectOneMenu>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                        <div class="grid_cell w_45 ml-w_10">
+                            <div class="icon_box">
+                                <p:selectOneMenu id="transferCurrency" value="#{stepOneView.paymentTransfer.transferCurrency}" required="true"
+                                                 styleClass="w_100" converter="omnifaces.SelectItemsConverter" autoWidth="false">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{stepOneView.transferCurrencies}" var="currency"
+                                                   itemLabel="#{currency.name} (#{currency.iso})" itemValue="#{currency}"/>
+                                    <p:ajax listener="#{stepOneView.updatePaymentSystem()}" update="payment-systems"/>
+                                </p:selectOneMenu>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_100 label_cell">
+                        <p:outputLabel value="Transfer Amount (Payout)" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_100 data_cell">
+                        <span class="step_num">1.4</span>
+                        <div class="icon_box">
+                            <p:inputNumber value="#{stepOneView.paymentTransfer.amount}" required="true" minValue="0" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="add_info_block">
+                <div class="grid_row">
+                    <div class="grid_cell w_100 label_cell">
+                        <span class="step_num">1.5</span><label>Sender Brief Information</label>
+                    </div>
+                    <div class="grid_cell w_100 data_cell">
+                        <div class="grid_row">
+                            <div class="grid_cell w_20">
+                                <p:outputLabel value="Citizenship" for="@next"/></div>
+                            <div class="grid_cell w_80">
+                                <div class="icon_box">
+                                    <p:selectOneMenu value="#{stepOneView.paymentTransfer.citizenship}" required="true" filter="true"
+                                                     filterMatchMode="startsWith" styleClass="w_100" panelStyleClass="country_panel"
+                                                     converter="omnifaces.SelectItemsConverter">
+                                        <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                        <f:selectItems value="#{stepOneView.countries}" var="country" itemLabel="#{country.name}"
+                                                       itemValue="#{country}"/>
+                                    </p:selectOneMenu>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_20">
+                                <p:outputLabel value="Resident (Country)" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_80">
+                                <div class="icon_box">
+                                    <p:selectOneMenu value="#{stepOneView.paymentTransfer.residentCountry}" required="true" filter="true"
+                                                     filterMatchMode="startsWith" styleClass="w_100" panelStyleClass="country_panel"
+                                                     converter="omnifaces.SelectItemsConverter">
+                                        <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                        <f:selectItems value="#{stepOneView.countries}" var="country" itemLabel="#{country.name}"
+                                                       itemValue="#{country}"/>
+                                    </p:selectOneMenu>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="paysystem_list">
+                <div class="title">List of available payment systems based on specified parameters</div>
+                <div>
+                    <p:importEnum type="web.entity.dict.PaymentSystemName"/>
+                    <ul jsf:id="payment-systems">
+                        <p:repeat value="#{stepOneView.paymentSystemItems}" var="paymentSystemItem">
+                            <li>
+                                <ui:fragment rendered="#{paymentSystemItem.enabled}">
+                                    <i class="access fa fa-check-circle" aria-hidden="true"/>
+                                    <span class="img_box enabled">
+                                        <h:graphicImage library="img" name="#{PaymentSystemName.MONEY_TRANSFER eq paymentSystemItem.paymentSystem.id ? 'payment-transfer.png' : 'payment-system.png'}"/>
+                                    </span>
+                                    <span class="status">can be used</span>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{not paymentSystemItem.enabled}">
+                                    <i class="access fa fa-times-circle-o" aria-hidden="true"/>
+                                    <span class="img_box disabled">
+                                        <h:graphicImage library="img" name="#{PaymentSystemName.MONEY_TRANSFER eq paymentSystemItem.paymentSystem.id ? 'payment-transfer_grey.png' : 'payment-system_grey.png'}"/>
+                                    </span>
+                                    <span class="status">cannot be used based on selected parameters</span>
+                                </ui:fragment>
+                            </li>
+                        </p:repeat>
+                    </ul>
+                </div>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Calculate" action="next" update="@form" styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" styleClass="orange-btn big_btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

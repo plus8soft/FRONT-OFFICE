@@ -1,0 +1,82 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:o="http://omnifaces.org/ui">
+    <ui:fragment rendered="#{stepTwoView.payoutTransfer.paymentSystem.id eq PaymentSystemName.MONEY_TRANSFER}">
+        <div class="btn_box clearfix">
+            <p:commandButton value="Search" action="#{stepTwoView.find}" update="@form" styleClass="r-float_elem blue-btn"/>
+        </div>
+        <ui:fragment rendered="#{stepTwoView.transferFounded}">
+            <p class="sub_title"><span>1.1</span>Verify transfer parameters</p>
+            <div class="title_block">
+                <p class="type_text">Transfer Amount and Currency (Payout)</p>
+                <p class="name_text currency_row">
+                    <h:outputText value="#{stepTwoView.payoutTransfer.amount}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText> #{stepTwoView.payoutTransfer.currency.iso} (#{stepTwoView.payoutTransfer.currency.name})
+                    <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                    styleClass="currency_img r-float_elem">
+                        <f:param name="id" value="#{stepTwoView.payoutTransfer.currency.id}"/>
+                    </p:graphicImage>
+                </p>
+                <ui:fragment rendered="#{stepTwoView.cashBalance.compareTo(stepTwoView.payoutTransfer.amount) eq -1}">
+                    <div>
+                        Insufficient cash amount in cash register to issue to client
+                    </div>
+                    <p class="type_text">In Cash</p>
+                    <p class="name_text">
+                        <h:outputText value="#{stepTwoView.cashBalance}">
+                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                        </h:outputText> #{stepTwoView.payoutTransfer.currency.iso} (#{stepTwoView.payoutTransfer.currency.name})
+                    </p>
+                </ui:fragment>
+                <p class="type_text">Country and Receiving Location</p>
+                <p class="name_text">
+                    #{stepTwoView.payoutTransfer.destinationCountry.name}, #{stepTwoView.payoutTransfer.destinationRegion.name}
+                </p>
+            </div>
+            <p class="sub_title"><span>1.2</span>Verify recipient data by requesting identity document</p>
+            <div class="title_block">
+                <p class="type_text">Last Name First Name Middle Name</p>
+                <p class="name_text">
+                    #{stepTwoView.payoutTransfer.receiver.lastname} #{stepTwoView.payoutTransfer.receiver.firstname}
+                    #{stepTwoView.payoutTransfer.receiver.patronymic}
+                    <h:outputText value="#{stepTwoView.payoutTransfer.receiver.birthDate}">
+                        <f:converter converterId="javax.faces.LocalDateConverter"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                    </h:outputText>
+                </p>
+                <ui:fragment rendered="#{not empty stepTwoView.payoutTransfer.receiver.document}">
+                    <p class="type_text">Identity Document (Type, Series and Number, Issued By and When)</p>
+                    <o:importConstants type="web.utils.Documents"/>
+                    <p class="name_text">
+                        <h:outputText value="#{documentTypeDictionary.findOne(Documents.US_PASSPORT_CODE eq stepTwoView.payoutTransfer.receiver.document.type ?
+                            Documents.US_PASSPORT_CODE : Documents.FOREIGN_CITIZEN_PASSPORT_CODE).value}, "
+                                      rendered="#{not empty stepTwoView.payoutTransfer.receiver.document.type}"/>
+                        <h:outputText value="#{utils.strings.join(' ', stepTwoView.payoutTransfer.receiver.document.series,
+                            stepTwoView.payoutTransfer.receiver.document.number)}, "
+                                      rendered="#{not empty stepTwoView.payoutTransfer.receiver.document.series or
+                                      not empty stepTwoView.payoutTransfer.receiver.document.number}"/>
+                        <h:outputText value="issued by #{stepTwoView.payoutTransfer.receiver.document.issuanceUnit}, "
+                                      rendered="#{not empty stepTwoView.payoutTransfer.receiver.document.issuanceUnit}"/>
+                        <h:outputText value="#{stepTwoView.payoutTransfer.receiver.document.issuanceDate}"
+                                      rendered="#{not empty stepTwoView.payoutTransfer.receiver.document.issuanceDate}">
+                            <f:converter converterId="javax.faces.LocalDateConverter"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                        </h:outputText>
+                    </p>
+                </ui:fragment>
+                <p class="type_text">Staying Address</p>
+                <p class="name_text">
+                    #{utils.addresses.formatTransferAddress(stepTwoView.payoutTransfer.receiver.address)}
+                </p>
+            </div>
+        </ui:fragment>
+    </ui:fragment>
+</ui:composition>

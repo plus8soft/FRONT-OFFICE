@@ -1,0 +1,186 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{counteragentView.dictionary.group} > #{counteragentView.dictionary.name}">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel box_big_subpanel clearfix">
+                <div class="search_box">
+                    <p:outputLabel value="Search:" for="@next"/>
+                    <p:inputText value="#{counteragentView.filter.ein}" placeholder="Search by EIN" maxlength="9"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}">
+                        <p:keyFilter regEx="/[0-9]/" preventPaste="false"/>
+                        <f:passThroughAttribute name="focus-priority" value="1"/>
+                    </p:inputText>
+                    <p:remoteCommand name="updateTable" action="#{counteragentView.fastSearch()}" update="@form"/>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                    <script>focusByPriority();</script>
+                </div>
+            </div>
+            <p:panel toggleable="true" header="Advanced Search" collapsed="#{not counteragentView.filter.extendedSearch}" styleClass="subpanel">
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel value="Name" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{counteragentView.filter.name}" styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_10 r-label">
+                        <p:outputLabel value="Contract" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:selectOneMenu value="#{counteragentView.filter.hasContract}" autoWidth="false" styleClass="w_100">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItem itemValue="#{false}" itemLabel="No"/>
+                            <f:selectItem itemValue="#{true}" itemLabel="Signed"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel value="Address" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{counteragentView.filter.address}" styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_10 r-label">
+                        <p:outputLabel value="Account" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{counteragentView.filter.account}" styleClass="w_100">
+                            <p:keyFilter regEx="/[0-9]/" preventPaste="false"/>
+                        </p:inputText>
+                    </div>
+                    <div class="grid_cell w_10 r-label">
+                        <p:outputLabel value="Status" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:selectOneMenu value="#{counteragentView.filter.disabled}" autoWidth="false" styleClass="w_100">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItem itemValue="#{false}" itemLabel="Active"/>
+                            <f:selectItem itemValue="#{true}" itemLabel="Not Used"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_10">
+                        <p:outputLabel value="Bank" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <p:autoComplete value="#{counteragentView.filter.bank}" completeMethod="#{counteragentView.completeName}" var="bank"
+                                        itemLabel="#{not empty bank ? utils.strings.join(' - ', bank.routingNumber, bank.name) : null}" itemValue="#{bank}"
+                                        converter="#{counteragentView.converter}" scrollHeight="300" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="btn_box clearfix">
+                    <p:defaultCommand target="@next" scope="@parent"/>
+                    <p:commandButton value="Find" action="#{counteragentView.extendedSearch()}" update="@form" styleClass="blue-btn r-float_elem"/>
+                </div>
+            </p:panel>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add" styleClass="blue-btn"/>
+                <p:commandButton value="Add Version" action="edit-version" disabled="#{empty counteragentModel.selected}" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="edit" disabled="#{empty counteragentModel.selected}" styleClass="blue-btn"/>
+                <p:commandButton value="Delete" onclick="PF('confirm').show()" disabled="#{empty counteragentModel.selected}"
+                                 styleClass="orange-btn"/>
+            </div>
+            <p:dataTable id="counteragents" value="#{counteragentModel}" var="counteragent" lazy="true" rows="100" scrollRows="50"
+                         selection="#{counteragentModel.selected}" selectionMode="single"
+                         scrollHeight="#{counteragentModel.rowCount gt 10 ? 400 : null}" virtualScroll="true"
+                         scrollable="#{counteragentModel.rowCount gt 10}" sortMode="multiple" emptyMessage="No data">
+                <p:ajax event="rowSelect" listener="#{counteragentView.select}" update="@form"/>
+                <p:ajax event="rowUnselect" listener="#{counteragentView.setBank(null)}" update="@form"/>
+                <p:ajax event="page" update="@form" listener="#{counteragentModel.setSelected(null)}"/>
+                <p:column headerText="EIN" width="80">
+                    #{counteragent.ein}
+                </p:column>
+                <p:column headerText="Name">
+                    #{counteragent.name}
+                </p:column>
+                <p:column headerText="Address">
+                    #{counteragent.address}
+                </p:column>
+                <p:column headerText="Version" width="45">
+                    #{counteragent.version}
+                </p:column>
+                <p:column headerText="Not Used" width="100">
+                    <ui:fragment rendered="#{counteragent.disabled}">
+                        <span class="fix_row align-center"><i class="fa fa-times error fa-2x" aria-hidden="true"/></span>
+                    </ui:fragment>
+                </p:column>
+            </p:dataTable>
+            <ui:fragment rendered="#{not empty counteragentView.model.selected}">
+                <div class="grid_row">
+                    <div class="grid_cell w_25">Counterparty Name:</div>
+                    <div class="grid_cell w_75"><b>#{counteragentView.model.selected.name}</b></div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_25">Contract Exists:</div>
+                    <div class="grid_cell w_75">
+                        <ui:fragment rendered="#{counteragentView.model.selected.contract}">
+                            <i class="fa fa-check-circle-o success fa-2x" aria-hidden="true"/>
+                        </ui:fragment>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_25">Bank where the account is opened:</div>
+                    <div class="grid_cell w_75"><b>#{counteragentView.bank.name}</b> (#{counteragentView.model.selected.routingNumber})</div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_25">Creation Date, Created By:</div>
+                    <div class="grid_cell w_75">
+                        <b><h:outputText value="#{counteragentView.model.selected.date}">
+                            <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        </h:outputText>, #{utils.strings.capitalizeFio(counteragentView.model.selected.user.lastname,
+                                counteragentView.model.selected.user.firstname, counteragentView.model.selected.user.patronymic)},</b>
+                        #{counteragentView.model.selected.user.positionText}, #{counteragentView.model.selected.user.department.name}
+                    </div>
+                </div>
+                <p:importEnum type="web.entity.dict.PayActionType"/>
+                <p:dataTable value="#{counteragentView.payActions}" var="action" emptyMessage="No data">
+                    <p:column headerText="Type">
+                        <h:outputText value="Budget" rendered="#{action.type eq PayActionType.PUBLIC_SECTOR}"/>
+                        <h:outputText value="Tax" rendered="#{action.type eq PayActionType.TAX}"/>
+                        <h:outputText value="Legal Entity" rendered="#{action.type eq PayActionType.COMPANY}"/>
+                    </p:column>
+                    <p:column headerText="Operation Name">
+                        #{action.name}
+                    </p:column>
+                    <p:column headerText="Account Number">
+                        #{action.account.id}
+                    </p:column>
+                    <p:column headerText="Cash Symbol">
+                        #{action.cashSymbol}
+                    </p:column>
+                    <p:column headerText="VAT">
+                        #{ndsDictionary.findOne(action.nds).value}
+                    </p:column>
+                    <p:column headerText="Primary">
+                        <ui:fragment rendered="#{action.main}">
+                            <i class="fa fa-check-circle-o success fa-2x" aria-hidden="true"/>
+                        </ui:fragment>
+                    </p:column>
+                </p:dataTable>
+            </ui:fragment>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" process="@this" styleClass="orange-btn big_btn"/>
+        </div>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{counteragentView.delete()}" onclick="PF('confirm').hide()" update="@form"
+                             styleClass="blue-btn r-float_elem"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

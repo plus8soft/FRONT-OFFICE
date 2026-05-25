@@ -1,0 +1,713 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:fo="http://xmlns.jcp.org/jsf/composite/component"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:o="http://omnifaces.org/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:importConstants type="web.utils.DateTimes"/>
+        <h1 class="title-page">Client Profile</h1>
+        <h:panelGroup id="fineractStatusBlock">
+            <ui:fragment rendered="#{FS_EDIT_CLIENT_VIEW.fineractClientStatus.showOnCard}">
+                <p class="#{FS_EDIT_CLIENT_VIEW.fineractClientStatus.cssClass}" style="margin: 0.5em 0;">
+                    #{FS_EDIT_CLIENT_VIEW.fineractClientStatus.summary}
+                </p>
+                <p:commandButton value="Refresh Fineract status" action="#{FS_EDIT_CLIENT_VIEW.onRefreshFineractStatus}"
+                                 update="fineractStatusBlock" styleClass="blue-btn" style="margin-bottom: 0.5em;"/>
+                <p:commandButton value="Sync to Fineract" action="#{FS_EDIT_CLIENT_VIEW.onSyncToFineract}"
+                                 update="fineractStatusBlock" styleClass="blue-btn" style="margin-bottom: 0.5em; margin-left: 0.5em;"/>
+            </ui:fragment>
+        </h:panelGroup>
+        <p:panel header="Basic Information" toggleable="true">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <ui:param name="validated" value="#{not FS_EDIT_CLIENT_VIEW.person.terrorist and not FS_EDIT_CLIENT_VIEW.person.fmsInvalid}"/>
+            <div jsf:id="error-messages" class="client_card">
+                <!-- CIS/SNG region: terrorist and FMS checks (legacy back integration) -->
+                <ui:fragment rendered="false">
+                    <p class="error_title">
+                        <span class="fa-stack">
+                            <i class="fa fa-circle-thin fa-stack-2x"/>
+                            <i class="fa fa-exclamation fa-stack-1x"/>
+                        </span>Client data validation failed
+                    </p>
+                    <div class="error_list">
+                        <ui:fragment rendered="#{FS_EDIT_CLIENT_VIEW.person.terrorist}">
+                            <div class="name"><span>Client performing the operation is on the terrorist list</span></div>
+                            <div class="text">Notify security service, financial monitoring department and interrupt the operation</div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{FS_EDIT_CLIENT_VIEW.person.fmsInvalid}">
+                            <div class="name"><span>Identity document is invalid</span></div>
+                        </ui:fragment>
+                    </div>
+                    <script>
+                        if ($(window).scrollTop() > ($('.error_title', $('#content')).eq(0).offset().top - $('form', $('#header')).outerHeight())) {
+                            $('html,body').animate({scrollTop: 0}, 'slow');
+                        }
+                    </script>
+                </ui:fragment>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_15"></div>
+                <div class="grid_cell w_40 mr-w_5">
+                    <p:outputLabel value="Last Name" for="lastname"/>
+                </div>
+                <div class="grid_cell w_40">
+                    <p:outputLabel value="First Name" for="firstname"/>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_15">
+                    <p:tooltip for="@next" value="Client's last and first name. Example: Smith John" position="top" showDelay="2000"/>
+                </div>
+                <div class="grid_cell w_40 mr-w_5">
+                    <div class="icon_box">
+                        <p:inputText id="lastname" value="#{FS_EDIT_CLIENT_VIEW.person.lastname}" required="true" styleClass="w_100">
+                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon"/>
+                        <script>focusByPriority();</script>
+                    </div>
+                </div>
+                <div class="grid_cell w_40">
+                    <div class="icon_box">
+                        <p:inputText id="firstname" value="#{FS_EDIT_CLIENT_VIEW.person.firstname}" required="true" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <!-- CIS/SNG region: Russian name cases (genitive, dative, instrumental); filled on save in EditClientView -->
+            <div class="grid_row">
+                <div class="grid_cell w_15">
+                    Resident
+                </div>
+                <div class="grid_cell w_5">
+                    <p:outputLabel value="country" for="@next"/>
+                </div>
+                <div class="grid_cell w_20">
+                    <div class="icon_box">
+                        <p:selectOneMenu value="#{FS_EDIT_CLIENT_VIEW.person.residentCountry}" autoWidth="false" required="true" filter="true"
+                                         filterMatchMode="startsWith" styleClass="w_100" panelStyleClass="country_panel">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{FS_EDIT_CLIENT_VIEW.countries}" var="country" itemLabel="#{country.name}"
+                                           itemValue="#{country.id}" itemDisabled="#{!country.enabled}"/>
+                        </p:selectOneMenu>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+                <div class="grid_cell w_15 r-label">
+                    <p:outputLabel value="Birth Date" for="@next:@next"/>
+                </div>
+                <div class="grid_cell w_15">
+                    <div class="icon_box">
+                        <p:tooltip for="@next" value="Date in format dd.mm.yyyy. Example: 01.12.1991" position="top" showDelay="2000"/>
+                        <p:calendar value="#{FS_EDIT_CLIENT_VIEW.person.birthDate}" pattern="dd.MM.yyyy" placeholder="dd.mm.yyyy"
+                                    showOn="button" mask="true" converter="javax.faces.LocalDateConverter" required="true"
+                                    mindate="#{DateTimes.MIN_LOCAL_DATE}" styleClass="w_100">
+                            <f:validator binding="#{minTemporalValidator}"/>
+                            <f:validator binding="#{maxCurrentLocalDateValidator}"/>
+                            <f:attribute name="zoneId" value="#{userSession.user.department.zoneId}"/>
+                            <p:ajax update="person-age"/>
+                            <p:ajax event="dateSelect" update="person-age"/>
+                        </p:calendar>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+                <div class="grid_cell w_10" jsf:id="person-age">
+                    <div class="grid_cell w_70 r-label">
+                        <p:outputLabel value="Age" rendered="#{not empty FS_EDIT_CLIENT_VIEW.person.birthDate}"/>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <b>
+                            <h:outputText value="#{FS_EDIT_CLIENT_VIEW.calculateAge()}" rendered="#{not empty FS_EDIT_CLIENT_VIEW.person.birthDate}"
+                                          styleClass="w_100"/>
+                        </b>
+                    </div>
+                </div>
+                <div class="grid_cell w_20">
+                    <div class="grid_cell w_30 r-label">
+                        <p:outputLabel value="Gender" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_70">
+                        <div class="icon_box">
+                            <p:importEnum type="web.entity.crm.Gender"/>
+                            <p:selectOneMenu value="#{FS_EDIT_CLIENT_VIEW.person.gender}" widgetVar="gender" required="true" autoWidth="false"
+                                             styleClass="w_100">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItem itemValue="#{Gender.MALE}" itemLabel="Male"/>
+                                <f:selectItem itemValue="#{Gender.FEMALE}" itemLabel="Female"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_80">
+                    <div class="grid_row">
+                        <div class="grid_cell w_25">
+                            <p:outputLabel value="Place of Birth" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_75">
+                            <div class="icon_box">
+                                <p:inputText value="#{FS_EDIT_CLIENT_VIEW.person.birthPlace}" required="true" styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_row">
+                        <div class="grid_cell w_25">
+                            <p:outputLabel value="Country of Birth" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_75">
+                            <div class="icon_box">
+                                <p:selectOneMenu value="#{FS_EDIT_CLIENT_VIEW.person.birthCountry}" required="true" filter="true"
+                                                 filterMatchMode="startsWith" autoWidth="false" styleClass="w_100" panelStyleClass="country_panel">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{FS_EDIT_CLIENT_VIEW.countries}" var="country" itemLabel="#{country.name}"
+                                                   itemValue="#{country.id}" itemDisabled="#{!country.enabled}"/>
+                                </p:selectOneMenu>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_row">
+                        <div class="grid_cell w_25">
+                            <p:outputLabel value="Citizenship" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_75">
+                            <div class="icon_box">
+                                <p:selectOneMenu value="#{FS_EDIT_CLIENT_VIEW.person.citizenship}" required="true" filter="true"
+                                                 filterMatchMode="startsWith" autoWidth="false" styleClass="w_100" panelStyleClass="country_panel">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{FS_EDIT_CLIENT_VIEW.countries}" var="country" itemLabel="#{country.name}"
+                                                   itemValue="#{country.id}" itemDisabled="#{!country.enabled}"/>
+                                </p:selectOneMenu>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_row">
+                        <div class="grid_cell w_25">
+                            <p:outputLabel value="TIN" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_75">
+                            <div class="icon_box">
+                                <p:inputMask value="#{FS_EDIT_CLIENT_VIEW.person.ein}" mask="99-9999999" placeholder="00-0000000"
+                                             styleClass="w_100">
+                                    <f:validator binding="#{personEinValidator}"/>
+                                </p:inputMask>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- CIS/SNG region: business type, client status, acquisition source -->
+                    <ui:fragment rendered="false">
+                        <div class="grid_row">
+                            <div class="grid_cell w_25">
+                                <p:outputLabel value="Individual Entrepreneur Status" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_75">
+                                <p:selectOneMenu value="#{FS_EDIT_CLIENT_VIEW.person.businessType}" styleClass="w_100" autoWidth="false">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{FS_EDIT_CLIENT_VIEW.businessTypeDictionary.findAll()}" var="unit"
+                                                   itemLabel="#{unit.value}" itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_25">
+                                <p:outputLabel value="Client Status" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_75">
+                                <p:selectOneMenu value="#{FS_EDIT_CLIENT_VIEW.person.status}" styleClass="w_100" autoWidth="false">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{FS_EDIT_CLIENT_VIEW.clientStatusDictionary.findAll()}" var="unit"
+                                                   itemLabel="#{unit.value}" itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_25">
+                                <p:outputLabel value="Acquisition Source" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_75">
+                                <p:selectOneMenu value="#{FS_EDIT_CLIENT_VIEW.person.attractionSource}" styleClass="w_100" autoWidth="false">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{FS_EDIT_CLIENT_VIEW.attractionSourceDictionary.findAll()}" var="unit"
+                                                   itemLabel="#{unit.value}" itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+                    </ui:fragment>
+                </div>
+                <div class="grid_cell w_20 align-center">
+                    <div class="grid_row w_100">
+                        <p:outputPanel styleClass="photo-state-changed">
+                            <h:graphicImage url="data:image/jpg;base64,#{FS_EDIT_CLIENT_VIEW.toBase64Photo()}" width="215" height="auto"
+                                            styleClass="r-float_elem"/>
+                            <p:outputLabel value="#{FS_EDIT_CLIENT_VIEW.photo.dateTime}" rendered="#{FS_EDIT_CLIENT_VIEW.photo.dateTime ne null}">
+                                <f:converter converterId="javax.faces.Instant"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                                <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                            </p:outputLabel>
+                        </p:outputPanel>
+                    </div>
+                    <ui:fragment rendered="#{userSession.rights.contains('single-window-photo-edit')}">
+                        <div class="w_100 grid_row">
+                            <div class="grid_cell w_100 photo-buttons" jsf:id="photo-buttons">
+                                <p:commandLink action="#{FS_EDIT_CLIENT_VIEW.initCamera}" process="@this" update="webcam buttons"
+                                               styleClass="mr-w_5 nodecor">
+                                    <i class="fa fa-video-camera fa-2x" aria-hidden="true"/>
+                                </p:commandLink>
+                                <p:fileUpload fileUploadListener="#{FS_EDIT_CLIENT_VIEW.uploadIcon}" auto="true" styleClass="file-upload"
+                                              style="display: none" update="photo-buttons"/>
+                                <p:remoteCommand oncomplete="PF('icon-dialog').show()" autoRun="true" update="webcam buttons"
+                                                 rendered="#{FS_EDIT_CLIENT_VIEW.localFile and not empty FS_EDIT_CLIENT_VIEW.image}"/>
+                                <p:commandLink action="#{FS_EDIT_CLIENT_VIEW.initUpload}" onclick="$('#content').find('.file-upload input').click()"
+                                               process="@this" update="webcam buttons" styleClass="mr-w_5 nodecor">
+                                    <i class="fa fa-folder-open fa-2x" aria-hidden="true"/>
+                                </p:commandLink>
+                                <p:commandLink disabled="true" styleClass="mr-w_5 nodecor">
+                                    <i class="fa fa-copy fa-2x" aria-hidden="true"/>
+                                </p:commandLink>
+                                <p:commandLink action="#{FS_EDIT_CLIENT_VIEW.removePhoto()}" process="@this" update="@(.photo-state-changed)"
+                                               styleClass="nodecor">
+                                    <i class="fa fa-trash fa-2x" aria-hidden="true"/>
+                                </p:commandLink>
+                            </div>
+                        </div>
+                    </ui:fragment>
+                </div>
+            </div>
+            <h:outputScript library="js" name="webcam.min.js"/>
+            <script>
+                function startWebCamera() {
+                    Webcam.set({
+                        width: 640,
+                        height: 480,
+                        jpeg_quality: 100
+                    });
+                    Webcam.attach('#web-camera');
+                }
+
+                Webcam.on('live', function () {
+                    PF('icon-dialog').show();
+                });
+
+                function finish() {
+                    Webcam.reset();
+                    PF('icon-dialog').hide();
+                }
+
+                Webcam.on('error', function (err) {
+                    showError();
+                });
+
+                function takePicture() {
+                    Webcam.snap(function (imageUri) {
+                        saveImage([{
+                            name: 'image',
+                            value: imageUri.replace(/^data\:image\/\w+\;base64\,/, '')
+                        }]);
+                    });
+                    Webcam.reset();
+                }
+            </script>
+            <p:dialog header="Photo Capture" modal="true" closable="false" widgetVar="icon-dialog" showEffect="fade" hideEffect="fade" width="681"
+                      resizable="false" draggable="false" styleClass="photo-dialog">
+                <p:remoteCommand name="showError" actionListener="#{FS_EDIT_CLIENT_VIEW.showCameraError}" process="@this"/>
+                <p:remoteCommand name="saveImage" actionListener="#{FS_EDIT_CLIENT_VIEW.takePicture}" process="@this"/>
+                <p:remoteCommand name="hideCropper" update="webcam"/>
+                <div jsf:id="webcam" class="webcam-photo">
+                    <ui:fragment rendered="#{FS_EDIT_CLIENT_VIEW.webCameraSource and FS_EDIT_CLIENT_VIEW.cameraLive}">
+                        <div class="oval"></div>
+                        <div id="web-camera"></div>
+                        <script>startWebCamera();</script>
+                    </ui:fragment>
+                    <p:imageCropper value="#{FS_EDIT_CLIENT_VIEW.croppedImage}" initialCoords="180,80,464,450" boxHeight="480"
+                                    rendered="#{not FS_EDIT_CLIENT_VIEW.cameraLive and not empty FS_EDIT_CLIENT_VIEW.image}"
+                                    converter="javax.faces.Byte"
+                                    image="data:image/jpg;base64,#{FS_EDIT_CLIENT_VIEW.toBase64()}"/>
+                </div>
+                <div jsf:id="buttons">
+                    <div class="navigation_panel bottom clearfix align-center">
+                        <ui:fragment rendered="#{not FS_EDIT_CLIENT_VIEW.localFile}">
+                            <p:commandButton value="Capture" onclick="takePicture();" action="#{FS_EDIT_CLIENT_VIEW.changeCameraState}"
+                                             update="buttons webcam" process="@widgetVar(icon-dialog)" rendered="#{FS_EDIT_CLIENT_VIEW.cameraLive}"
+                                             styleClass="r-float_elem blue-btn"/>
+                            <p:commandButton value="Start" action="#{FS_EDIT_CLIENT_VIEW.changeCameraState}" update="buttons webcam"
+                                             process="@widgetVar(icon-dialog)" rendered="#{not FS_EDIT_CLIENT_VIEW.cameraLive}"
+                                             styleClass="r-float_elem blue-btn"/>
+                        </ui:fragment>
+                    </div>
+                    <ui:fragment rendered="#{FS_EDIT_CLIENT_VIEW.localFile}">
+                        <div class="w_100 grid_row">
+                            <div class="grid_cell w_50 mr-w_5">
+                                <p:outputLabel value="Photo Date" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_45">
+                                <div class="icon_box">
+                                    <p:calendar value="#{FS_EDIT_CLIENT_VIEW.imageDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm:ss"
+                                                placeholder="dd.mm.yyyy hh:mm:ss" timeZone="#{userSession.user.department.zoneId}" showOn="button"
+                                                styleClass="w_100" mask="true"/>
+                                    <p:message for="@previous" display="icon"/>
+                                </div>
+                            </div>
+                        </div>
+                    </ui:fragment>
+                    <div class="btn_box">
+                        <p:commandButton value="Save" action="#{FS_EDIT_CLIENT_VIEW.savePhotoChanges}" process="@widgetVar(icon-dialog)"
+                                         oncomplete="if (!args.error) { PF('icon-dialog').hide(); hideCropper(); }" update="@(.photo-state-changed)"
+                                         disabled="#{FS_EDIT_CLIENT_VIEW.cameraLive}" styleClass="big_btn blue-btn r-float_elem"/>
+                        <p:commandButton value="Close" action="#{FS_EDIT_CLIENT_VIEW.cancelPhotoChanges}" process="@widgetVar(icon-dialog)"
+                                         oncomplete="finish(); hideCropper();" styleClass="big_btn orange-btn"/>
+                    </div>
+                </div>
+            </p:dialog>
+        </p:panel>
+        <p:panel header="Primary Identity Document" toggleable="true">
+            <div class="grid_row">
+                <o:importConstants type="web.utils.Documents"/>
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Document Type" for="@next"/>
+                </div>
+                <div class="grid_cell w_40 mr-w_5">
+                    <div class="icon_box">
+                        <p:selectOneMenu value="#{FS_EDIT_CLIENT_VIEW.mainDocument.type}" styleClass="w_100" required="true" autoWidth="false">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItem itemLabel="#{documentTypeDictionary.findOne(Documents.US_PASSPORT_CODE).value}"
+                                          itemValue="#{Documents.US_PASSPORT_CODE}"/>
+                            <f:selectItem itemLabel="#{documentTypeDictionary.findOne(Documents.FOREIGN_CITIZEN_PASSPORT_CODE).value}"
+                                          itemValue="#{Documents.FOREIGN_CITIZEN_PASSPORT_CODE}"/>
+                            <p:ajax listener="#{FS_EDIT_CLIENT_VIEW.onDocumentTypeChange}" process="@this" update="@(.document-state)"/>
+                        </p:selectOneMenu>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+                <div class="grid_cell w_20 mr-w_5">
+                    <div class="grid_cell w_25">
+                        <p:outputLabel value="Series" for="@next" styleClass="document-state"/>
+                    </div>
+                    <div class="grid_cell w_75">
+                        <div class="icon_box">
+                            <p:inputText value="#{FS_EDIT_CLIENT_VIEW.mainDocument.series}"
+                                         required="#{FS_EDIT_CLIENT_VIEW.mainDocument.type eq Documents.US_PASSPORT_CODE}"
+                                         maxlength="#{FS_EDIT_CLIENT_VIEW.mainDocument.type eq Documents.US_PASSPORT_CODE ? 4 : 30}"
+                                         styleClass="w_100 document-state">
+                                <p:keyFilter regEx="#{FS_EDIT_CLIENT_VIEW.mainDocument.type eq Documents.US_PASSPORT_CODE ? '/\\d/'
+                                             : '/[0-9a-zA-Z-]/'}" preventPaste="false"/>
+                                <f:validator binding="#{documentValidator}"/>
+                                <f:attribute name="type" value="#{FS_EDIT_CLIENT_VIEW.mainDocument.type}"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_cell w_20">
+                    <div class="grid_cell w_25">
+                        <p:outputLabel value="Number" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_75">
+                        <div class="icon_box">
+                            <p:inputText value="#{FS_EDIT_CLIENT_VIEW.mainDocument.number}"
+                                         required="#{FS_EDIT_CLIENT_VIEW.mainDocument.type ne null}"
+                                         maxlength="#{FS_EDIT_CLIENT_VIEW.mainDocument.type eq Documents.US_PASSPORT_CODE ? 6 : 40}"
+                                         styleClass="w_100 document-state">
+                                <p:keyFilter regEx="#{FS_EDIT_CLIENT_VIEW.mainDocument.type eq Documents.US_PASSPORT_CODE ? '/\\d/'
+                                             : '/[0-9a-zA-Z-]/'}" preventPaste="false"/>
+                                <f:validator binding="#{documentValidator}"/>
+                                <f:attribute name="type" value="#{FS_EDIT_CLIENT_VIEW.mainDocument.type}"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Place of Issue" styleClass="document-state" for="@next"/>
+                </div>
+                <div class="grid_cell w_40 mr-w_5">
+                    <div class="icon_box">
+                        <p:inputText value="#{FS_EDIT_CLIENT_VIEW.mainDocument.issuanceUnit}"
+                                     required="#{FS_EDIT_CLIENT_VIEW.mainDocument.type ne null}"
+                                     styleClass="w_100 document-state"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+                <!-- CIS/SNG region: passport subdivision code (###-###) -->
+                <ui:fragment rendered="false">
+                    <div class="grid_cell w_20 mr-w_5">
+                        <p:outputLabel value="Department Code" for="@next" styleClass="document-state"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:inputMask mask="999-999" value="#{FS_EDIT_CLIENT_VIEW.mainDocument.issuanceUnitCode}"
+                                         required="#{FS_EDIT_CLIENT_VIEW.mainDocument.type eq Documents.US_PASSPORT_CODE}"
+                                         styleClass="w_100 document-state"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </ui:fragment>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Issue Date" styleClass="document-state" for="@next"/>
+                </div>
+                <div class="grid_cell w_40 mr-w_5">
+                    <div class="icon_box">
+                        <p:calendar value="#{FS_EDIT_CLIENT_VIEW.mainDocument.issuanceDate}" pattern="dd.MM.yyyy" placeholder="dd.mm.yyyy"
+                                    showOn="button"
+                                    mask="true" converter="javax.faces.LocalDateConverter" required="#{FS_EDIT_CLIENT_VIEW.mainDocument.type ne null}"
+                                    mindate="#{DateTimes.MIN_LOCAL_DATE}" styleClass="w_50 document-state">
+                            <f:validator binding="#{maxCurrentLocalDateValidator}"/>
+                            <f:attribute name="zoneId" value="#{userSession.user.department.zoneId}"/>
+                            <f:validator binding="#{minTemporalValidator}"/>
+                        </p:calendar>
+                        <p:message for="@previous" display="icon" styleClass="mlm-w_50"/>
+                    </div>
+                </div>
+                <div class="grid_cell w_20 mr-w_5">
+                    <p:outputLabel value="Valid Until" for="@next"/>
+                </div>
+                <div class="grid_cell w_20">
+                    <div class="icon_box">
+                        <p:calendar value="#{FS_EDIT_CLIENT_VIEW.mainDocument.validUntilDate}" pattern="dd.MM.yyyy" placeholder="dd.mm.yyyy"
+                                    showOn="button" mask="true" converter="javax.faces.LocalDateConverter" styleClass="w_100 document-state"
+                                    mindate="#{DateTimes.MIN_LOCAL_DATE}">
+                            <f:validator binding="#{minTemporalValidator}"/>
+                        </p:calendar>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+        </p:panel>
+        <!-- CIS/SNG region: extra identity documents -->
+        <p:panel header="Additional Documents" toggleable="true" rendered="false">
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="add" actionListener="#{FS_EDIT_CLIENT_VIEW.addDocument}" process="@this" update="@next"
+                                 oncomplete="PF('documents').switchToRowEdit(PF('documents').findRow(PF('documents').getJQ().find('tr').length - 2))"
+                                 styleClass="blue-btn"/>
+            </div>
+            <p:dataTable value="#{FS_EDIT_CLIENT_VIEW.additionalDocuments}" var="document" rowIndexVar="row" editable="true" widgetVar="documents"
+                         emptyMessage="No data">
+                <p:ajax event="rowEditInit" listener="#{FS_EDIT_CLIENT_VIEW.onDocumentEdit}"/>
+                <p:ajax event="rowEditCancel" listener="#{FS_EDIT_CLIENT_VIEW.onCancelDocumentEdit}"/>
+                <p:column headerText="Document Type">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            #{FS_EDIT_CLIENT_VIEW.documentTypeDictionary.findOne(document.type).value}
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box">
+                                <p:selectOneMenu value="#{document.type}" required="true" autoWidth="false" styleClass="w_100">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{FS_EDIT_CLIENT_VIEW.documentTypeDictionary.findAll('10', '21')}" var="unit"
+                                                   itemLabel="#{unit.value}" itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                                    <p:ajax update="@(.ui-datatable .ui-inputtext)"/>
+                                </p:selectOneMenu>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Series" width="90">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <p:outputLabel value="#{document.series}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:inputText value="#{document.series}">
+                                <p:keyFilter regEx="#{document.type eq Documents.US_PASSPORT_CODE ? '/\\d/'
+                                             : '/[0-9a-zA-Z-]/'}" preventPaste="false"/>
+                                <f:validator binding="#{documentValidator}"/>
+                                <f:attribute name="type" value="#{document.type}"/>
+                            </p:inputText>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Number" width="120">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            #{document.number}
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box">
+                                <p:inputText value="#{document.number}" required="true">
+                                    <p:keyFilter regEx="#{document.type eq Documents.US_PASSPORT_CODE ? '/\\d/'
+                                             : '/[0-9a-zA-Z-]/'}" preventPaste="false"/>
+                                    <f:validator binding="#{documentValidator}"/>
+                                    <f:attribute name="type" value="#{document.type}"/>
+                                </p:inputText>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Issue Date" width="120">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <p:outputLabel value="#{document.issuanceDate}">
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                                <f:converter converterId="javax.faces.LocalDateConverter"/>
+                            </p:outputLabel>
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box">
+                                <p:calendar value="#{document.issuanceDate}" pattern="dd.MM.yyyy" placeholder="dd.mm.yyyy" showOn="button"
+                                            mask="true" converter="javax.faces.LocalDateConverter" required="true"
+                                            mindate="#{DateTimes.MIN_LOCAL_DATE}">
+                                    <f:validator binding="#{minTemporalValidator}"/>
+                                    <f:validator binding="#{maxCurrentLocalDateValidator}"/>
+                                    <f:attribute name="zoneId" value="#{userSession.user.department.zoneId}"/>
+                                </p:calendar>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Valid Until" width="120">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <p:outputLabel value="#{document.validUntilDate}">
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                                <f:converter converterId="javax.faces.LocalDateConverter"/>
+                            </p:outputLabel>
+                        </f:facet>
+                        <f:facet name="input">
+                            <div class="icon_box">
+                                <p:calendar value="#{document.validUntilDate}" pattern="dd.MM.yyyy" placeholder="dd.mm.yyyy"
+                                            showOn="button" mask="true" converter="javax.faces.LocalDateConverter"
+                                            mindate="#{DateTimes.MIN_LOCAL_DATE}">
+                                    <f:validator binding="#{minTemporalValidator}"/>
+                                    <f:attribute name="zoneId" value="#{userSession.user.department.zoneId}"/>
+                                </p:calendar>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Place of Issue">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            #{document.issuanceUnit}
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:inputTextarea value="#{document.issuanceUnit}" autoResize="false" styleClass="w_100" rows="2"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column width="60">
+                    <p:rowEditor editTitle="Edit" saveTitle="Save" cancelTitle="Cancel"/>
+                    <p:commandLink actionListener="#{FS_EDIT_CLIENT_VIEW.removeDocument(row)}" immediate="true" update="@parent:@parent"
+                                   styleClass="delete-link ml-w_10">
+                        <i class="fa fa-trash" aria-hidden="true"/>
+                    </p:commandLink>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <!-- CIS/SNG region: temporary (staying) address -->
+        <p:panel header="Temporary Address Information" toggleable="true" rendered="false">
+            <div jsf:id="accommodation">
+                <fo:address value="#{FS_EDIT_CLIENT_VIEW.accommodationAddressAutoComplete}"/>
+            </div>
+        </p:panel>
+        <p:panel header="Residential Address" toggleable="true">
+            <div jsf:id="residential">
+                <fo:address value="#{FS_EDIT_CLIENT_VIEW.residentialAddressAutoComplete}"/>
+            </div>
+        </p:panel>
+        <!-- CIS/SNG region: correspondence address and "matches" linkage -->
+        <p:panel header="Correspondence Address" toggleable="true" rendered="false">
+            <div jsf:id="correspondence">
+                <fo:address value="#{FS_EDIT_CLIENT_VIEW.correspondenceAddressAutoComplete}"/>
+            </div>
+        </p:panel>
+        <p:panel id="contactInfo" header="Contact Information" toggleable="true">
+            <p:outputPanel id="contactsTable" layout="block">
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="add" actionListener="#{FS_EDIT_CLIENT_VIEW.addContact}" process="@this"
+                                 update="@form:contactInfo:contactsTable" styleClass="blue-btn"/>
+            </div>
+            <p:dataTable value="#{FS_EDIT_CLIENT_VIEW.contacts}" var="contact" rowIndexVar="row" widgetVar="contacts"
+                         emptyMessage="No data">
+                <p:column headerText="Contact Type">
+                    <p:selectOneMenu value="#{contact.type}" styleClass="w_100" autoWidth="false">
+                        <f:selectItem itemValue="#{null}" itemLabel=""/>
+                        <f:selectItems value="#{FS_EDIT_CLIENT_VIEW.contactTypeDictionary.findAll()}" var="unit" itemLabel="#{unit.value}"
+                                       itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                        <p:ajax event="change" listener="#{FS_EDIT_CLIENT_VIEW.onContactTypeChange(contact)}" process="@this"
+                                update="@form:contactInfo:contactsTable"/>
+                    </p:selectOneMenu>
+                </p:column>
+                <p:column headerText="Contact" width="200">
+                    <ui:fragment rendered="#{contact.type eq 'Email'}">
+                        <div class="icon_box">
+                            <p:inputText value="#{contact.data}" placeholder="email@some.dom" styleClass="w_100">
+                                <p:keyFilter regEx="/^[_A-Za-z0-9-@\\.]/" preventPaste="false"/>
+                                <f:validator binding="#{emailValidator}"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{contact.type eq 'SmsClientBank' or contact.type eq 'MobilePhone'
+                            or contact.type eq 'HomePhone' or contact.type eq 'WorkPhone' or contact.type eq 'Fax'}">
+                        <div class="icon_box">
+                            <p:inputText value="#{contact.data}" placeholder="+1 555 123 4567" styleClass="w_100">
+                                <p:keyFilter regEx="/[0-9+() -]/" preventPaste="false"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{FS_EDIT_CLIENT_VIEW.showGenericContactInput(contact.type)}">
+                        <div class="icon_box">
+                            <p:inputText value="#{contact.data}" placeholder="Contact value" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </ui:fragment>
+                </p:column>
+                <p:column headerText="Primary" width="65">
+                    <p:selectBooleanCheckbox value="#{contact.main}">
+                        <p:ajax event="change" listener="#{FS_EDIT_CLIENT_VIEW.onContactMainChange(contact)}" process="@this"/>
+                    </p:selectBooleanCheckbox>
+                </p:column>
+                <p:column headerText="Notification" width="85">
+                    <p:selectBooleanCheckbox value="#{contact.notification}"/>
+                </p:column>
+                <p:column headerText="Comment">
+                    <p:inputTextarea value="#{contact.description}" autoResize="false" styleClass="w_100" rows="2"/>
+                </p:column>
+                <p:column width="60">
+                    <p:commandLink actionListener="#{FS_EDIT_CLIENT_VIEW.removeContact(row)}" process="@this"
+                                   update="@form:contactInfo:contactsTable" styleClass="delete-link">
+                        <i class="fa fa-trash" aria-hidden="true"/>
+                    </p:commandLink>
+                </p:column>
+            </p:dataTable>
+            </p:outputPanel>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:defaultCommand target="@next"/>
+            <p:commandButton value="Next" styleClass="blue-btn big_btn r-float_elem" action="#{FS_EDIT_CLIENT_VIEW.next()}"
+                             update="@(.icon_box .ui-widget) @(.icon_box > .ui-message) error-messages"/>
+            <p:commandButton value="Back" styleClass="blue-btn big_btn" onclick="PF('confirm').show()" immediate="true"/>
+            <p:commandButton value="Cancel" styleClass="orange-btn big_btn" action="cancel" process="@this"/>
+        </div>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" closable="false" header="Confirmation" severity="info"
+                         message="Changes will be cancelled. Do you really want to leave the client profile?">
+            <p:commandButton value="Confirm" action="#{FS_EDIT_CLIENT_VIEW.back()}" onclick="PF('confirm').hide()" immediate="true"
+                             styleClass="blue-btn r-float_elem"/>
+            <p:button value="Cancel" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

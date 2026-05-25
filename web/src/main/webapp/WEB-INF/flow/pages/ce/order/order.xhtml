@@ -1,0 +1,241 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../ce-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Order Registry</h1>
+        <div class="flex_box">
+            <div class="flex_item w_1_3">
+                <p:panel header="Select Department and Period">
+                    <f:facet name="actions">
+                        <span class="icon-block icon_currency"/>
+                    </f:facet>
+                    <div class="table_filter">
+                        <p:outputLabel value="Department" for="@next"/>
+                        <p:selectOneMenu styleClass="w_100" value="#{orderView.selectedDepartment}" converter="omnifaces.SelectItemsConverter"
+                                         autoWidth="false" filter="true" filterMatchMode="contains">
+                            <f:selectItems value="#{orderView.departments}" var="item" itemLabel="#{item.name}" itemValue="#{item}"/>
+                            <p:ajax listener="#{orderView.onChangeRange}" update="@form"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="Period" for="@next"/>
+                        <p:importEnum type="web.view.ce.order.DateRange"/>
+                        <p:selectOneMenu value="#{orderView.dateRange}" autoWidth="false">
+                            <f:selectItem itemValue="#{DateRange.TODAY}" itemLabel="today"/>
+                            <f:selectItem itemValue="#{DateRange.YESTERDAY}" itemLabel="yesterday"/>
+                            <f:selectItem itemValue="#{DateRange.DAY_BEFORE_YESTERDAY}" itemLabel="day before yesterday"/>
+                            <f:selectItem itemValue="#{DateRange.THIS_WEEK}" itemLabel="this week"/>
+                            <f:selectItem itemValue="#{DateRange.PREVIOUS_WEEK}" itemLabel="previous week"/>
+                            <f:selectItem itemValue="#{DateRange.CUSTOM_DATE}" itemLabel="previous day"/>
+                            <f:selectItem itemValue="#{DateRange.CUSTOM_PERIOD}" itemLabel="previous period"/>
+                            <p:ajax listener="#{orderView.onChangeRange}" update="@form"/>
+                        </p:selectOneMenu>
+                        <ui:fragment rendered="#{orderView.dateRange eq DateRange.CUSTOM_DATE}">
+                            <div class="icon_box sibling">
+                                <p:calendar value="#{orderView.customDate}" converter="javax.faces.LocalDateConverter" pattern="dd.MM.yyyy"
+                                            showOn="button" placeholder="dd.mm.yyyy" mask="true">
+                                    <p:ajax event="change" listener="#{orderView.onChangeCustomDate}" update="@form"/>
+                                    <p:ajax event="dateSelect" listener="#{orderView.onChangeCustomDate}" update="@form"/>
+                                </p:calendar>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{orderView.dateRange eq DateRange.CUSTOM_PERIOD}">
+                            <p:outputLabel value="Period Start Date" for="@next"/>
+                            <div class="icon_box">
+                                <p:calendar value="#{orderView.customPeriodStartDate}" converter="javax.faces.LocalDateConverter" pattern="dd.MM.yyyy"
+                                            showOn="button" placeholder="dd.mm.yyyy" mask="true">
+                                    <p:ajax event="change" listener="#{orderView.onChangeCustomPeriod}" update="@form"/>
+                                    <p:ajax event="dateSelect" listener="#{orderView.onChangeCustomPeriod}" update="@form"/>
+                                </p:calendar>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                            <p:outputLabel value="Period End Date" for="@next"/>
+                            <div class="icon_box">
+                                <p:calendar value="#{orderView.customPeriodEndDate}" converter="javax.faces.LocalDateConverter" pattern="dd.MM.yyyy"
+                                            showOn="button" placeholder="dd.mm.yyyy" mask="true">
+                                    <p:ajax event="change" listener="#{orderView.onChangeCustomPeriod}" update="@form"/>
+                                    <p:ajax event="dateSelect" listener="#{orderView.onChangeCustomPeriod}" update="@form"/>
+                                </p:calendar>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </ui:fragment>
+                    </div>
+                    <p:dataTable value="#{orderView.orders}" var="order" selection="#{orderView.selectedOrder}" rowKey="#{order.id}"
+                                 emptyMessage="No data">
+                        <p:ajax event="rowSelectRadio" listener="#{orderView.onChangeOrder}" update="@form"/>
+                        <p:column selectionMode="single" styleClass="check_cell" width="17"/>
+                        <p:column headerText="Date and Time" styleClass="#{not empty order.dealUser ? 'red-text' : ''}" width="100">
+                            <h:outputText value="#{order.date}">
+                                <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy HH:mm"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Information" styleClass="#{not empty order.dealUser ? 'red-text' : ''}">
+                            <ui:fragment rendered="#{not empty order.dealUser}">
+                                #{utils.strings.capitalizeFio(order.dealUser.lastname, order.dealUser.firstname, order.dealUser.patronymic)}<br/>
+                                #{order.dealUser.positionText}
+                            </ui:fragment>
+                            <ui:fragment rendered="#{empty order.dealUser}">
+                                #{empty order.canceled ? 'General Rate' : 'Rate Return'}
+                            </ui:fragment>
+                        </p:column>
+                        <p:column width="13">
+                            <p:rowToggler/>
+                        </p:column>
+                        <p:rowExpansion styleClass="order-info">
+                            <div class="#{not empty order.dealUser ? 'red-text' : ''}">
+                                <span>Creator:</span> #{utils.strings.capitalizeFio(order.user.lastname, order.user.firstname, order.user.patronymic)},
+                                #{order.user.positionText}
+                            </div>
+                            <ui:fragment rendered="#{not empty order.dealUser}">
+                                <div class="red-text">
+                                    <span>Operations Performed:</span> #{order.performedOperationsCount} of #{order.allowedOperationsCount}
+                                </div>
+                            </ui:fragment>
+                        </p:rowExpansion>
+                    </p:dataTable>
+                </p:panel>
+            </div>
+            <div class="flex_item w_2_3">
+                <ui:fragment rendered="#{not empty orderView.selectedOrder}">
+                    <p:panel header="If necessary, reprint the order for setting exchange rates">
+                        <f:facet name="actions">
+                            <span class="icon-block icon_currency"/>
+                        </f:facet>
+                        <div class="description_order">
+                            Foreign currency buy/sell rates set at
+                            <b><h:outputText value="#{orderView.selectedOrder.date}">
+                                <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                                <f:attribute name="pattern" value="HH:mm:ss"/>
+                            </h:outputText></b> on
+                            <b><h:outputText value="#{orderView.selectedOrder.date}">
+                                <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            </h:outputText></b>
+                            by order <b>No. #{orderView.selectedOrder.number}</b>
+                            <ui:fragment rendered="#{not empty orderView.selectedOrder.dealUser}">
+                                for user <b>#{orderView.selectedOrder.dealUser.positionText}
+                                #{utils.strings.capitalizeFio(orderView.selectedOrder.dealUser.lastname,
+                                        orderView.selectedOrder.dealUser.firstname, orderView.selectedOrder.dealUser.patronymic)}</b>
+                            </ui:fragment>
+                        </div>
+                        <div class="navigation_panel clearfix">
+                            <p:selectOneButton value="#{orderView.selectedRuleName}" styleClass="dashed" onchange="groupChangeListener(this)"
+                                               rendered="#{empty orderView.selectedOrder.dealUser}">
+                                <f:selectItems var="ruleName" value="#{orderView.ruleNames}" itemLabel="#{ruleName}" itemValue="#{ruleName}"/>
+                            </p:selectOneButton>
+                            <script>
+                                function groupChangeListener(button) {
+                                    var radioButton = button.inputs.filter(':checked'),
+                                        header = $('.ui-datatable').find('.ui-rowgroup-header');
+                                    if (radioButton.val() !== undefined) {
+                                        $('.ui-icon-circle-triangle-s', header).each(function () {
+                                            $(this).parent().click();
+                                        });
+                                        var td = header.children().filter(function () {
+                                            return $(this).text().trim() === radioButton.val();
+                                        });
+                                        if ($('.ui-icon-circle-triangle-e', td).length) {
+                                            td.children('a').click();
+                                        }
+                                    } else {
+                                        $('.ui-icon-circle-triangle-e', header).each(function () {
+                                            $(this).parent().click();
+                                        });
+                                    }
+                                }
+                            </script>
+                        </div>
+                        <p:dataTable value="#{orderView.rateItems}" var="item" sortBy="#{item.rate.rulePosition}"
+                                     expandableRowGroups="true" emptyMessage="No data">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column rowspan="2" headerText="Currency Type"/>
+                                    <p:column rowspan="2" headerText="Denomination"/>
+                                    <p:column rowspan="2" colspan="2" styleClass="operation_cell" headerText="Buy"/>
+                                    <p:column rowspan="2" colspan="2" styleClass="operation_cell" headerText="Sell"/>
+                                    <p:column rowspan="2" styleClass="operation_cell" headerText="External"/>
+                                    <p:column colspan="2" styleClass="dbl_operation_cell" headerText="Market"/>
+                                </p:row>
+                                <p:row>
+                                    <p:column headerText="buy"/>
+                                    <p:column headerText="sell"/>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:headerRow rendered="#{empty orderView.selectedOrder.dealUser}">
+                                <p:column colspan="9">
+                                    #{item.rate.ruleName}
+                                </p:column>
+                            </p:headerRow>
+                            <p:column sortBy="#{item.rate.currencyPosition}">
+                                <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                                styleClass="currency_img">
+                                    <f:param name="id" value="#{item.rate.currency.id}"/>
+                                </p:graphicImage>
+                                #{item.rate.currency.iso}
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                #{item.rate.currency.ratio}
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <b><h:outputText value="#{item.rate.buyRate}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText></b>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <h:outputText value="#{item.differenceBuy}" rendered="#{item.differenceBuy.signum() ne 0}"
+                                              styleClass="#{item.differenceBuy.signum() eq 1 ? 'delta_plus' : 'delta_minus'}">
+                                    <f:convertNumber pattern="+0.00;-0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <b><h:outputText value="#{item.rate.sellRate}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText></b>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <h:outputText value="#{item.differenceSell}" rendered="#{item.differenceSell.signum() ne 0}"
+                                              styleClass="#{item.differenceSell.signum() eq 1 ? 'delta_plus' : 'delta_minus'}">
+                                    <f:convertNumber pattern="+0.00;-0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <h:outputText value="#{item.rate.externalRate}">
+                                    <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <h:outputText value="#{item.marketRate.buyRate}">
+                                    <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <h:outputText value="#{item.marketRate.sellRate}">
+                                    <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    <div class="navigation_panel clearfix bottom">
+                        <p:commandButton value="Print" action="#{orderView.print()}" update="@form" styleClass="blue-btn big_btn r-float_elem"/>
+                        <p:commandButton value="Send" action="#{orderView.send()}" rendered="#{userSession.rights.contains('ce-resend-order')}"
+                                         styleClass="blue-btn big_btn r-float_elem"/>
+                    </div>
+                </ui:fragment>
+            </div>
+        </div>
+        <p:dialog modal="true" closable="true" visible="true" resizable="false" draggable="false" rendered="#{not empty orderView.reportId}"
+                  closeOnEscape="true" appendTo="@(body)" positionType="absolute" position="top">
+            <p:ajax event="close" listener="#{orderView.closeReport}" update="@form"/>
+            <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="600">
+                <f:param name="path" value="#{orderView.reportId}"/>
+            </p:media>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

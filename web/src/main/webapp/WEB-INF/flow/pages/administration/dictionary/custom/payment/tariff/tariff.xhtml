@@ -1,0 +1,93 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{paymentTariffView.dictionary.group} > #{paymentTariffView.dictionary.name}">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel box_big_subpanel clearfix">
+                <div class="search_box">
+                    <p:outputLabel value="Search:" for="@next"/>
+                    <p:inputText value="#{paymentTariffView.filter.name}" placeholder="Search by name"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}"/>
+                    <p:remoteCommand name="updateTable" action="#{paymentTariffView.fastSearch()}" update="@form"/>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                </div>
+            </div>
+            <p:panel toggleable="true" header="Extended Search" collapsed="#{not paymentTariffView.filter.extendedSearch}" styleClass="subpanel">
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_20">
+                            <p:outputLabel value="System" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_80">
+                            <p:selectOneMenu value="#{paymentTariffView.filter.paymentSystem}" styleClass="w_100" autoWidth="false"
+                                             converter="omnifaces.SelectItemsConverter">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{paymentTariffView.paymentSystems}" var="paymentSystem" itemValue="#{paymentSystem}"
+                                               itemLabel="#{paymentSystem.name}"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_30 r-label">
+                            <p:outputLabel value="Status" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_70">
+                            <p:selectOneMenu value="#{paymentTariffView.filter.status}" styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItem itemValue="true" itemLabel="Active"/>
+                                <f:selectItem itemValue="false" itemLabel="Not used"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <div class="grid_cell w_40">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel value="Destination Required" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectOneMenu value="#{paymentTariffView.filter.destinationRequired}" styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItem itemValue="true" itemLabel="Yes"/>
+                                <f:selectItem itemValue="false" itemLabel="No"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn_box clearfix">
+                    <p:commandButton value="Search" update="@form" action="#{paymentTariffView.extendedSearch()}" styleClass="blue-btn r-float_elem"/>
+                </div>
+            </p:panel>
+            <p:dataTable id="paymentTariffs" value="#{paymentTariffModel}" var="paymentTariff" lazy="true" rows="100" sortMode="multiple"
+                         virtualScroll="true" scrollable="#{paymentTariffModel.rowCount gt 10}" scrollRows="50"
+                         scrollHeight="#{paymentTariffModel.rowCount gt 10 ? 400 : null}" emptyMessage="No data">
+                <p:column headerText="Payment System Name">
+                    #{paymentTariff.paymentSystem.name}
+                </p:column>
+                <p:column headerText="Tariff Code">
+                    #{paymentTariff.code}
+                </p:column>
+                <p:column headerText="Tariff Name">
+                    #{paymentTariff.name}
+                </p:column>
+                <p:column headerText="Destination Required">
+                    #{not empty paymentTariff.destinationRequired ? (paymentTariff.destinationRequired ? "Yes" : "No") : ""}
+                </p:column>
+                <p:column headerText="Status">
+                    #{paymentTariff.enabled ? "Active" : "Not used"}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

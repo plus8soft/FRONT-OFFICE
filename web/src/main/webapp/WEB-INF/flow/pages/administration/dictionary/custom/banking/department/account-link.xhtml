@@ -1,0 +1,161 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{accountLinkView.dictionaryParameter.group} > #{accountLinkView.dictionaryParameter.name}">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="body_block">
+                <div class="grid_row">
+                    <div class="grid_cell">Define Linked Account Search Parameters</div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_40">
+                        <div class="grid_cell w_40">
+                            <p:outputLabel value="Department" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectOneMenu value="#{accountLinkView.filter.department}" filter="true" styleClass="w_100" autoWidth="false"
+                                             converter="omnifaces.SelectItemsConverter">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{accountLinkView.departments}" var="departmentItem" itemLabel="#{departmentItem.name}"
+                                               itemValue="#{departmentItem}"/>
+                                <p:ajax update="updateBack"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel value="Account Type" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectOneMenu id="typeAccount" value="#{accountLinkView.accountType}" styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{accountTypeDictionary.findAll()}" var="type" itemLabel="#{type.value}"
+                                               itemValue="#{type.shortValue}" itemDisabled="#{type.unused}"/>
+                                <p:ajax update="accountNumber updateBack" listener="#{accountLinkView.selectAccountType()}"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel value="Account Number" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:inputMask id="accountNumber" value="#{accountLinkView.filter.numberAccount}" styleClass="w_100"
+                                         mask="99999? – 999 – 9 – 9999 – 9999999" converter="CorrespondentAccount">
+                                <p:ajax event="keyup" update="typeAccount" listener="#{accountLinkView.changeAccountNumber()}"/>
+                                <p:ajax update="updateBack"/>
+                            </p:inputMask>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_40">
+                        <div class="grid_cell w_40">
+                            <p:outputLabel value="Currency"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectCheckboxMenu value="#{accountLinkView.filter.currencies}" label="" styleClass="w_100" updateLabel="true"
+                                                  filter="true" filterMatchMode="startsWith" converter="omnifaces.SelectItemsConverter">
+                                <f:selectItems value="#{accountLinkView.currencies}" var="currency" itemLabel="#{currency.iso}"
+                                               itemValue="#{currency}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel value="Status" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectOneMenu value="#{accountLinkView.filter.status}" styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItem itemValue="#{true}" itemLabel="Active"/>
+                                <f:selectItem itemValue="#{false}" itemLabel="Closed"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel value="Name" for="@next"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:inputText value="#{accountLinkView.filter.name}" styleClass="w_100"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation_panel clearfix body_block">
+                <p:commandButton value="Search" update="@form" action="#{accountLinkView.updateFilter()}" styleClass="blue-btn r-float_elem"/>
+                <p:commandButton value="Update from CBS" id="updateBack" styleClass="blue-btn" update="@widgetVar(updateConfirm)"
+                                 disabled="#{empty accountLinkView.filter.numberAccount or empty accountLinkView.filter.department}"
+                                 actionListener="#{accountLinkView.updateInformationBack()}"
+                                 oncomplete="if (!args.error) PF('updateConfirm').show()"/>
+            </div>
+            <p:dataTable id="accountLinks" value="#{accountLinkModel}" var="accountLinkItem" lazy="true" rows="100" sortMode="multiple"
+                         virtualScroll="true" scrollable="#{accountLinkModel.rowCount gt 10}" scrollRows="50"
+                         scrollHeight="#{accountLinkModel.rowCount gt 10 ? 400 : null}" emptyMessage="No data">
+                <p:column headerText="Account #" width="186">
+                    <h:outputText value="#{accountLinkItem.account.id}" converter="CorrespondentAccount"/>
+                </p:column>
+                <p:column headerText="Currency" width="42">
+                    #{accountLinkItem.account.currency.iso}
+                </p:column>
+                <p:column headerText="Name" width="350">
+                    #{accountLinkItem.account.name}
+                </p:column>
+                <p:column headerText="Account Type">
+                    #{accountTypeDictionary.findOne(accountLinkItem.type).value}
+                </p:column>
+                <p:column headerText="After-Hours Account" width="156">
+                    <p:selectBooleanCheckbox value="#{accountLinkItem.nightly}" disabled="true"/>
+                </p:column>
+                <p:column headerText="Open Date" width="90">
+                    <h:outputText value="#{accountLinkItem.openDate}">
+                        <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Close Date" width="90">
+                    <h:outputText value="#{accountLinkItem.closeDate}">
+                        <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Status" width="60">
+                    #{accountLinkItem.account.enabled ? "Active" : "Closed"}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+        <p:confirmDialog widgetVar="updateConfirm" showEffect="fade" hideEffect="fade" closable="false" header="According to CBS Data" severity="info">
+            <f:facet name="message">
+                Account Count: #{accountLinkView.accounts.size()}<br/>
+                <ui:fragment rendered="#{not empty accountLinkView.errorInformations}">
+                    Account data cannot be added:<br/>
+                </ui:fragment>
+                <p:repeat value="#{accountLinkView.errorInformations}" var="item">
+                    #{item.accountNumber}: #{item.message} - #{item.objectName} (#{item.objectId})<br/>
+                </p:repeat>
+            </f:facet>
+            <p:commandButton value="Change" actionListener="#{accountLinkView.makeChanges()}" onclick="PF('updateConfirm').hide()"
+                             update="accountLinks" styleClass="blue-btn r-float_elem"/>
+            <p:button value="Cancel" onclick="PF('updateConfirm').hide(); return" styleClass="orange-btn"/>
+            <p:commandButton value="To File" ajax="false" rendered="#{not empty accountLinkView.errorInformations}"
+                             styleClass=" green-btn r-float_elem">
+                <p:fileDownload value="#{accountLinkView.fileDownload()}"/>
+            </p:commandButton>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

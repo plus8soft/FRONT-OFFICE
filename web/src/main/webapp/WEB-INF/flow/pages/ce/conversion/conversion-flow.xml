@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/ce/transition">
+    <view-state id="conversion">
+        <var name="conversionView" class="web.view.ce.conversion.ConversionView"/>
+        <on-entry>
+            <evaluate expression="conversionView.init()"/>
+        </on-entry>
+    </view-state>
+</flow>

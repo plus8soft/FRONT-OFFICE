@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="ehcache.xsd" maxBytesLocalHeap="200M">
+    <cache name="depositsInfo" timeToLiveSeconds="300"/>
+    <cache name="creditsInfo" timeToLiveSeconds="300"/>
+    <cache name="fineractDeposits" timeToLiveSeconds="300"/>
+    <cache name="fineractCredits" timeToLiveSeconds="300"/>
+    <cache name="event-enabled"/>
+    <cache name="event-type"/>
+    <cache name="dictionary"/>
+    <cache name="dictionary-unit"/>
+</ehcache>

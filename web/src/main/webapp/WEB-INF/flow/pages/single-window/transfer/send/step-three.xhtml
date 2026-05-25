@@ -1,0 +1,102 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Define transfer type and main parameters" styleClass="transaction_page">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span>2</span>
+                    <span class="current">3</span>
+                    <span>4</span>
+                    <span>5</span>
+                    <span>6</span>
+                    <span>7</span>
+                </div>
+            </f:facet>
+            <div class="title_block">
+                <p class="type_text">Operation Type</p>
+                <p class="name_text">Transfer funds to individual (send)</p>
+                <p class="type_text">Payment System</p>
+                <p class="name_text">#{stepThreeView.paymentTransfer.paymentSystem.name}</p>
+                <p class="type_text">Transfer Amount and Currency</p>
+                <p class="name_text">
+                    <h:outputText value="#{stepThreeView.paymentTransfer.amount}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText> #{stepThreeView.paymentTransfer.transferCurrency.iso} (#{stepThreeView.paymentTransfer.transferCurrency.name})
+                </p>
+                <p class="type_text">Transfer Country and City (Location)</p>
+                <p class="name_text">
+                    #{stepThreeView.paymentTransfer.destinationCountry.name}, #{stepThreeView.paymentTransfer.destinationRegion.name}
+                </p>
+            </div>
+            <div class="step_block type_transaction">
+                <div class="choose_type">
+                    <span class="step_num">3.1</span>Define transfer type
+                </div>
+                <p:importEnum type="web.entity.dict.PaymentSystemName"/>
+                <div class="toggle_operation">
+                    <p:selectOneRadio id="operation-transfer" value="#{stepThreeView.paymentTransfer.addressed}" layout="custom">
+                        <f:selectItem itemLabel="Addressed Transfer" itemValue="#{true}"/>
+                        <f:selectItem itemLabel="Non-Addressed Transfer" itemValue="#{false}"/>
+                        <p:ajax listener="#{stepThreeView.clearFilter()}" update="@form"/>
+                    </p:selectOneRadio>
+                    <p:radioButton for="operation-transfer" itemIndex="0"
+                                   disabled="#{PaymentSystemName.MONEY_TRANSFER eq stepThreeView.paymentTransfer.paymentSystem.id}"/>
+                    <p:outputLabel for="@previous" styleClass="address_label#{stepThreeView.paymentTransfer.addressed ? ' current' : ''}">
+                        <span>At Specified Address</span>Transfer can be received at service point at selected address
+                    </p:outputLabel>
+                    <p:radioButton for="operation-transfer" itemIndex="1"/>
+                    <p:outputLabel for="@previous" styleClass="#{not stepThreeView.paymentTransfer.addressed ? ' current' : ''}">
+                        <span>"Non-Addressed"</span>Transfer can be received at any service point within destination city
+                    </p:outputLabel>
+                </div>
+                <ui:fragment rendered="#{stepThreeView.paymentTransfer.addressed}">
+                    <div class="grid_row search_block">
+                        <div class="identity">
+                            <div class="grid_cell">
+                                <p:outputLabel for="@next:@next">#{stepThreeView.paymentTransfer.destinationCountry.name}</p:outputLabel>
+                            </div>
+                            <div class="grid_cell">
+                                <p:outputLabel for="@next">#{stepThreeView.paymentTransfer.destinationRegion.name}</p:outputLabel>
+                            </div>
+                        </div>
+                        <div class="input_box">
+                            <p:inputText value="#{stepThreeView.filter.address}" placeholder="Street, building" styleClass="w_100"
+                                         onkeypress="if(event.keyCode === 13) { updateTable(); return false;}"/>
+                            <p:remoteCommand name="updateTable" action="#{stepThreeView.updateFilter()}" update="paymentPoints"/>
+                        </div>
+                    </div>
+                    <p:dataTable id="paymentPoints" value="#{paymentPointModel}" var="paymentPoint" lazy="true" rows="100"
+                                 selection="#{stepThreeView.paymentTransfer.paymentPoint}" selectionMode="single" sortMode="multiple"
+                                 virtualScroll="true" scrollable="#{paymentPointModel.rowCount gt 10}"
+                                 scrollHeight="#{paymentPointModel.rowCount gt 10 ? 400 : null}" scrollRows="50" emptyMessage="No data">
+                        <p:ajax event="rowSelect" update="@(.blue-btn)"/>
+                        <p:ajax event="rowUnselect" update="@(.blue-btn)"/>
+                        <p:ajax event="page" listener="#{stepThreeView.paymentTransfer.setPaymentPoint(null)}" update="@(.blue-btn)"/>
+                        <p:column headerText="Agent, Branch Name">
+                            #{paymentPoint.name}
+                        </p:column>
+                        <p:column headerText="Address">
+                            #{paymentPoint.address}
+                        </p:column>
+                    </p:dataTable>
+                </ui:fragment>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Next" action="next"
+                             disabled="#{stepThreeView.paymentTransfer.addressed and empty stepThreeView.paymentTransfer.paymentPoint}"
+                             styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Back" action="back" styleClass="big_btn orange-btn"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" process="@this" styleClass="orange-btn big_btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

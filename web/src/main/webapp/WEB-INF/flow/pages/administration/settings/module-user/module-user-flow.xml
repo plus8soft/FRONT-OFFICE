@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <view-state id="module-user">
+        <var name="moduleUserView" class="web.view.administration.settings.module.user.ModuleUserView"/>
+        <on-entry>
+            <evaluate expression="moduleUserView.init()"/>
+        </on-entry>
+        <transition on="show" to="show">
+            <set name="flowScope.FS_TASK" value="moduleUserView.selectedTask.data.task"/>
+        </transition>
+    </view-state>
+    <view-state id="show">
+        <var name="showView" class="web.view.administration.settings.module.user.show.ModuleUserShowView"/>
+        <var name="moduleUserModel" class="web.view.administration.settings.module.user.show.ModuleUserModel"/>
+        <on-entry>
+            <set name="showView.task" value="flowScope.FS_TASK"/>
+            <evaluate expression="showView.init(moduleUserModel)"/>
+        </on-entry>
+        <transition on="back" to="module-user"/>
+    </view-state>
+</flow>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">
+            #{empty groupEditView.group.id ? 'New Department Group' : groupService.formatGroupPath(groupEditView.group, groupEditView.groups)}
+        </h1>
+        <p:panel toggleable="true" header="Basic Parameters">
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Group Name" for="@next"/>
+                </div>
+                <div class="grid_cell w_30">
+                    <div class="icon_box">
+                        <p:inputText value="#{groupEditView.group.name}" required="true" styleClass="w_100">
+                            <f:validator binding="#{departmentGroupNameValidator}"/>
+                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                        </p:inputText>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel value="Description" for="@next"/>
+                </div>
+                <div class="grid_cell w_30">
+                    <p:inputText value="#{groupEditView.group.description}" styleClass="w_100"/>
+                </div>
+            </div>
+        </p:panel>
+        <p:panel toggleable="true" header="Departments">
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" update="@(.ui-selectcheckboxmenu) @(.ui-datatable) @this" process="@this"
+                                 actionListener="#{groupEditView.addDepartments()}" disabled="#{empty groupEditView.selectedDepartments}"
+                                 styleClass="blue-btn"/>
+                <p:commandButton value="Delete" update="@(.ui-datatable) @(.ui-selectcheckboxmenu) @this"
+                                 actionListener="#{groupEditView.removeDepartments()}" disabled="#{empty groupEditView.selectedDepartment}"
+                                 immediate="true" styleClass="orange-btn"/>
+            </div>
+            <div class="body_block grid_row">
+                <div class="grid_cell w_10">
+                    <p:outputLabel for="@next" value="Departments"/>
+                </div>
+                <div class="grid_cell w_90">
+                    <p:selectCheckboxMenu label="Not Selected" value="#{groupEditView.selectedDepartments}" filter="true" filterMatchMode="contains"
+                                          updateLabel="true" converter="omnifaces.SelectItemsConverter" styleClass="w_100">
+                        <f:selectItems value="#{groupEditView.departments}" var="departmentItem" itemLabel="#{departmentItem.name}"
+                                       itemValue="#{departmentItem}"/>
+                        <p:ajax update="@(.blue-btn)"/>
+                        <p:ajax event="toggleSelect" update="@(.blue-btn)"/>
+                    </p:selectCheckboxMenu>
+                </div>
+            </div>
+            <p:dataTable var="departmentItem" value="#{groupEditView.group.departments}" rowKey="#{departmentItem.id}"
+                         selection="#{groupEditView.selectedDepartment}" selectionMode="single" emptyMessage="No data" styleClass="body_block">
+                <p:ajax update="@(.orange-btn)" event="rowSelect"/>
+                <p:ajax update="@(.orange-btn)" event="rowUnselect"/>
+                <p:column headerText="Name">
+                    #{departmentItem.name}
+                </p:column>
+                <p:column headerText="Time Zone">
+                    #{groupEditView.formatZoneId(departmentItem.zoneId)}
+                </p:column>
+                <p:column headerText="Status">
+                    #{departmentItem.enabled ? "Active" : "Blocked"}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <p:panel header="Users" toggleable="true">
+            <div class="navigation_panel box_big_subpanel clearfix">
+                <div class="search_box">
+                    <p:outputLabel for="@next" value="Search:"/>
+                    <p:inputText value="#{groupEditView.filter.textFilter}" placeholder="Search by name, login"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}"/>
+                    <p:remoteCommand name="updateTable" action="#{groupEditView.fastSearch}" update="users"/>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                </div>
+            </div>
+            <p:panel toggleable="true" styleClass="subpanel" collapsed="true" header="Advanced Search">
+                <div class="grid_row">
+                    <div class="grid_cell w_15">
+                        <p:outputLabel for="@next" value="Activity Date, until"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <div class="icon_box">
+                            <p:calendar value="#{groupEditView.filter.lastLoginEventDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                        timeZone="#{userSession.user.department.zoneId}" showOn="button" placeholder="dd.mm.yyyy hh:mm" mask="true"
+                                        styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_5 ml-w_5">
+                        <p:outputLabel for="@next" value="Status"/>
+                    </div>
+                    <div class="grid_cell w_25">
+                        <p:selectOneMenu value="#{groupEditView.filter.status}" styleClass="w_100" autoWidth="false">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{userStatusDictionary.findAll()}" var="status" itemLabel="#{status.value}"
+                                           itemValue="#{status.code}" itemDisabled="#{status.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="grid_cell w_10 ml-w_5">
+                        <p:outputLabel for="@next" value="Position"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:selectOneMenu styleClass="w_100" value="#{groupEditView.filter.position}" converter="javax.faces.Integer"
+                                         autoWidth="false">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{userJobPositionDictionary.findAll()}" var="position" itemValue="#{position.code}"
+                                           itemLabel="#{position.value}" itemDisabled="#{position.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="btn_box clearfix">
+                    <p:defaultCommand target="@next" scope="@parent:@parent"/>
+                    <p:commandButton value="Search" action="#{groupEditView.extendedSearch}" update="@parent:@parent"
+                                     styleClass="blue-btn r-float_elem"/>
+                </div>
+            </p:panel>
+            <p:dataTable id="users" value="#{groupEditView.model}" var="user" lazy="true" rows="100" sortMode="multiple" scrollRows="50"
+                         scrollable="#{groupEditView.model.rowCount gt 10}" virtualScroll="true"
+                         scrollHeight="#{groupEditView.model.rowCount gt 10 ? 400 : null}" emptyMessage="No data">
+                <p:column headerText="Login">
+                    #{user.login}
+                </p:column>
+                <p:column headerText="Name, Position">
+                    #{user.lastname} #{user.firstname} #{user.patronymic}<br/>#{userJobPositionDictionary.findOne(user.position).value}
+                </p:column>
+                <p:column headerText="Activity Date">
+                    <h:outputText value="#{user.lastLoginEventDate}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Status">
+                    #{userStatusDictionary.findOne(user.status).value}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="btn_box">
+            <p:defaultCommand target="@next" scope="@previous:@previous:@previous"/>
+            <p:commandButton value="Save" action="#{groupEditView.save}" update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"
+                             styleClass="blue-btn big_btn r-float_elem"/>
+            <p:commandButton value="Cancel" action="to-group" immediate="true" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,54 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                template="../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{documentTypeView.dictionary.group} > #{documentTypeView.dictionary.name}">
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="edit" disabled="#{empty documentTypeModel.selected}" styleClass="blue-btn"/>
+                <p:commandButton value="Delete" onclick="PF('confirm').show()" disabled="#{empty documentTypeModel.selected}"
+                                 styleClass="orange-btn"/>
+            </div>
+            <o:importConstants type="web.view.administration.dictionary.custom.documenttype.DocumentTypeView"/>
+            <p:dataTable id="doctypes" value="#{documentTypeModel}" var="type" lazy="true" rows="100" sortMode="multiple" virtualScroll="true"
+                         scrollable="#{documentTypeModel.rowCount gt 10}" scrollRows="50" selectionMode="single"
+                         scrollHeight="#{documentTypeModel.rowCount gt 10 ? 400 : null}" selection="#{documentTypeModel.selected}"
+                         emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.ui-button)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-button)"/>
+                <p:ajax event="page" update="@(.ui-button)" listener="#{documentTypeModel.setSelected(null)}"/>
+                <p:column headerText="Name" width="400">
+                    #{type.name}
+                </p:column>
+                <p:column headerText="Validity Period">
+                    #{type.term} #{DocumentTypeView.TERM_TYPE_MAP.get(type.termType)}
+                </p:column>
+                <p:column headerText="Required">
+                    <ui:fragment rendered="#{type.required}">
+                        <i class="fa fa-check success" aria-hidden="true"/>
+                    </ui:fragment>
+                </p:column>
+                <p:column headerText="Not Used">
+                    <ui:fragment rendered="#{type.disabled}">
+                        <i class="fa fa-check success" aria-hidden="true"/>
+                    </ui:fragment>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{documentTypeView.delete()}" onclick="PF('confirm').hide()" update="@form"
+                             styleClass="blue-btn r-float_elem"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

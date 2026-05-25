@@ -1,0 +1,168 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                template="../../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Payment Systems > Payment System Data - #{systemInfoView.paymentSystem.name}">
+            <p:tabView id="tab">
+                <p:tab title="Regions, Cities, Settlements">
+                    <div class="navigation_panel box_big_subpanel clearfix">
+                        <div class="search_box">
+                            <p:outputLabel for="@next" value="Search:"/>
+                            <p:inputText value="#{systemInfoView.regionFilter.name}" placeholder="Search by name"
+                                         onkeypress="if(event.keyCode === 13) { updateRegionTable(); return false;}">
+                                <f:passThroughAttribute name="focus-priority" value="1"/>
+                            </p:inputText>
+                            <p:remoteCommand name="updateRegionTable" action="#{systemInfoView.fastRegionSearch()}" update="@form"/>
+                            <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                            <script>focusByPriority();</script>
+                        </div>
+                    </div>
+                    <p:panel toggleable="true" header="Extended Search" collapsed="#{not systemInfoView.regionFilter.extendedSearch}"
+                             styleClass="subpanel">
+                        <div class="grid_row">
+                            <div class="grid_cell w_10">
+                                <p:outputLabel value="Country" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_55">
+                                <p:selectOneMenu value="#{systemInfoView.regionFilter.country}" filter="true" filterMatchMode="startsWith"
+                                                 autoWidth="false" converter="omnifaces.SelectItemsConverter" styleClass="w_100"
+                                                 panelStyleClass="country_panel">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{systemInfoView.countries}" var="country" itemLabel="#{country.name}"
+                                                   itemValue="#{country}"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="grid_cell w_10 ml-w_5">
+                                <p:outputLabel value="Status" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_20">
+                                <p:selectOneMenu value="#{systemInfoView.regionFilter.status}" autoWidth="false" styleClass="w_100">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItem itemValue="#{true}" itemLabel="Active"/>
+                                    <f:selectItem itemValue="#{false}" itemLabel="Not used"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+                        <div class="btn_box clearfix">
+                            <p:defaultCommand target="@next" scope="@parent"/>
+                            <p:commandButton value="Search" action="#{systemInfoView.extendedRegionSearch()}" update="@form"
+                                             styleClass="blue-btn r-float_elem"/>
+                        </div>
+                    </p:panel>
+                    <p:dataTable id="regions" value="#{regionModel}" var="region" lazy="true" rows="100" sortMode="multiple" virtualScroll="true"
+                                 scrollable="#{regionModel.rowCount gt 10}" scrollRows="50" scrollHeight="#{regionModel.rowCount gt 10 ? 400 : null}"
+                                 emptyMessage="No data">
+                        <p:column headerText="Country">
+                            #{region.country.name}
+                        </p:column>
+                        <p:column headerText="Name">
+                            #{region.name}
+                        </p:column>
+                        <p:column headerText="Status">
+                            #{region.enabled ? "Active" : "Not used"}
+                        </p:column>
+                    </p:dataTable>
+                </p:tab>
+                <p:tab title="Transfer Pickup Points">
+                    <div class="navigation_panel box_big_subpanel clearfix">
+                        <div class="search_box">
+                            <p:outputLabel value="Search:" for="@next"/>
+                            <p:inputText value="#{systemInfoView.paymentPointFilter.name}" placeholder="Search by name"
+                                         onkeypress="if(event.keyCode === 13) { updateTable(); return false;}"/>
+                            <p:remoteCommand name="updateTable" action="#{systemInfoView.fastPaymentPointSearch()}" update="@form"/>
+                            <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                        </div>
+                    </div>
+                    <p:panel toggleable="true" header="Extended Search" collapsed="#{not systemInfoView.paymentPointFilter.extendedSearch}"
+                             styleClass="subpanel">
+                        <div class="grid_row">
+                            <div class="grid_cell w_5">
+                                <p:outputLabel value="Country" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_45">
+                                <p:selectOneMenu value="#{systemInfoView.paymentPointFilter.country}" filter="true" filterMatchMode="startsWith"
+                                                 styleClass="w_100" panelStyleClass="country_panel" autoWidth="false"
+                                                 converter="omnifaces.SelectItemsConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                    <f:selectItems value="#{systemInfoView.countries}" var="country" itemValue="#{country}"
+                                                   itemLabel="#{country.name}"/>
+                                    <p:ajax update="@(.ui-autocomplete)"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="grid_cell w_5 ml-w_5">
+                                <p:outputLabel value="Region" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_40">
+                                <p:autoComplete value="#{systemInfoView.paymentPointFilter.region}" completeMethod="#{systemInfoView.completeRegion}"
+                                                var="region" itemLabel="#{region.name}" itemValue="#{region}" converter="#{systemInfoView.converter}"
+                                                scrollHeight="300" styleClass="w_100"/>
+                            </div>
+                        </div>
+                        <div class="grid_row">
+                            <div class="grid_cell w_5">
+                                <p:outputLabel value="Address" for="@next"/>
+                            </div>
+                            <div class="grid_cell w_45">
+                                <p:inputText value="#{systemInfoView.paymentPointFilter.address}" styleClass="w_100"/>
+                            </div>
+                        </div>
+                        <div class="btn_box clearfix">
+                            <p:commandButton value="Search" update="@form" action="#{systemInfoView.extendedPaymentPointSearch()}"
+                                             styleClass="blue-btn r-float_elem"/>
+                        </div>
+                    </p:panel>
+                    <p:dataTable id="paymentPoints" value="#{paymentPointModel}" var="paymentPoint" lazy="true" rows="100" sortMode="multiple"
+                                 virtualScroll="true" scrollable="#{paymentPointModel.rowCount gt 10}" scrollRows="50"
+                                 selection="#{paymentPointModel.selected}" selectionMode="single"
+                                 scrollHeight="#{paymentPointModel.rowCount gt 10 ? 400 : null}" emptyMessage="No data" styleClass="body_block">
+                        <p:ajax event="rowSelect" update="content:tab:point-currencies"/>
+                        <p:ajax event="rowUnselect" update="content:tab:point-currencies"/>
+                        <p:ajax event="page" listener="#{paymentPointModel.setSelected(null)}" update="content:tab:point-currencies"/>
+                        <p:column headerText="Country" width="151">
+                            #{paymentPoint.country.name}
+                        </p:column>
+                        <p:column headerText="Name">
+                            #{paymentPoint.name}
+                        </p:column>
+                        <p:column headerText="Address" styleClass="fix_cell">
+                            <span class="fix_row">#{paymentPoint.address}</span>
+                        </p:column>
+                        <p:column headerText="Code" width="41">
+                            #{paymentPoint.code}
+                        </p:column>
+                    </p:dataTable>
+                    <div jsf:id="point-currencies" class="body_block">
+                        <ui:fragment rendered="#{not empty paymentPointModel.selected}">
+                            <p>#{paymentPointModel.selected.name}, #{paymentPointModel.selected.address}</p>
+                        </ui:fragment>
+                        <p:dataTable value="#{paymentPointModel.selected.currencies}" var="currency" emptyMessage="No data">
+                            <f:facet name="header"><b>Pickup Point Currencies</b></f:facet>
+                            <p:column width="200">
+                                <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                                styleClass="currency_img">
+                                    <f:param name="id" value="#{currency.id}"/>
+                                </p:graphicImage>
+                            </p:column>
+                            <p:column headerText="Code">
+                                #{currency.iso}
+                            </p:column>
+                            <p:column headerText="Name">
+                                #{currency.name}
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </p:tab>
+            </p:tabView>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

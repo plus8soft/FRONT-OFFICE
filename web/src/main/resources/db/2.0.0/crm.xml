@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="2.0.0" failOnError="true">
+        <sql>CREATE SCHEMA CRM</sql>
+        
+        <!-- PERSONS table based on Person entity -->
+        <createTable schemaName="CRM" tableName="PERSONS" remarks="Natural Persons">
+            <column name="PERSONS_ID" type="INT" remarks="Natural person identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PERSONS_ID_PK"/>
+            </column>
+            <column name="EXT_PERSONS_ID" type="BIGINT" remarks="Identifier in external system"/>
+            <column name="RESCOUNTRY" type="VARCHAR(50)" remarks="Resident country"/>
+            <column name="GENDER" type="INT" remarks="Gender"/>
+            <column name="CITIZENSHIP" type="VARCHAR(100)" remarks="Citizenship"/>
+            <column name="LASTNAME" type="VARCHAR(100)" remarks="Last name"/>
+            <column name="FIRSTNAME" type="VARCHAR(100)" remarks="First name"/>
+            <column name="PATRONYMIC" type="VARCHAR(100)" remarks="Middle name"/>
+            <column name="COUNTRYOFB" type="VARCHAR(50)" remarks="Country of birth"/>
+            <column name="PLACEOFBTXT" type="VARCHAR(100)" remarks="Place of birth"/>
+            <column name="BIRTHDATE" type="DATE" remarks="Date of birth"/>
+            <column name="LASTNAME_RDP" type="VARCHAR(100)" remarks="Last name (genitive case)"/>
+            <column name="FIRSTNAME_RDP" type="VARCHAR(100)" remarks="First name (genitive case)"/>
+            <column name="PATRONYMIC_RDP" type="VARCHAR(100)" remarks="Middle name (genitive case)"/>
+            <column name="LASTNAME_DTP" type="VARCHAR(100)" remarks="Last name (dative case)"/>
+            <column name="FIRSTNAME_DTP" type="VARCHAR(100)" remarks="First name (dative case)"/>
+            <column name="PATRONYMIC_DTP" type="VARCHAR(100)" remarks="Middle name (dative case)"/>
+            <column name="LASTNAME_TVP" type="VARCHAR(100)" remarks="Last name (instrumental case)"/>
+            <column name="FIRSTNAME_TVP" type="VARCHAR(100)" remarks="First name (instrumental case)"/>
+            <column name="PATRONYMIC_TVP" type="VARCHAR(100)" remarks="Middle name (instrumental case)"/>
+            <column name="BUSINESS" type="VARCHAR(50)" remarks="Business type"/>
+            <column name="EIN" type="VARCHAR(50)" remarks="EIN"/>
+            <column name="STATUS" type="INT" remarks="Status"/>
+            <column name="ATTRACTION_SOURCE" type="VARCHAR(50)" remarks="Attraction source"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="PERSONS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- ADDRESS table based on Address entity -->
+        <createTable schemaName="CRM" tableName="ADDRESS" remarks="Addresses">
+            <column name="ADDRESS_ID" type="INT" remarks="Address identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ADDRESS_ID_PK"/>
+            </column>
+            <column name="POSTALCODE" type="VARCHAR(100)" remarks="Postal code"/>
+            <column name="COUNTRY" type="VARCHAR(10)" remarks="Country"/>
+            <column name="REGIONTYPE" type="VARCHAR(50)" remarks="Region type"/>
+            <column name="REGION" type="VARCHAR(200)" remarks="Region"/>
+            <column name="DISTRICTTYPE" type="VARCHAR(50)" remarks="District type"/>
+            <column name="DISTRICT" type="VARCHAR(200)" remarks="District"/>
+            <column name="CITYTYPE" type="VARCHAR(50)" remarks="City type"/>
+            <column name="CITY" type="VARCHAR(200)" remarks="City"/>
+            <column name="LOCALITYTYPE" type="VARCHAR(50)" remarks="Locality type"/>
+            <column name="LOCALITY" type="VARCHAR(200)" remarks="Locality"/>
+            <column name="STREETTYPE" type="VARCHAR(50)" remarks="Street type"/>
+            <column name="STREET" type="VARCHAR(200)" remarks="Street"/>
+            <column name="HOUSE" type="VARCHAR(50)" remarks="House"/>
+            <column name="HOUSING" type="VARCHAR(50)" remarks="Building"/>
+            <column name="STRUCTURE" type="VARCHAR(50)" remarks="Structure"/>
+            <column name="FLAT" type="VARCHAR(50)" remarks="Apartment"/>
+            <column name="ADDRESS_CODE" type="VARCHAR(100)" remarks="Address code"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="ADDRESS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- Insert 2 test addresses from USA -->
+        <!-- Address 1: New York, NY -->
+        <insert schemaName="CRM" tableName="ADDRESS">
+            <column name="ADDRESS_ID" valueComputed="NEXT VALUE FOR CRM.ADDRESS_ID_SEQ"/>
+            <column name="POSTALCODE" value="10001"/>
+            <column name="COUNTRY" value="US"/>
+            <column name="REGIONTYPE" value="State"/>
+            <column name="REGION" value="New York"/>
+            <column name="CITYTYPE" value="City"/>
+            <column name="CITY" value="New York"/>
+            <column name="STREETTYPE" value="Street"/>
+            <column name="STREET" value="Broadway"/>
+            <column name="HOUSE" value="350"/>
+            <column name="FLAT" value="Suite 100"/>
+        </insert>
+        
+        <!-- Address 2: Los Angeles, CA -->
+        <insert schemaName="CRM" tableName="ADDRESS">
+            <column name="ADDRESS_ID" valueComputed="NEXT VALUE FOR CRM.ADDRESS_ID_SEQ"/>
+            <column name="POSTALCODE" value="90001"/>
+            <column name="COUNTRY" value="US"/>
+            <column name="REGIONTYPE" value="State"/>
+            <column name="REGION" value="California"/>
+            <column name="CITYTYPE" value="City"/>
+            <column name="CITY" value="Los Angeles"/>
+            <column name="STREETTYPE" value="Avenue"/>
+            <column name="STREET" value="Sunset Boulevard"/>
+            <column name="HOUSE" value="1234"/>
+            <column name="FLAT" value="Apt 5B"/>
+        </insert>
+        
+        <!-- DOCUMENTS table based on Document entity -->
+        <createTable schemaName="CRM" tableName="DOCUMENTS" remarks="Documents">
+            <column name="DOCUMENTS_ID" type="INT" remarks="Document identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="DOCUMENTS_ID_PK"/>
+            </column>
+            <column name="PERSONS_ID" type="INT" remarks="Natural person identifier">
+                <constraints nullable="false" foreignKeyName="DOCUMENTS_PERSONS_ID_FK" references="CRM.PERSONS(PERSONS_ID)"/>
+            </column>
+            <column name="TYPE" type="VARCHAR(50)" remarks="Document type"/>
+            <column name="SERIES" type="VARCHAR(20)" remarks="Document series"/>
+            <column name="NUMBER" type="VARCHAR(100)" remarks="Document number"/>
+            <column name="ISSUANCEUNIT" type="VARCHAR(255)" remarks="Issuing authority"/>
+            <column name="ISSUANCEUNITID" type="VARCHAR(50)" remarks="Department code"/>
+            <column name="ISSUANCEDATE" type="DATE" remarks="Issue date"/>
+            <column name="VALIDTODATE" type="DATE" remarks="Valid until date"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="DOCUMENTS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- CONTACTS table based on Contact entity -->
+        <createTable schemaName="CRM" tableName="CONTACTS" remarks="Contacts">
+            <column name="CONTACTS_ID" type="INT" remarks="Contact identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CONTACTS_ID_PK"/>
+            </column>
+            <column name="PERSONS_ID" type="INT" remarks="Natural person identifier">
+                <constraints nullable="false" foreignKeyName="CONTACTS_PERSONS_ID_FK" references="CRM.PERSONS(PERSONS_ID)"/>
+            </column>
+            <column name="TYPE" type="VARCHAR(50)" remarks="Contact type"/>
+            <column name="DATA" type="VARCHAR(200)" remarks="Contact data"/>
+            <column name="NOTIFICATION" type="BIT" remarks="Notification">
+                <constraints nullable="false"/>
+            </column>
+            <column name="MAIN" type="BIT" remarks="Main">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="CONTACTS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- PERSON_ADDRESS table based on PersonAddress entity -->
+        <createTable schemaName="CRM" tableName="PERSON_ADDRESS" remarks="Natural Person Address">
+            <column name="PERSON_ADDRESS_ID" type="INT" remarks="Natural person address identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PERSON_ADDRESS_ID_PK"/>
+            </column>
+            <column name="PERSONS_ID" type="INT" remarks="Natural person identifier">
+                <constraints nullable="false" foreignKeyName="PERSON_ADDRESS_PERSONS_ID_FK" references="CRM.PERSONS(PERSONS_ID)"/>
+            </column>
+            <column name="ADDRESS_ID" type="INT" remarks="Address identifier">
+                <constraints nullable="false" foreignKeyName="PERSON_ADDRESS_ADDRESS_ID_FK" references="CRM.ADDRESS(ADDRESS_ID)"/>
+            </column>
+            <column name="TYPE" type="VARCHAR(50)" remarks="Link type"/>
+            <column name="TYPE_MATCH" type="VARCHAR(50)" remarks="Type match"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="PERSON_ADDRESS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- PERSON_PHOTO table based on Photo entity -->
+        <createTable schemaName="CRM" tableName="PERSON_PHOTO" remarks="Person Photo">
+            <column name="PERSON_PHOTO_ID" type="INT" remarks="Photo identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PERSON_PHOTO_ID_PK"/>
+            </column>
+            <column name="PERSONS_ID" type="INT" remarks="Natural person identifier">
+                <constraints nullable="false" foreignKeyName="PERSON_PHOTO_PERSONS_ID_FK" references="CRM.PERSONS(PERSONS_ID)"/>
+            </column>
+            <column name="PHOTO_DATE" type="DATETIME2" remarks="Photo date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TYPE" type="VARCHAR(50)" remarks="Type"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="PERSON_PHOTO_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex indexName="PERSON_PHOTO_PERSONS_ID_IDX" schemaName="CRM" tableName="PERSON_PHOTO" unique="true">
+            <column name="PERSONS_ID"/>
+        </createIndex>
+        
+        <!-- DOC_COPIES table based on DocumentCopy entity -->
+        <createTable schemaName="CRM" tableName="DOC_COPIES" remarks="Document Copies">
+            <column name="DOC_COPIES_ID" type="INT" remarks="Document copy identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="DOC_COPIES_ID_PK"/>
+            </column>
+            <column name="PERSONS_ID" type="INT" remarks="Natural person identifier">
+                <constraints nullable="false" foreignKeyName="DOC_COPIES_PERSONS_ID_FK" references="CRM.PERSONS(PERSONS_ID)"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User identifier">
+                <constraints nullable="false" foreignKeyName="DOC_COPIES_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="CDATE" type="DATETIME2" remarks="Creation date"/>
+            <column name="TYPE" type="BIT" remarks="Type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DOC_TYPES_BANK_ID" type="INT" remarks="Bank document type ID"/>
+            <column name="DOC_TYPES_CLIENT_ID" type="VARCHAR(50)" remarks="Client document type ID"/>
+            <column name="NAME" type="VARCHAR(200)" remarks="Name"/>
+            <column name="SERIES" type="VARCHAR(20)" remarks="Series"/>
+            <column name="NUMBER" type="VARCHAR(100)" remarks="Number"/>
+            <column name="DOC_DATE" type="DATE" remarks="Document date"/>
+            <column name="VALID_TO_DATE" type="DATE" remarks="Valid to date"/>
+            <column name="TERMLESS" type="BIT" remarks="Termless"/>
+            <column name="VERSION" type="INT" remarks="Version"/>
+            <column name="MAIN" type="BIT" remarks="Main"/>
+            <column name="FILE_NAME" type="VARCHAR(500)" remarks="File name"/>
+            <column name="FILE_SIZE" type="BIGINT" remarks="File size"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="DOC_COPIES_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- CHANGES table based on Change entity -->
+        <createTable schemaName="CRM" tableName="CHANGES" remarks="Changes">
+            <column name="CHANGES_ID" type="INT" remarks="Change identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CHANGES_ID_PK"/>
+            </column>
+            <column name="CDATE" type="DATETIME2" remarks="Change date"/>
+            <column name="TYPE" type="VARCHAR(10)" remarks="Type"/>
+            <column name="PERSONS_ID" type="INT" remarks="Natural person identifier">
+                <constraints nullable="false" foreignKeyName="CHANGES_PERSONS_ID_FK" references="CRM.PERSONS(PERSONS_ID)"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User identifier">
+                <constraints nullable="false" foreignKeyName="CHANGES_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department identifier">
+                <constraints nullable="false" foreignKeyName="CHANGES_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="TASKS_ID" type="INT" remarks="Task identifier">
+                <constraints nullable="false" foreignKeyName="CHANGES_TASKS_ID_FK" references="CORE.TASKS(TASKS_ID)"/>
+            </column>
+            <column name="CONNECTION_EVENTS_ID" type="INT" remarks="Connection event identifier">
+                <constraints nullable="false" foreignKeyName="CHANGES_CONNECTION_EVENTS_ID_FK" references="LOG.CONNECTION_EVENTS(CONNECTION_EVENTS_ID)"/>
+            </column>
+            <column name="VERSION" type="INT" remarks="Version"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="CHANGES_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- CHANGES_LOG table based on ChangeLog entity -->
+        <createTable schemaName="CRM" tableName="CHANGES_LOG" remarks="Changes Log">
+            <column name="CHANGES_LOG_ID" type="INT" remarks="Change log identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CHANGES_LOG_ID_PK"/>
+            </column>
+            <column name="CHANGES_ID" type="INT" remarks="Change identifier">
+                <constraints nullable="false" foreignKeyName="CHANGES_LOG_CHANGES_ID_FK" references="CRM.CHANGES(CHANGES_ID)"/>
+            </column>
+            <column name="TYPE" type="VARCHAR(10)" remarks="Type"/>
+            <column name="ENTITY_NAME" type="VARCHAR(200)" remarks="Entity name"/>
+            <column name="ENTITY_DESCRIPTION" type="VARCHAR(500)" remarks="Entity description"/>
+            <column name="ENTITY_PK_VALUE" type="BIGINT" remarks="Entity primary key value"/>
+            <column name="ENTITY_TYPE" type="VARCHAR(100)" remarks="Entity type"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="CHANGES_LOG_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- CHANGES_LOG_DATA table based on ChangeLogData entity -->
+        <createTable schemaName="CRM" tableName="CHANGES_LOG_DATA" remarks="Changes Log Data">
+            <column name="CHANGES_LOG_DATA_ID" type="INT" remarks="Change log data identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CHANGES_LOG_DATA_ID_PK"/>
+            </column>
+            <column name="CHANGES_LOG_ID" type="INT" remarks="Change log identifier">
+                <constraints nullable="false" foreignKeyName="CHANGES_LOG_DATA_CHANGES_LOG_ID_FK" references="CRM.CHANGES_LOG(CHANGES_LOG_ID)"/>
+            </column>
+            <column name="FIELD_NAME" type="VARCHAR(200)" remarks="Field name"/>
+            <column name="FIELD_DESCRIPTION" type="VARCHAR(500)" remarks="Field description"/>
+            <column name="OLD_VALUE" type="VARCHAR(MAX)" remarks="Old value"/>
+            <column name="NEW_VALUE" type="VARCHAR(MAX)" remarks="New value"/>
+        </createTable>
+        <createSequence schemaName="CRM" sequenceName="CHANGES_LOG_DATA_ID_SEQ" startValue="1" incrementBy="1"/>
+    </changeSet>
+    
+    <!-- Add foreign keys for LOG schema tables that reference CRM.PERSONS -->
+    <changeSet id="2" author="2.0.0" failOnError="true">
+        <addForeignKeyConstraint baseTableName="OPERATION_LOG" baseTableSchemaName="LOG"
+                                 constraintName="OPERATION_LOG_PERSONS_ID_FK"
+                                 referencedTableName="PERSONS" referencedTableSchemaName="CRM"
+                                 baseColumnNames="PERSONS_ID" referencedColumnNames="PERSONS_ID"/>
+        <addForeignKeyConstraint baseTableName="OPERATION_PERSONS" baseTableSchemaName="LOG"
+                                 constraintName="OPERATION_PERSONS_PERSONS_ID_FK"
+                                 referencedTableName="PERSONS" referencedTableSchemaName="CRM"
+                                 baseColumnNames="PERSONS_ID" referencedColumnNames="PERSONS_ID"/>
+    </changeSet>
+</databaseChangeLog>

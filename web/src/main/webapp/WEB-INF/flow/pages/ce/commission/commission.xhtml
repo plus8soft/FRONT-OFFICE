@@ -1,0 +1,160 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../ce-template.xhtml">
+    <ui:define name="content-body">
+        <p:importEnum type="web.entity.ce.Sign"/>
+        <h1 class="title-page">Commission Rules</h1>
+        <div class="flex_box">
+            <div class="flex_item w_1_3">
+                <p:panel header="Select Required Departments">
+                    <f:facet name="actions">
+                        <span class="icon-block icon_currency"/>
+                    </f:facet>
+                    <div class="tree_bg">
+                        <div class="header_tree">
+                            <div class="additional_col count_cell">Currencies</div>
+                            <div class="main_col">Departments</div>
+                        </div>
+                        <p:tree value="#{commissionView.departmentTree}" var="item" selection="#{commissionView.selectedDepartments}"
+                                selectionMode="checkbox" styleClass="w_100" animate="true" propagateSelectionDown="false"
+                                propagateSelectionUp="false">
+                            <p:ajax event="select" listener="#{commissionView.onChangeDepartmentTree()}" oncomplete="focusByPriority()"
+                                    update="@form:right"/>
+                            <p:ajax event="unselect" listener="#{commissionView.onChangeDepartmentTree()}" update="@form"/>
+                            <p:treeNode type="empty">#{item}</p:treeNode>
+                            <p:treeNode>
+                                <span class="float_cell count_cell">#{item.currenciesCount}</span>
+                                <span class="main_cell">#{item.department.name}</span>
+                            </p:treeNode>
+                        </p:tree>
+                        <p:contextMenu for="@parent" widgetVar="contextMenu"
+                                       targetFilter=".ui-treenode:not([data-nodetype='empty']) > .ui-treenode-content,
+                                       .ui-treenode:not([data-nodetype='empty']) > .ui-treenode-content *"
+                                       beforeShow="this.rowKey = $(event.target).closest('.ui-treenode').attr('data-rowkey')">
+                            <p:menuitem value="Select Child Elements" immediate="true"
+                                        onclick="selectSameLevel([{name: 'rowKey', value: PF('contextMenu').rowKey}]);"/>
+                            <p:menuitem value="Deselect Child Elements" immediate="true"
+                                        onclick="deselectSameLevel([{name: 'rowKey', value: PF('contextMenu').rowKey}]);"/>
+                        </p:contextMenu>
+                        <p:remoteCommand name="selectSameLevel" actionListener="#{commissionView.selectAllChilds}" update="@form"/>
+                        <p:remoteCommand name="deselectSameLevel" actionListener="#{commissionView.deselectAllChilds}" update="@form"/>
+                    </div>
+                </p:panel>
+                <div class="navigation_panel clearfix bottom">
+                    <p:commandLink value="Deselect All" styleClass="underline r-float_elem" action="#{commissionView.deselectAllDepartments()}"
+                                   update="@form"/>
+                    <p:commandLink value="Select All" styleClass="underline" action="#{commissionView.selectAllDepartments()}" update="@form"/>
+                </div>
+            </div>
+            <h:panelGroup id="right" layout="block" styleClass="flex_item w_2_3">
+                <ui:fragment rendered="#{not empty commissionView.selectedDepartments}">
+                    <p:panel header="Define Commission Rule Parameters for Selected Departments">
+                        <f:facet name="actions">
+                            <span class="icon-block icon_currency"/>
+                        </f:facet>
+                        <p:dataTable value="#{commissionView.ruleItems}" var="item" emptyMessage="No data">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column rowspan="3" headerText="Rule Active"/>
+                                    <p:column rowspan="3" headerText="Rule Description"/>
+                                    <p:column rowspan="2" colspan="2" headerText="Rule Range"/>
+                                    <p:column colspan="4" headerText="Commission Amount Calculation Rules"/>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="2" headerText="Buy"/>
+                                    <p:column colspan="2" headerText="Sell"/>
+                                </p:row>
+                                <p:row>
+                                    <p:column headerText="Minimum Amount, USD"/>
+                                    <p:column headerText="Maximum Amount, USD"/>
+                                    <p:column headerText="Absolute Amount, USD"/>
+                                    <p:column headerText="%"/>
+                                    <p:column headerText="Absolute Amount, USD"/>
+                                    <p:column headerText="%"/>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:column>
+                                <p:commandLink value="?" rendered="#{item.enabledConflict}" update="@form">
+                                    <f:setPropertyActionListener value="#{false}" target="#{item.enabledConflict}"/>
+                                    <f:setPropertyActionListener value="#{true}" target="#{commissionView.edited}"/>
+                                </p:commandLink>
+                                <p:selectBooleanCheckbox value="#{item.ruleParameter.enabled}" rendered="#{not item.enabledConflict}">
+                                    <p:ajax update="@form:right" listener="#{commissionView.setEdited(true)}"/>
+                                </p:selectBooleanCheckbox>
+                            </p:column>
+                            <p:column>
+                                #{item.rule.name}
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <h:outputText value="#{item.rule.min}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <h:outputText value="#{item.rule.max}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <p:commandLink value="?" rendered="#{item.buyConflict}" update="@form">
+                                    <f:setPropertyActionListener value="#{false}" target="#{item.buyConflict}"/>
+                                    <f:setPropertyActionListener value="#{true}" target="#{commissionView.edited}"/>
+                                </p:commandLink>
+                                <p:inputNumber value="#{item.ruleParameter.buyValue}" rendered="#{not item.buyConflict}"
+                                               disabled="#{not empty item.ruleParameter.buyPercent}" minValue="0">
+                                    <p:ajax update="@form:right" listener="#{commissionView.setEdited(true)}"/>
+                                    <f:passThroughAttribute name="focus-priority" value="1"/>
+                                </p:inputNumber>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <p:commandLink value="?" rendered="#{item.buyConflict}" update="@form">
+                                    <f:setPropertyActionListener value="#{false}" target="#{item.buyConflict}"/>
+                                    <f:setPropertyActionListener value="#{true}" target="#{commissionView.edited}"/>
+                                </p:commandLink>
+                                <p:inputNumber value="#{item.ruleParameter.buyPercent}" minValue="0" maxValue="99.99" decimalPlaces="2"
+                                               rendered="#{not item.buyConflict}" disabled="#{not empty item.ruleParameter.buyValue}">
+                                    <p:ajax update="@form:right" listener="#{commissionView.setEdited(true)}"/>
+                                </p:inputNumber>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <p:commandLink value="?" rendered="#{item.sellConflict}" update="@form">
+                                    <f:setPropertyActionListener value="#{false}" target="#{item.sellConflict}"/>
+                                    <f:setPropertyActionListener value="#{true}" target="#{commissionView.edited}"/>
+                                </p:commandLink>
+                                <p:inputNumber value="#{item.ruleParameter.sellValue}" rendered="#{not item.sellConflict}"
+                                               disabled="#{not empty item.ruleParameter.sellPercent}" minValue="0">
+                                    <p:ajax update="@form:right" listener="#{commissionView.setEdited(true)}"/>
+                                </p:inputNumber>
+                            </p:column>
+                            <p:column styleClass="align-right">
+                                <p:commandLink value="?" rendered="#{item.sellConflict}" update="@form">
+                                    <f:setPropertyActionListener value="#{false}" target="#{item.sellConflict}"/>
+                                    <f:setPropertyActionListener value="#{true}" target="#{commissionView.edited}"/>
+                                </p:commandLink>
+                                <p:inputNumber value="#{item.ruleParameter.sellPercent}" minValue="0" maxValue="99.99" decimalPlaces="2"
+                                               rendered="#{not item.sellConflict}" disabled="#{not empty item.ruleParameter.sellValue}">
+                                    <p:ajax update="@form:right" listener="#{commissionView.setEdited(true)}"/>
+                                </p:inputNumber>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    <div class="navigation_panel clearfix bottom">
+                        <p:defaultCommand target="@next"/>
+                        <p:commandButton value="Save" styleClass="blue-btn big_btn r-float_elem" action="#{commissionView.saveView()}"
+                                         update="@form" disabled="#{not commissionView.edited}"/>
+                        <p:commandButton value="Cancel" styleClass="orange-btn big_btn" action="#{commissionView.onChangeDepartmentTree()}"
+                                         update="@form" disabled="#{not commissionView.edited}"/>
+                    </div>
+                </ui:fragment>
+            </h:panelGroup>
+        </div>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

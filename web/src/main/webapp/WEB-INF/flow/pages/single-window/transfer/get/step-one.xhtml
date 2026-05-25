@@ -1,0 +1,42 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                template="../../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Select Payment System" styleClass="transaction_page">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span class="current">1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                </div>
+            </f:facet>
+            <div class="paysystem_list">
+                <p:importEnum type="web.entity.dict.PaymentSystemName"/>
+                <ul class="list_enabled_sys">
+                    <p:repeat value="#{stepOneView.departmentPaymentSystems}" var="item">
+                        <li>
+                            <p:commandLink action="#{stepOneView.next(item)}">
+                                <div class="img_box enabled">
+                                    <h:graphicImage library="img" name="#{PaymentSystemName.MONEY_TRANSFER eq item.paymentSystem.id ? 'payment-transfer' : 'payment-system'}.png"/>
+                                </div>
+                                <div class="data_box">
+                                    <div class="grid_row">
+                                        <div class="grid_cell error w_100">#{item.paymentSystem.name}</div>
+                                    </div>
+                                </div>
+                            </p:commandLink>
+                        </li>
+                    </p:repeat>
+                </ul>
+            </div>
+        </p:panel>
+    </ui:define>
+</ui:composition>

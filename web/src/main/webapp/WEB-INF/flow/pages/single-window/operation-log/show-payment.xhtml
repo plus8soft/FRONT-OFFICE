@@ -1,0 +1,127 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="List of Available Actions" styleClass="opertion_log_page">
+            <h2 class="title_block">
+                <i class="fa fa-exclamation-circle fa-rotate-180 fa-1x" aria-hidden="true"/>
+                #{operationShowView.operation.task.name} <i class="fa fa-angle-right" aria-hidden="true"/>
+                #{operationCodeDictionary.findOne(operationShowView.operation.code).value}
+            </h2>
+            <div class="list_opertion_log">
+                <div class="item item_title">Operation Description</div>
+                <div class="item item_text">
+                    <p class="title">Operation ID</p>
+                    <p class="text"><b>#{operationShowView.operation.id}</b></p>
+                </div>
+                <div class="item item_text">
+                    <p class="title">Operation Date and Time</p>
+                    <p class="text">
+                        <b>
+                            <h:outputText value="#{operationShowView.operation.instant}">
+                                <f:converter converterId="javax.faces.Instant"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                                <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                            </h:outputText>
+                        </b>
+                    </p>
+                </div>
+                <div class="item item_text">
+                    <p class="title">Performed By</p>
+                    <p class="text">
+                        <b>
+                            #{userJobPositionDictionary.findOne(operationShowView.operation.user.position).value}
+                            #{operationShowView.operation.user.lastname} #{operationShowView.operation.user.firstname}
+                            #{operationShowView.operation.user.patronymic}
+                        </b>
+                    </p>
+                </div>
+                <div class="item item_text">
+                    <p class="title">System Module and Operation Name</p>
+                    <p class="text">
+                        <b>#{operationShowView.operation.task.name} > #{operationCodeDictionary.findOne(operationShowView.operation.code).value}</b>
+                    </p>
+                </div>
+                <div class="item item_text">
+                    <p class="title">Status</p>
+                    <p class="text #{OperationStatus.COMPLETED eq operationShowView.operation.status ? 'green-text'
+                        : OperationStatus.PERFORMED eq operationShowView.operation.status ? 'red-text' : 'blue-text'}">
+                        <b>#{operationStatusDictionary.findOne(operationShowView.operation.status).value}</b>
+                    </p>
+                </div>
+                <div class="item item_title">Operation Data</div>
+                <div class="item item_text">
+                    <p class="title">Amount and Currency</p>
+                    <p class="text">
+                        <b>
+                            <h:outputText value="#{operationShowView.operation.amount}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </h:outputText>, #{operationShowView.baseCurrency.name} (#{operationShowView.baseCurrency.iso})
+                        </b>
+                    </p>
+                </div>
+                <ui:fragment rendered="#{not empty operationShowView.operation.personHistory}">
+                    <div class="item item_title">Client Data</div>
+                    <div class="item item_text">
+                        <p class="title">Last Name, First Name, Middle Name, Birth Date</p>
+                        <p class="text">
+                            <b>
+                                #{operationShowView.operation.personHistory.lastname}
+                                #{operationShowView.operation.personHistory.firstname}
+                                #{operationShowView.operation.personHistory.patronymic}
+                                <h:outputText value="#{operationShowView.operation.personHistory.birthDate}">
+                                    <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                    <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                                </h:outputText>
+                            </b>
+                        </p>
+                    </div>
+                    <div class="item item_text">
+                        <p class="title">Identity Document (Type, Series, Number)</p>
+                        <p class="text">
+                            <b>
+                                #{documentTypeDictionary.findOne(operationShowView.operation.personHistory.document.type).value},
+                                #{operationShowView.operation.personHistory.document.series}
+                                #{operationShowView.operation.personHistory.document.number}
+                            </b>
+                        </p>
+                    </div>
+                    <div class="item item_text">
+                        <p class="title">Identity Document (Issued By and When)</p>
+                        <p class="text">
+                            <b>
+                                #{operationShowView.operation.personHistory.document.issuanceUnit},
+                                <h:outputText value="#{operationShowView.operation.personHistory.document.issuanceDate}">
+                                    <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                    <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                                </h:outputText>
+                            </b>
+                        </p>
+                    </div>
+                    <ui:fragment rendered="#{not empty operationShowView.operation.personHistory.mobilePhone}">
+                        <div class="item item_text">
+                            <p class="title">Contact Information</p>
+                            <p class="text"><b>#{operationShowView.operation.personHistory.mobilePhone}</b></p>
+                        </div>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{not empty operationShowView.operation.personHistory.email}">
+                        <div class="item item_text">
+                            <p class="title">Email Address</p>
+                            <p class="text"><b>#{operationShowView.operation.personHistory.email}</b></p>
+                        </div>
+                    </ui:fragment>
+                </ui:fragment>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Back" action="cancel" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

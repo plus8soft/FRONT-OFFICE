@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://java.sun.com/jsf/html"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Document Scans</h1>
+        <p:panel header="Select document and perform necessary actions">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <ui:fragment rendered="#{userSession.rights.contains('single-window-document-copies-edit')}">
+                <div class="navigation_panel clearfix">
+                    <p:commandButton value="Add" action="add-document-copy" styleClass="blue-btn"/>
+                    <p:commandButton value="Edit" action="edit" disabled="#{empty documentCopyView.selected}" styleClass="blue-btn"/>
+                    <p:commandButton value="View" action="#{documentCopyView.setShowReport(true)}" update="@form"
+                                     disabled="#{empty documentCopyView.selected or empty documentCopyView.selected.file}" styleClass="green-btn"/>
+                    <p:commandButton value="Delete" onclick="PF('confirm').show()" disabled="#{empty documentCopyView.selected}"
+                                     styleClass="orange-btn"/>
+                </div>
+            </ui:fragment>
+            <p:dataTable value="#{documentCopyView.documentCopies}" var="copy" selection="#{documentCopyView.selected}" selectionMode="single"
+                         rowKey="#{copy.id}" emptyMessage="No data found">
+                <p:ajax event="rowSelect" update="@form"/>
+                <p:ajax event="rowUnselect" update="@form"/>
+                <p:column headerText="Document Type">
+                    #{copy.external ? "External" : "Internal"}
+                </p:column>
+                <p:column headerText="Name">
+                    #{copy.name}
+                </p:column>
+                <p:column headerText="Series">
+                    #{copy.series}
+                </p:column>
+                <p:column headerText="Number">
+                    #{copy.number}
+                </p:column>
+                <p:column headerText="Document Date">
+                    <p:outputLabel value="#{copy.issuanceDate}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                    </p:outputLabel>
+                </p:column>
+                <p:column headerText="Valid Until">
+                    <p:outputLabel value="#{copy.validUntilDate}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                    </p:outputLabel>
+                </p:column>
+                <p:column headerText="Current Document Version">
+                    #{copy.version}
+                </p:column>
+            </p:dataTable>
+            <ui:fragment rendered="#{not empty documentCopyView.selected}">
+                <hr/>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">Document Name:</div>
+                    <div class="grid_cell w_85">
+                        <b>#{documentCopyView.selected.name}</b>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">File Name, File Size:</div>
+                    <div class="grid_cell w_85">
+                        <b>#{documentCopyView.selected.fileName}</b>, #{documentCopyView.selected.fileSize} bytes
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">Creation Date:</div>
+                    <div class="grid_cell w_85">
+                        <b><h:outputText value="#{documentCopyView.selected.creationDate}">
+                            <f:converter converterId="javax.faces.Instant"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                            <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                        </h:outputText></b>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_15">Created By:</div>
+                    <div class="grid_cell w_85">
+                        <b>#{utils.strings.capitalizeFio(documentCopyView.selected.user.lastname, documentCopyView.selected.user.firstname,
+                                documentCopyView.selected.user.patronymic)}</b>, #{documentCopyView.selected.user.positionText},
+                        #{documentCopyView.selected.user.department.name}
+                    </div>
+                </div>
+            </ui:fragment>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Close" styleClass="orange-btn big_btn" action="to-edit-client"/>
+        </div>
+        <p:dialog modal="true" closable="true" visible="true" rendered="#{documentCopyView.showReport}" resizable="false" draggable="false"
+                  closeOnEscape="true" appendTo="@(body)" positionType="absolute" position="top">
+            <p:ajax event="close" listener="#{documentCopyView.closeDialog}" update="@form"/>
+            <p:media value="#{reportRequest.report}" player="pdf" width="1200" height="500">
+                <f:param name="path" value="#{documentCopyView.selected.fileName}"/>
+            </p:media>
+        </p:dialog>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{documentCopyView.delete()}" onclick="PF('confirm').hide()"
+                             styleClass="blue-btn r-float_elem" update="@form"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

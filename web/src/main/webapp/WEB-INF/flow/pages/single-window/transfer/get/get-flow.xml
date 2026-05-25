@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/single-window/transition">
+    <view-state id="step-one">
+        <var name="stepOneView" class="web.view.transfer.get.StepOneView"/>
+        <on-entry>
+            <evaluate expression="stepOneView.init()"/>
+        </on-entry>
+        <transition on="next" to="step-two-action"/>
+        <on-exit>
+            <set name="flowScope.FS_PAYOUT_TRANSFER" value="stepOneView.payoutTransfer"/>
+        </on-exit>
+    </view-state>
+    <action-state id="step-two-action">
+        <evaluate expression="flowScope.FS_PAYOUT_TRANSFER.paymentSystem.id"/>
+        <transition on="MONEY_TRANSFER" to="step-transfer"/>
+        <transition on="WESTERN_UNION" to="step-transfer"/>
+        <transition on="MONEYGRAM" to="step-transfer"/>
+    </action-state>
+    <subflow-state id="step-transfer" subflow="pages/single-window/transfer/get/transfer">
+        <input name="payoutTransfer" value="flowScope.FS_PAYOUT_TRANSFER"/>
+        <transition on="back" to="step-one"/>
+    </subflow-state>
+    <view-state id="step-two">
+        <transition on="next" to="step-three"/>
+        <transition on="back" to="back"/>
+    </view-state>
+    <subflow-state id="step-three" subflow="pages/single-window/client-search">
+        <input name="stepNumber" value="3"/>
+        <input name="stepsCount" value="4"/>
+        <input name="headerLabel" value="'Enter Recipient Data'"/>
+        <input name="personId" value="flowScope.FS_PERSON_ID"/>
+        <input name="validators" value="T(java.util.Collections).singletonList(new web.service.crm.validator.MobilePhoneValidator())"/>
+        <output name="personIdOut" value="flowScope.FS_PERSON_ID"/>
+        <transition on="next" to="step-four"/>
+        <transition on="back" to="step-two"/>
+    </subflow-state>
+    <view-state id="step-four">
+        <transition on="back" to="step-three"/>
+    </view-state>
+    <end-state id="cancel"/>
+    <global-transitions>
+        <transition on="cancel" to="cancel"/>
+    </global-transitions>
+</flow>

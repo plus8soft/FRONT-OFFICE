@@ -1,0 +1,200 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <o:importConstants type="web.entity.AuthorizationResult"/>
+        <h1 class="title-page">Audit Logs</h1>
+        <p:panel header="Login/Logout">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="body_block">
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40">
+                            <p:outputLabel for="@next" value="Result"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:selectOneMenu value="#{ioView.filter.result}" styleClass="w_100" autoWidth="false">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItem itemValue="#{true}" itemLabel="Successful Login"/>
+                                <f:selectItem itemValue="#{false}" itemLabel="Login Failed"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_70">
+                        <div class="grid_cell w_15 r-label">
+                            <p:outputLabel value="Code"/>
+                        </div>
+                        <div class="grid_cell w_85">
+                            <p:selectCheckboxMenu value="#{ioView.filter.authorizationResults}" label="" updateLabel="true"
+                                                  converter="omnifaces.GenericEnumConverter" styleClass="w_100">
+                                <f:selectItems value="#{AuthorizationResult}" var="authorizationResult"
+                                               itemValue="#{authorizationResult}" itemLabel="#{authorizationResult.message}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40">
+                            <p:outputLabel for="@next" value="Event Date, from"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <div class="icon_box">
+                                <p:calendar value="#{ioView.filter.eventDateWith}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                            timeZone="#{userSession.user.department.zoneId}" showOn="button" placeholder="dd.mm.yyyy hh:mm"
+                                            mask="true" styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_35 r-label">
+                            <p:outputLabel for="@next" value="to"/>
+                        </div>
+                        <div class="grid_cell w_65">
+                            <div class="icon_box">
+                                <p:calendar value="#{ioView.filter.eventDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                            timeZone="#{userSession.user.department.zoneId}" showOn="button" placeholder="dd.mm.yyyy hh:mm"
+                                            mask="true" styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_40">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel for="@next" value="Account (Login)"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:inputText value="#{ioView.filter.userLogin}" styleClass="w_100"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40">
+                            <p:outputLabel for="@next" value="Last Name"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:inputText value="#{ioView.filter.lastname}" styleClass="w_100"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_35 r-label">
+                            <p:outputLabel for="@next" value="First Name"/>
+                        </div>
+                        <div class="grid_cell w_65">
+                            <p:inputText value="#{ioView.filter.firstname}" styleClass="w_100"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_40">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel for="@next" value="Middle Name"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:inputText value="#{ioView.filter.patronymic}" styleClass="w_100"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_40">
+                            <p:outputLabel for="@next" value="Logout Date, from"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <div class="icon_box">
+                                <p:calendar value="#{ioView.filter.outDateWith}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                            timeZone="#{userSession.user.department.zoneId}" showOn="button" placeholder="dd.mm.yyyy hh:mm"
+                                            mask="true" styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_35 r-label">
+                            <p:outputLabel for="@next" value="to"/>
+                        </div>
+                        <div class="grid_cell w_65">
+                            <div class="icon_box">
+                                <p:calendar value="#{ioView.filter.outDate}" converter="javax.faces.Instant" pattern="dd.MM.yyyy HH:mm"
+                                            timeZone="#{userSession.user.department.zoneId}" showOn="button" placeholder="dd.mm.yyyy hh:mm"
+                                            mask="true" styleClass="w_100"/>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_40">
+                        <div class="grid_cell w_40 r-label">
+                            <p:outputLabel for="@next" value="IP"/>
+                        </div>
+                        <div class="grid_cell w_60">
+                            <p:inputText value="#{ioView.filter.userIp}" placeholder=". . ." maxlength="39" styleClass="w_100">
+                                <p:keyFilter regEx="/[a-fA-F0-9\.:]/" preventPaste="false"/>
+                            </p:inputText>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation_panel clearfix body_block">
+                <p:commandButton value="Search" action="#{ioView.updateFilter()}" update="@form" styleClass="blue-btn r-float_elem"/>
+                <p:commandButton update="@widgetVar(dialog)" styleClass="green-btn" value="Export to File" oncomplete="PF('dialog').show()"/>
+                <p:commandButton value="View" action="show" disabled="#{empty ioView.model.selected}" styleClass="green-btn"/>
+            </div>
+            <p:dataTable id="connectionEvents" value="#{ioView.model}" var="connectionEvent" lazy="true" rows="100" scrollRows="50"
+                         scrollable="#{ioView.model.rowCount gt 10}" scrollHeight="#{ioView.model.rowCount gt 10 ? 400 : null}" virtualScroll="true"
+                         selection="#{ioView.model.selected}" selectionMode="single" sortMode="multiple" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@previous"/>
+                <p:ajax event="rowUnselect" update="@previous"/>
+                <p:ajax event="page" update="@previous" listener="#{ioView.model.setSelected(null)}"/>
+                <p:column headerText="Event Date" width="120">
+                    <h:outputText value="#{connectionEvent.date}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Result" width="70">
+                    <span class="fix_row align-center">
+                        <i class="fa #{AuthorizationResult.SUCCESS eq connectionEvent.authorizationResult ? 'fa-check-circle success' :
+                                'fa-times-circle error'} fa-2x" aria-hidden="true"/>
+                    </span>
+                </p:column>
+                <p:column headerText="Code" width="290" styleClass="fix_cell">
+                    <span class="fix_row">#{connectionEvent.authorizationResult.message}</span>
+                </p:column>
+                <p:column headerText="Login" width="110">
+                    #{connectionEvent.login}
+                </p:column>
+                <p:column headerText="Full Name">
+                    #{connectionEvent.user.lastname} #{connectionEvent.user.firstname} #{connectionEvent.user.patronymic}
+                </p:column>
+                <p:column headerText="IP">
+                    #{connectionEvent.ip}
+                </p:column>
+                <p:column headerText="Logout Date" width="120">
+                    <h:outputText value="#{connectionEvent.logoffDate}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+            <p:confirmDialog header="Question" widgetVar="dialog" showEffect="fade" hideEffect="fade" closable="false" severity="help"
+                             message="Number of records: #{ioView.model.rowCount}, do you really want to export?">
+                <p:commandButton value="Yes" ajax="false" styleClass="blue-btn r-float_elem" onclick="PF('dialog').hide();">
+                    <p:fileDownload value="#{ioView.fileDownload()}"/>
+                </p:commandButton>
+                <p:button value="No" styleClass="orange-btn" onclick="PF('dialog').hide(); return"/>
+            </p:confirmDialog>
+        </p:panel>
+    </ui:define>
+</ui:composition>

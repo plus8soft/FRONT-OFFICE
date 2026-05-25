@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="2.0.0" failOnError="true">
+        <sql>CREATE SCHEMA CORE</sql>
+        <createView viewName="TABLE_DESCRIPTIONS_V" schemaName="CORE"><![CDATA[
+            SELECT
+                schemas.name                                  schemaName,
+                tables.name                                   tableName,
+                CAST(extended_properties.value AS VARCHAR) AS tableDescr
+            FROM
+                sys.tables
+                INNER JOIN sys.schemas ON tables.schema_id = schemas.schema_id AND schemas.name NOT IN ('dbo', 'sys')
+                LEFT JOIN sys.extended_properties ON
+                                                    tables.object_id = extended_properties.major_id
+                                                    AND extended_properties.minor_id = 0
+                                                    AND extended_properties.name = 'MS_Description'
+        ]]></createView>
+        <createView viewName="TABLE_FIELDS_V" schemaName="CORE"><![CDATA[
+            SELECT
+              schemas.name                                  schemaName,
+              tables.name                                   tableName,
+              columns.name                                  columnName,
+              UPPER(types.name)                             columnType,
+              columns.max_length,
+              columns.precision,
+              CAST(extended_properties.value AS VARCHAR) AS columnDescr
+            FROM
+              sys.tables
+              INNER JOIN sys.columns ON tables.object_id = columns.object_id
+              INNER JOIN sys.schemas ON tables.schema_id = schemas.schema_id AND schemas.name NOT IN ('dbo', 'sys')
+              INNER JOIN sys.types ON columns.user_type_id = types.user_type_id
+              LEFT JOIN sys.extended_properties ON
+                                                  tables.object_id = extended_properties.major_id
+                                                  AND columns.column_id = extended_properties.minor_id
+                                                  AND extended_properties.name IN ('MS_Description', 'ColumnDescription')
+        ]]></createView>
+        
+        <!-- DEPARTMENTS table based on Department entity -->
+        <createTable schemaName="CORE" tableName="DEPARTMENTS" remarks="Departments">
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="DEPARTMENTS_ID_PK"/>
+            </column>
+            <column name="EXT_DEPARTMENTS_ID" type="INT" remarks="ID in external system"/>
+            <column name="PARENT_DEPARTMENT" type="INT" remarks="Parent department"/>
+            <column name="POSITION" type="INT" remarks="Display position"/>
+            <column name="STATUS" type="BIT" remarks="Status">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TYPE" type="INT" remarks="Type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CODE" type="VARCHAR(100)" remarks="Code"/>
+            <column name="SHORT_NAME" type="VARCHAR(100)" remarks="Short name"/>
+            <column name="FULL_NAME" type="VARCHAR(500)" remarks="Full name"/>
+            <column name="EMAIL" type="VARCHAR(100)" remarks="Email"/>
+            <column name="WORK_PHONE" type="VARCHAR(100)" remarks="Work phone"/>
+            <column name="MOB_PHONE" type="VARCHAR(100)" remarks="Mobile phone"/>
+            <column name="POSTALCODE" type="VARCHAR(100)" remarks="Postal code"/>
+            <column name="COUNTRY" type="VARCHAR(10)" remarks="Country"/>
+            <column name="REGIONTYPE" type="VARCHAR(50)" remarks="Region type"/>
+            <column name="REGION" type="VARCHAR(200)" remarks="Region"/>
+            <column name="DISTRICTTYPE" type="VARCHAR(50)" remarks="District type"/>
+            <column name="DISTRICT" type="VARCHAR(200)" remarks="District"/>
+            <column name="CITYTYPE" type="VARCHAR(50)" remarks="City type"/>
+            <column name="CITY" type="VARCHAR(200)" remarks="City"/>
+            <column name="LOCALITYTYPE" type="VARCHAR(50)" remarks="Locality type"/>
+            <column name="LOCALITY" type="VARCHAR(200)" remarks="Locality"/>
+            <column name="STREETTYPE" type="VARCHAR(50)" remarks="Street type"/>
+            <column name="STREET" type="VARCHAR(200)" remarks="Street"/>
+            <column name="HOUSE" type="VARCHAR(50)" remarks="House"/>
+            <column name="HOUSING" type="VARCHAR(50)" remarks="Building"/>
+            <column name="STRUCTURE" type="VARCHAR(50)" remarks="Structure"/>
+            <column name="FLAT" type="VARCHAR(50)" remarks="Apartment"/>
+            <column name="ADDRESS_CODE" type="VARCHAR(100)" remarks="Address code"/>
+            <column name="START_OPERATION_DAY" type="TIME(3)" remarks="Operation time, from">
+                <constraints nullable="false"/>
+            </column>
+            <column name="END_OPERATION_DAY" type="TIME(3)" remarks="Operation time, to">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NIGHTLY_CASH" type="BIT" remarks="Night cash desk">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TIME_ZONE" type="VARCHAR(50)" remarks="Time zone"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="DEPARTMENTS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <addForeignKeyConstraint baseTableName="DEPARTMENTS" baseTableSchemaName="CORE"
+                                 constraintName="DEPARTMENTS_DEPARTMENTS_ID_FK"
+                                 referencedTableName="DEPARTMENTS" referencedTableSchemaName="CORE"
+                                 baseColumnNames="PARENT_DEPARTMENT" referencedColumnNames="DEPARTMENTS_ID"/>
+        
+        <!-- SECURITY_PROFILES table based on SecurityProfile entity -->
+        <createTable schemaName="CORE" tableName="SECURITY_PROFILES" remarks="Security Profiles">
+            <column name="SECURITY_PROFILES_ID" type="INT" remarks="Security profile ID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="SECURITY_PROFILES_ID_PK"/>
+            </column>
+            <column name="NAME" type="VARCHAR(200)" remarks="Name"/>
+            <column name="DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+            <column name="PASS_UCASE_AND_LCASE" type="BIT" remarks="Password uses uppercase and lowercase characters">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASS_CONTAINS_NUMBERS" type="BIT" remarks="Password contains numbers">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASS_CONTAINS_SPEC_CHARACTERS" type="BIT" remarks="Password contains special characters">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASS_NOT_USE_USERDATA" type="BIT" remarks="Password must not contain user data">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASS_NOT_USE_COMMON_WORDS" type="BIT" remarks="Password must not contain common words">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASS_MIN_LEN" type="INT" remarks="Minimum password length"/>
+            <column name="PASS_EXP_TERM_TYPE" type="VARCHAR(10)" remarks="Password expiration term type"/>
+            <column name="PASS_EXP_TERM" type="INT" remarks="Password expiration term"/>
+            <column name="BLOCK_ACCOUNT_INACTIVE" type="BIT" remarks="Block account when inactive">
+                <constraints nullable="false"/>
+            </column>
+            <column name="BLOCK_ACCOUNT_INACTIVE_TERM_TYPE" type="VARCHAR(10)" remarks="Account blocking term type when inactive"/>
+            <column name="BLOCK_ACCOUNT_INACTIVE_TERM" type="INT" remarks="Account blocking term when inactive"/>
+            <column name="BLOCK_ACCOUNT_FAIL_LOGIN" type="BIT" remarks="Block account on incorrect password entry">
+                <constraints nullable="false"/>
+            </column>
+            <column name="BLOCK_ACCOUNT_FAIL_LOGIN_ATTEMPS" type="INT" remarks="Maximum number of incorrect password attempts"/>
+            <column name="TEMPORARY_BLOCK_ACCOUNT" type="BIT" remarks="Temporarily block account on incorrect password entry">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TEMPORARY_BLOCK_ACCOUNT_FAIL_ATTEMPS" type="INT" remarks="Maximum number of incorrect password attempts"/>
+            <column name="TEMPORARY_BLOCK_ACCOUNT_TERM_TYPE" type="VARCHAR(10)" remarks="Temporary account blocking term type on incorrect password"/>
+            <column name="TEMPORARY_BLOCK_ACCOUNT_TERM" type="INT" remarks="Temporary account blocking term on incorrect password"/>
+            <column name="MAX_SESSIONS" type="INT" remarks="Maximum number of sessions"/>
+            <column name="SESSION_TIMEOUT" type="INT" remarks="Session timeout in minutes"/>
+            <column name="CONNECT_ONLY_FROM_TRUST_ZONE" type="BIT" remarks="Login only from trusted zones">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CONNECT_TRUST_ZONE" type="VARCHAR(2000)" remarks="List of trusted zones"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="SECURITY_PROFILES_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- USERS table based on User entity -->
+        <createTable schemaName="CORE" tableName="USERS" remarks="Users">
+            <column name="USERS_ID" type="INT" remarks="User identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="USERS_ID_PK"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department identifier">
+                <constraints nullable="false" foreignKeyName="USERS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+            <column name="LOGIN" type="VARCHAR(50)" remarks="Login">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASS" type="VARCHAR(60)" remarks="Password">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASS_CHANGE_ON_LOGIN" type="BIT" remarks="Change password on login">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FIRSTNAME" type="VARCHAR(100)" remarks="First name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LASTNAME" type="VARCHAR(100)" remarks="Last name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PATRONYMIC" type="VARCHAR(100)" remarks="Middle name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ACCOUNT_EXP_DATE" type="DATETIME2" remarks="Account expiration date"/>
+            <column name="LAST_LOGIN_EVENT" type="DATETIME2" remarks="Last login event date"/>
+            <column name="USE_DEPARTMENT_TIME_ZONE" type="BIT" remarks="Use department time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TIME_ZONE" type="VARCHAR(50)" remarks="Time zone"/>
+            <column name="JOB_POSITION" type="INT" remarks="Job position"/>
+            <column name="JOB_POSITION_TXT" type="VARCHAR(200)" remarks="Job position (text)"/>
+            <column name="WORK_PHONE" type="VARCHAR(100)" remarks="Work phone"/>
+            <column name="MOB_PHONE" type="VARCHAR(100)" remarks="Mobile phone"/>
+            <column name="EMAIL" type="VARCHAR(100)" remarks="Email"/>
+            <column name="AUTH_TYPE" type="VARCHAR(50)" remarks="Authorization type"/>
+            <column name="STATUS" type="VARCHAR(50)" remarks="Status">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SECURITY_PROFILES_ID" type="INT" remarks="Security profile identifier">
+                <constraints nullable="false" foreignKeyName="USERS_SECURITY_PROFILES_ID_FK"
+                             references="CORE.SECURITY_PROFILES(SECURITY_PROFILES_ID)"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="USERS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <createIndex indexName="USERS_DEPARTMENTS_ID_IDX" schemaName="CORE" tableName="USERS">
+            <column name="DEPARTMENTS_ID"/>
+        </createIndex>
+        <createIndex indexName="USERS_LOGIN_IDX" schemaName="CORE" tableName="USERS">
+            <column name="LOGIN"/>
+        </createIndex>
+        
+        <!-- GROUPS table based on Group entity -->
+        <createTable schemaName="CORE" tableName="GROUPS" remarks="Groups">
+            <column name="GROUPS_ID" type="INT" remarks="Group identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="GROUPS_ID_PK"/>
+            </column>
+            <column name="PARENT_GROUP" type="INT" remarks="Parent group"/>
+            <column name="POSITION" type="INT" remarks="Display position"/>
+            <column name="TYPE" type="BIT" remarks="Type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR(500)" remarks="Name"/>
+            <column name="DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="GROUPS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <addForeignKeyConstraint baseTableName="GROUPS" baseTableSchemaName="CORE"
+                                 constraintName="GROUPS_GROUPS_ID_FK"
+                                 referencedTableName="GROUPS" referencedTableSchemaName="CORE"
+                                 baseColumnNames="PARENT_GROUP" referencedColumnNames="GROUPS_ID"/>
+        
+        <!-- Insert 2 bank-related groups -->
+        <!-- Group 1: Banking Operations (TYPE=true so it appears on User Groups page; admin is assigned to this group in core-data.xml) -->
+        <insert schemaName="CORE" tableName="GROUPS">
+            <column name="GROUPS_ID" valueComputed="NEXT VALUE FOR CORE.GROUPS_ID_SEQ"/>
+            <column name="NAME" value="Banking Operations Group"/>
+            <column name="DESCRIPTION" value="Group for banking operations and financial services"/>
+            <column name="TYPE" valueBoolean="true"/>
+            <column name="POSITION" valueNumeric="1"/>
+        </insert>
+        
+        <!-- Group 2: Treasury Department -->
+        <insert schemaName="CORE" tableName="GROUPS">
+            <column name="GROUPS_ID" valueComputed="NEXT VALUE FOR CORE.GROUPS_ID_SEQ"/>
+            <column name="NAME" value="Treasury Department Group"/>
+            <column name="DESCRIPTION" value="Group for treasury operations and currency exchange"/>
+            <column name="TYPE" valueBoolean="false"/>
+            <column name="POSITION" valueNumeric="2"/>
+        </insert>
+        
+        <!-- Group 3: User Group (TYPE=true so it appears on User Groups page) -->
+        <insert schemaName="CORE" tableName="GROUPS">
+            <column name="GROUPS_ID" valueComputed="NEXT VALUE FOR CORE.GROUPS_ID_SEQ"/>
+            <column name="NAME" value="User Group"/>
+            <column name="DESCRIPTION" value="Default user group"/>
+            <column name="TYPE" valueBoolean="true"/>
+            <column name="POSITION" valueNumeric="3"/>
+        </insert>
+        
+        <!-- GROUP_DEPARTMENTS join table -->
+        <createTable schemaName="CORE" tableName="GROUP_DEPARTMENTS" remarks="Department Groups">
+            <column name="GROUPS_ID" type="INT" remarks="Group ID">
+                <constraints nullable="false" foreignKeyName="GROUP_DEPARTMENTS_GROUPS_ID_FK" references="CORE.GROUPS(GROUPS_ID)"/>
+            </column>
+            <column name="DEPARTMENTS_ID" type="INT" remarks="Department ID">
+                <constraints nullable="false" foreignKeyName="GROUP_DEPARTMENTS_DEPARTMENTS_ID_FK" references="CORE.DEPARTMENTS(DEPARTMENTS_ID)"/>
+            </column>
+        </createTable>
+        
+        <!-- GROUP_USERS join table -->
+        <createTable schemaName="CORE" tableName="GROUP_USERS" remarks="User Groups">
+            <column name="GROUPS_ID" type="INT" remarks="Group ID">
+                <constraints nullable="false" foreignKeyName="GROUP_USERS_GROUPS_ID_FK" references="CORE.GROUPS(GROUPS_ID)"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints nullable="false" foreignKeyName="GROUP_USERS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+        </createTable>
+        
+        <!-- ROLES table based on Role entity -->
+        <createTable schemaName="CORE" tableName="ROLES" remarks="Roles">
+            <column name="ROLES_ID" type="INT" remarks="Role identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ROLES_ID_PK"/>
+            </column>
+            <column name="IS_SYSTEM" type="BIT" remarks="System">
+                <constraints nullable="false"/>
+            </column>
+            <column name="GROUP_NAME" type="VARCHAR(500)" remarks="Group"/>
+            <column name="NAME" type="VARCHAR(500)" remarks="Name"/>
+            <column name="DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="ROLES_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- RIGHTS table based on Right entity -->
+        <createTable schemaName="CORE" tableName="RIGHTS" remarks="Rights">
+            <column name="RIGHTS_ID" type="INT" remarks="Right identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="RIGHTS_ID_PK"/>
+            </column>
+            <column name="GROUP_NAME" type="VARCHAR(500)" remarks="Group"/>
+            <column name="SYSTEM_NAME" type="VARCHAR(100)" remarks="System name"/>
+            <column name="NAME" type="VARCHAR(500)" remarks="Name"/>
+            <column name="DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="RIGHTS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- PROJECTS table based on Project entity -->
+        <createTable schemaName="CORE" tableName="PROJECTS" remarks="Projects">
+            <column name="PROJECTS_ID" type="INT" remarks="Project identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PROJECTS_ID_PK"/>
+            </column>
+            <column name="SYSTEM_NAME" type="VARCHAR(100)" remarks="System name"/>
+            <column name="NAME" type="VARCHAR(500)" remarks="Name"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="PROJECTS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- TASKS table based on Task entity -->
+        <createTable schemaName="CORE" tableName="TASKS" remarks="Tasks">
+            <column name="TASKS_ID" type="INT" remarks="Task identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="TASKS_ID_PK"/>
+            </column>
+            <column name="PARENT_TASK" type="INT" remarks="Parent task"/>
+            <column name="PROJECTS_ID" type="INT" remarks="Project identifier">
+                <constraints nullable="false" foreignKeyName="TASKS_PROJECTS_ID_FK" references="CORE.PROJECTS(PROJECTS_ID)"/>
+            </column>
+            <column name="SYSTEM_NAME" type="VARCHAR(100)" remarks="System name"/>
+            <column name="NAME" type="VARCHAR(500)" remarks="Name"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="TASKS_ID_SEQ" startValue="1" incrementBy="1"/>
+        <addForeignKeyConstraint baseTableName="TASKS" baseTableSchemaName="CORE"
+                                 constraintName="TASKS_TASKS_ID_FK"
+                                 referencedTableName="TASKS" referencedTableSchemaName="CORE"
+                                 baseColumnNames="PARENT_TASK" referencedColumnNames="TASKS_ID"/>
+        
+        <!-- Join tables for many-to-many relationships -->
+        <createTable schemaName="CORE" tableName="ROLE_RIGHTS" remarks="Role Rights">
+            <column name="ROLES_ID" type="INT" remarks="Role ID">
+                <constraints nullable="false" foreignKeyName="ROLE_RIGHTS_ROLES_ID_FK" references="CORE.ROLES(ROLES_ID)"/>
+            </column>
+            <column name="RIGHTS_ID" type="INT" remarks="Right ID">
+                <constraints nullable="false" foreignKeyName="ROLE_RIGHTS_RIGHTS_ID_FK" references="CORE.RIGHTS(RIGHTS_ID)"/>
+            </column>
+        </createTable>
+        
+        <createTable schemaName="CORE" tableName="ROLE_TASKS" remarks="Role Tasks">
+            <column name="ROLES_ID" type="INT" remarks="Role ID">
+                <constraints nullable="false" foreignKeyName="ROLE_TASKS_ROLES_ID_FK" references="CORE.ROLES(ROLES_ID)"/>
+            </column>
+            <column name="TASKS_ID" type="INT" remarks="Task ID">
+                <constraints nullable="false" foreignKeyName="ROLE_TASKS_TASKS_ID_FK" references="CORE.TASKS(TASKS_ID)"/>
+            </column>
+        </createTable>
+        
+        <createTable schemaName="CORE" tableName="GROUP_ROLES" remarks="Group Roles">
+            <column name="GROUPS_ID" type="INT" remarks="Group ID">
+                <constraints nullable="false" foreignKeyName="GROUP_ROLES_GROUPS_ID_FK" references="CORE.GROUPS(GROUPS_ID)"/>
+            </column>
+            <column name="ROLES_ID" type="INT" remarks="Role ID">
+                <constraints nullable="false" foreignKeyName="GROUP_ROLES_ROLES_ID_FK" references="CORE.ROLES(ROLES_ID)"/>
+            </column>
+        </createTable>
+        
+        <createTable schemaName="CORE" tableName="USER_ROLES" remarks="User Roles">
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints nullable="false" foreignKeyName="USER_ROLES_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="ROLES_ID" type="INT" remarks="Role ID">
+                <constraints nullable="false" foreignKeyName="USER_ROLES_ROLES_ID_FK" references="CORE.ROLES(ROLES_ID)"/>
+            </column>
+        </createTable>
+        
+        <createTable schemaName="CORE" tableName="USER_RIGHTS" remarks="User Rights">
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints nullable="false" foreignKeyName="USER_RIGHTS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="RIGHTS_ID" type="INT" remarks="Right ID">
+                <constraints nullable="false" foreignKeyName="USER_RIGHTS_RIGHTS_ID_FK" references="CORE.RIGHTS(RIGHTS_ID)"/>
+            </column>
+        </createTable>
+        
+        <createTable schemaName="CORE" tableName="USER_TASKS" remarks="User Tasks">
+            <column name="USERS_ID" type="INT" remarks="User ID">
+                <constraints nullable="false" foreignKeyName="USER_TASKS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="TASKS_ID" type="INT" remarks="Task ID">
+                <constraints nullable="false" foreignKeyName="USER_TASKS_TASKS_ID_FK" references="CORE.TASKS(TASKS_ID)"/>
+            </column>
+        </createTable>
+        
+        <!-- USER_CERTIFICATES table based on Certificate entity -->
+        <createTable schemaName="CORE" tableName="USER_CERTIFICATES" remarks="User Certificates">
+            <column name="USER_CERTIFICATES_ID" type="INT" remarks="Certificate identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="USER_CERTIFICATES_ID_PK"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User identifier">
+                <constraints nullable="false" foreignKeyName="USER_CERTIFICATES_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="ID" type="VARCHAR(200)" remarks="Serial number"/>
+            <column name="DATA" type="TEXT" remarks="Certificate data"/>
+            <column name="START_DATE" type="DATETIME2" remarks="Start date"/>
+            <column name="END_DATE" type="DATETIME2" remarks="End date"/>
+            <column name="OWNER" type="VARCHAR(500)" remarks="Owner"/>
+            <column name="LOCKED" type="BIT" remarks="Locked"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="USER_CERTIFICATES_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- USER_PASSWORDS table based on Password entity -->
+        <createTable schemaName="CORE" tableName="USER_PASSWORDS" remarks="User Passwords">
+            <column name="USER_PASSWORDS_ID" type="INT" remarks="Password identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="USER_PASSWORDS_ID_PK"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User identifier">
+                <constraints nullable="false" foreignKeyName="USER_PASSWORDS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="CHANGE_DATE" type="DATETIME2" remarks="Change date"/>
+            <column name="PASS" type="VARCHAR(60)" remarks="Password"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="USER_PASSWORDS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- DICTIONARIES table based on Dictionary entity -->
+        <createTable schemaName="CORE" tableName="DICTIONARIES" remarks="Dictionaries">
+            <column name="DICT_NAME" type="VARCHAR(100)" remarks="Dictionary name">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="DICTIONARIES_DICT_NAME_PK"/>
+            </column>
+            <column name="NAME" type="VARCHAR(500)" remarks="Name"/>
+            <column name="GROUP_NAME" type="VARCHAR(500)" remarks="Group"/>
+            <column name="UPD_DATE" type="DATETIME2" remarks="Update date"/>
+            <column name="IS_SYSTEM" type="BIT" remarks="System">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+        </createTable>
+        
+        <!-- DICTIONARY_VALUES table based on DictionaryValue entity -->
+        <createTable schemaName="CORE" tableName="DICTIONARY_VALUES" remarks="Dictionary Values">
+            <column name="DICTIONARY_VALUES_ID" type="INT" remarks="Dictionary value identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="DICTIONARY_VALUES_ID_PK"/>
+            </column>
+            <column name="DICT_NAME" type="VARCHAR(100)" remarks="Dictionary name">
+                <constraints nullable="false" foreignKeyName="DICTIONARY_VALUES_DICT_NAME_FK" references="CORE.DICTIONARIES(DICT_NAME)"/>
+            </column>
+            <column name="CODE" type="VARCHAR(100)" remarks="Code"/>
+            <column name="VALUE" type="VARCHAR(500)" remarks="Value"/>
+            <column name="SHORT_VALUE" type="VARCHAR(200)" remarks="Short value"/>
+            <column name="IS_SYSTEM" type="BIT" remarks="System">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NOT_USE" type="BIT" remarks="Not use">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="DICTIONARY_VALUES_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- Insert dictionaries for Time Zone and Job Position -->
+        <!-- Time Zone Dictionary -->
+        <insert schemaName="CORE" tableName="DICTIONARIES">
+            <column name="DICT_NAME" value="TIME_ZONE"/>
+            <column name="NAME" value="Time Zones"/>
+            <column name="GROUP_NAME" value="Administration Subsystem"/>
+            <column name="UPD_DATE" valueComputed="GETUTCDATE()"/>
+            <column name="IS_SYSTEM" valueBoolean="true"/>
+            <column name="DESCRIPTION" value="Time Zones List"/>
+        </insert>
+        
+        <!-- Job Position Dictionary -->
+        <insert schemaName="CORE" tableName="DICTIONARIES">
+            <column name="DICT_NAME" value="USR_JOB_POSITION"/>
+            <column name="NAME" value="Job Position"/>
+            <column name="GROUP_NAME" value="Administration Subsystem"/>
+            <column name="UPD_DATE" valueComputed="GETUTCDATE()"/>
+            <column name="IS_SYSTEM" valueBoolean="false"/>
+            <column name="DESCRIPTION" value="Position"/>
+        </insert>
+        
+        <!-- Insert Time Zone values (2 American time zones) -->
+        <!-- Time Zone 1: Eastern Time -->
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="TIME_ZONE"/>
+            <column name="CODE" value="America/New_York"/>
+            <column name="VALUE" value="Eastern Time EST/EDT (UTC-5/-4)"/>
+            <column name="SHORT_VALUE" value="EST/EDT"/>
+            <column name="IS_SYSTEM" valueBoolean="false"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        
+        <!-- Time Zone 2: Pacific Time -->
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="TIME_ZONE"/>
+            <column name="CODE" value="America/Los_Angeles"/>
+            <column name="VALUE" value="Pacific Time PST/PDT (UTC-8/-7)"/>
+            <column name="SHORT_VALUE" value="PST/PDT"/>
+            <column name="IS_SYSTEM" valueBoolean="false"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        
+        <!-- Insert Job Position values (2 positions) -->
+        <!-- Job Position 1: Administrator -->
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="USR_JOB_POSITION"/>
+            <column name="CODE" value="1"/>
+            <column name="VALUE" value="Administrator"/>
+            <column name="SHORT_VALUE" value="Admin"/>
+            <column name="IS_SYSTEM" valueBoolean="false"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        
+        <!-- Job Position 2: Manager -->
+        <insert schemaName="CORE" tableName="DICTIONARY_VALUES">
+            <column name="DICTIONARY_VALUES_ID" valueComputed="NEXT VALUE FOR CORE.DICTIONARY_VALUES_ID_SEQ"/>
+            <column name="DICT_NAME" value="USR_JOB_POSITION"/>
+            <column name="CODE" value="2"/>
+            <column name="VALUE" value="Manager"/>
+            <column name="SHORT_VALUE" value="Mgr"/>
+            <column name="IS_SYSTEM" valueBoolean="false"/>
+            <column name="NOT_USE" valueBoolean="false"/>
+        </insert>
+        
+        <!-- AUDIT_PARAMS table based on EventSetting entity -->
+        <createTable schemaName="CORE" tableName="AUDIT_PARAMS" remarks="Audit Parameters">
+            <column name="AUDIT_PARAMS_ID" type="INT" remarks="Audit parameter identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="AUDIT_PARAMS_ID_PK"/>
+            </column>
+            <column name="TASKS_ID" type="INT" remarks="Task identifier">
+                <constraints nullable="false" foreignKeyName="AUDIT_PARAMS_TASKS_ID_FK" references="CORE.TASKS(TASKS_ID)"/>
+            </column>
+            <column name="TYPE" type="INT" remarks="Type"/>
+            <column name="EVENT_CODE" type="INT" remarks="Event code"/>
+            <column name="FIX_EVENT" type="BIT" remarks="Fix event">
+                <constraints nullable="false"/>
+            </column>
+            <column name="IS_SYSTEM" type="BIT" remarks="System">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="AUDIT_PARAMS_ID_SEQ" startValue="1" incrementBy="1"/>
+        
+        <!-- USER_TERMINALS table based on TrustedHost entity -->
+        <createTable schemaName="CORE" tableName="USER_TERMINALS" remarks="User Terminals">
+            <column name="USER_TERMINALS_ID" type="INT" remarks="Terminal identifier">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="USER_TERMINALS_ID_PK"/>
+            </column>
+            <column name="USERS_ID" type="INT" remarks="User identifier">
+                <constraints nullable="false" foreignKeyName="USER_TERMINALS_USERS_ID_FK" references="CORE.USERS(USERS_ID)"/>
+            </column>
+            <column name="TERMINAL_IP" type="VARCHAR(50)" remarks="Terminal IP"/>
+            <column name="DESCRIPTION" type="VARCHAR(500)" remarks="Description"/>
+        </createTable>
+        <createSequence schemaName="CORE" sequenceName="USER_TERMINALS_ID_SEQ" startValue="1" incrementBy="1"/>
+    </changeSet>
+</databaseChangeLog>

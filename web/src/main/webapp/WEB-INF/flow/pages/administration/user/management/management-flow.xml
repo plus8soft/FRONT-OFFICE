@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <var name="FS_FILTER" class="web.view.administration.user.management.UserFilter"/>
+    <view-state id="user">
+        <var name="userView" class="web.view.administration.user.management.UserView"/>
+        <var name="userModel" class="web.view.administration.user.management.UserModel"/>
+        <on-entry>
+            <set name="userView.filter" value="FS_FILTER"/>
+            <evaluate expression="userView.init(userModel)"/>
+        </on-entry>
+        <transition on="add" to="edit">
+            <set name="flowScope.FS_USER" value="new web.entity.core.User()"/>
+        </transition>
+        <transition on="edit" to="edit">
+            <set name="flowScope.FS_USER" value="userModel.selected"/>
+        </transition>
+        <on-exit>
+            <set name="FS_FILTER" value="userModel.filter"/>
+        </on-exit>
+    </view-state>
+    <view-state id="edit">
+        <var name="editView" class="web.view.administration.user.management.edit.EditView"/>
+        <on-entry>
+            <set name="editView.user" value="flowScope.FS_USER"/>
+            <evaluate expression="editView.init()"/>
+        </on-entry>
+        <transition on="save" to="user"/>
+        <transition on="cancel" to="user"/>
+    </view-state>
+</flow>

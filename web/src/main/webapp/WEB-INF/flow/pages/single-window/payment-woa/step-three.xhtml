@@ -1,0 +1,111 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Payment Data Verification" styleClass="transaction_page">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span>2</span>
+                    <span class="current">3</span>
+                    <span>4</span>
+                </div>
+            </f:facet>
+            <p class="sub_title"><span>3.1</span>Verify payment data</p>
+            <p class="sub_title blue-text">Payer</p>
+            <div class="grid_row row_text">
+                <div class="grid_cell w_5">EIN</div>
+                <div class="grid_cell w_30"><b>#{stepThree.payment.senderEin}</b></div>
+                <div class="grid_cell w_5">Amount</div>
+                <div class="grid_cell w_25"><b>#{stepThree.payment.total}</b></div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_70">
+                    <b><h:outputText value="#{utils.getStrings().joinFio(stepThree.payment.person.lastname, stepThree.payment.person.firstname,
+                                stepThree.payment.person.patronymic)}" rendered="#{not empty stepThree.payment.person}"/>
+                        <h:outputText value="#{stepThree.payment.payer}" rendered="#{not empty stepThree.payment.payer}"/>
+                        <h:outputText value=" // #{utils.addresses.formatAddress(stepThree.personAddress)}"
+                                      rendered="#{not empty stepThree.personAddress}"/></b>
+                </div>
+                <div>
+                    <div class="grid_cell row_text w_5">Acc.№</div>
+                    <div class="grid_cell row_text w_25"><b>000</b></div>
+                </div>
+            </div>
+            <p class="sub_title blue-text">Payer Bank</p>
+            <div class="grid_row">
+                <div class="grid_cell w_70"><b>BANK</b></div>
+                <div class="grid_cell row_text w_5">BIC</div>
+                <div class="grid_cell row_text w_25"><b>043510123</b></div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell row_text w_5 ml-w_70">Acc.№</div>
+                <div class="grid_cell row_text w_25"><b>000</b></div>
+            </div>
+            <p class="sub_title blue-text">Recipient Bank</p>
+            <div class="grid_row">
+                <div class="grid_cell w_70"><b>#{stepThree.payment.bank.name}</b></div>
+                <div class="grid_cell row_text w_5">BIC</div>
+                <div class="grid_cell row_text w_25"><b>#{stepThree.payment.bank.routingNumber}</b></div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell row_text w_5 ml-w_70">Acc.№</div>
+                <div class="grid_cell row_text w_25"><b>#{stepThree.payment.bank.correspondentAccount}</b></div>
+            </div>
+            <p class="sub_title blue-text">Recipient</p>
+            <div class="grid_row row_text">
+                <div class="grid_cell w_5">EIN</div>
+                <div class="grid_cell w_30"><b>#{stepThree.payment.counteragent.ein}</b></div>
+                <div class="grid_cell w_5">Acc.№</div>
+                <div class="grid_cell w_25"><b>#{stepThree.payment.account.id}</b></div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_100"><b>#{stepThree.payment.counteragent.name}</b></div>
+            </div>
+            <hr class="blue"/>
+            <div class="grid_row row_text">
+                <div class="grid_cell w_10">Basis (106)</div>
+                <div class="grid_cell w_20"><b>#{stepThree.payment.reason}</b></div>
+            </div>
+            <div class="grid_row row_text">
+                <div class="grid_cell w_10">Tax Period (107)</div>
+                <div class="grid_cell w_25"><b>#{stepThree.payment.period}</b></div>
+                <div class="grid_cell w_10">Doc. Number (108)</div>
+                <div class="grid_cell w_25"><b>#{stepThree.payment.docNumber}</b></div>
+                <div class="grid_cell w_10">Doc. Date (109)</div>
+                <div class="grid_cell w_10">
+                    <b><h:outputText value="#{stepThree.payment.docDate}">
+                        <f:converter converterId="javax.faces.LocalDateConverter"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                    </h:outputText><h:outputText value="0" rendered="#{stepThree.payment.reason eq 'VD'}"/></b>
+                </div>
+                <div class="grid_cell w_5">Type (110)</div>
+                <div class="grid_cell w_5"><b>#{stepThree.payment.paymentCode}</b></div>
+            </div>
+            <p class="sub_title"><span>3.2</span>Enter payment purpose</p>
+            <div class="grid_row">
+                <div class="grid_cell w_100">
+                    <div class="icon_box">
+                        <p:inputTextarea rows="5" cols="50" value="#{stepThree.payment.purpose}" required="true" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <p class="sub_title"><span>3.3</span>Receive required amount from client</p>
+            <p class="sub_title"><span>3.4</span>Confirm operation and generate required documents</p>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Next" action="next" update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"
+                             styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Back" action="#{stepThree.goBack()}" immediate="true" styleClass="big_btn orange-btn"/>
+            <p:commandButton value="Cancel" action="cancel" immediate="true" styleClass="orange-btn big_btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

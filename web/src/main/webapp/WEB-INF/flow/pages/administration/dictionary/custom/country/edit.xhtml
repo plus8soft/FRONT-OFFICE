@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">#{countryEditView.dictionary.group} > #{countryEditView.dictionary.name} >
+            <h:outputText rendered="#{empty countryEditView.country.id}" value="Add New Dictionary Entry"/>
+            <h:outputText rendered="#{not empty countryEditView.country.id}" value="#{countryEditView.country.name} (#{countryEditView.country.id})"/>
+        </h1>
+        <p:panel header="Basic Parameters">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="grid_row">
+                <div class="grid_cell w_40">
+                    <div class="grid_cell w_40">
+                        <p:outputLabel value="Name" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_60">
+                        <div class="icon_box">
+                            <p:inputText value="#{countryEditView.country.name}" required="true" styleClass="w_100">
+                                <f:passThroughAttribute name="focus-priority" value="1"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                            <script>focusByPriority();</script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_40">
+                    <div class="grid_cell w_40">
+                        <p:outputLabel value="ISO" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_60">
+                        <div class="icon_box">
+                            <p:inputText value="#{countryEditView.country.id}" maxlength="3" required="true"
+                                         readonly="#{not empty countryEditView.country.id}" styleClass="w_100">
+                                <p:keyFilter regEx="/[0-9]/" preventPaste="false"/>
+                                <f:validator binding="#{countryValidator}"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_cell w_30">
+                    <div class="grid_cell w_40 r-label">
+                        <p:outputLabel value="Alpha 2" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_60">
+                        <div class="icon_box">
+                            <p:inputText value="#{countryEditView.country.alpha2}" maxlength="2" required="true" styleClass="w_100">
+                                <p:keyFilter regEx="/[A-Z]/" preventPaste="false"/>
+                                <f:validateLength minimum="2"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_cell w_30">
+                    <div class="grid_cell w_40 r-label">
+                        <p:outputLabel value="Alpha 3" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_60">
+                        <div class="icon_box">
+                            <p:inputText value="#{countryEditView.country.alpha3}" maxlength="3" required="true" styleClass="w_100">
+                                <p:keyFilter regEx="/[A-Z]/" preventPaste="false"/>
+                                <f:validateLength minimum="3"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_40">
+                    <div class="grid_cell w_40">
+                        <p:outputLabel value="In Use" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_60">
+                        <p:selectBooleanCheckbox value="#{countryEditView.country.enabled}"/>
+                    </div>
+                </div>
+            </div>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Save" action="#{countryEditView.save()}" update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"
+                             styleClass="r-float_elem blue-btn big_btn"/>
+            <p:commandButton value="Cancel" action="cancel" styleClass="orange-btn big_btn" immediate="true" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>

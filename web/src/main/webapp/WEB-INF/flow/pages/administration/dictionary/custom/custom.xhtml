@@ -1,0 +1,132 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:importEnum type="web.entity.dict.UpdateType"/>
+        <h1 class="title-page">Custom Dictionaries</h1>
+        <p:panel header="Select a dictionary and perform the necessary actions">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Update" action="#{customDictionaryView.update()}"
+                                 disabled="#{empty customDictionaryView.selected or customDictionaryView.selected.updateType ne UpdateType.VARIOUS}"
+                                 update="@form" styleClass="green-btn"/>
+                <p:commandButton value="Elements" disabled="#{empty customDictionaryView.selected}" action="elements"
+                                 styleClass="btn_group green-btn"/>
+                <p:commandButton value="Options" action="options"
+                                 disabled="#{empty customDictionaryView.selected or customDictionaryView.selected.updateType ne UpdateType.VARIOUS}"
+                                 styleClass="blue-btn"/>
+            </div>
+            <p:importEnum type="web.entity.dict.UpdateResult"/>
+            <p:poll interval="5" listener="#{customDictionaryView.init}" update="@next"/>
+            <p:dataTable value="#{customDictionaryView.dictionaryParameters}" var="customDicionary" rowKey="#{customDicionary.id}"
+                         selection="#{customDictionaryView.selected}" selectionMode="single" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@form"/>
+                <p:ajax event="rowUnselect" update="@form"/>
+                <p:columnGroup type="header">
+                    <p:row>
+                        <p:column rowspan="2" headerText="Group" width="165"/>
+                        <p:column rowspan="2" headerText="Name"/>
+                        <p:column rowspan="2" headerText="Update Type" width="70"/>
+                        <p:column colspan="4" headerText="Update Results" width="420"/>
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="Updating"/>
+                        <p:column headerText="Update Start Date"/>
+                        <p:column headerText="Last Successful Update Date"/>
+                        <p:column headerText="Last Result"/>
+                    </p:row>
+                </p:columnGroup>
+                <p:column>
+                    #{customDicionary.group}
+                </p:column>
+                <p:column>
+                    #{customDicionary.name}
+                </p:column>
+                <p:column styleClass="align-center">
+                    <ui:fragment rendered="#{UpdateType.VARIOUS eq customDicionary.updateType}">
+                        <i class="fa fa-refresh blue-text fa-2x" aria-hidden="true"/>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{UpdateType.WITH_OPTIONS eq customDicionary.updateType}">
+                        <i class="fa fa-cog green-text fa-2x" aria-hidden="true"/>
+                    </ui:fragment>
+                </p:column>
+                <p:column styleClass="align-center">
+                    <ui:fragment rendered="#{customDicionary.updateType eq UpdateType.VARIOUS}">
+                        <ui:fragment rendered="#{dictionaryScheduler.isRunned(customDicionary)}">
+                            <i class="fa fa-refresh fa-spin blue-text fa-2x" aria-hidden="true"/>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{dictionaryScheduler.isPlanned(customDicionary)}">
+                            <i class="fa fa-clock-o fa-2x" aria-hidden="true"/>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{dictionaryScheduler.isWaiting(customDicionary)}">
+                            <i class="fa fa-hourglass-start fa-2x" aria-hidden="true"/>
+                        </ui:fragment>
+                    </ui:fragment>
+                </p:column>
+                <p:column>
+                    <h:outputText value="#{dictionaryScheduler.getInstant(customDicionary)}"
+                                  rendered="#{customDicionary.updateType eq UpdateType.VARIOUS}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+                <p:column>
+                    <h:outputText value="#{customDicionary.successUpdateDate}">
+                        <f:converter converterId="javax.faces.Instant"/>
+                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                        <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                    </h:outputText>
+                </p:column>
+                <p:column styleClass="align-center">
+                    <ui:fragment rendered="#{not empty customDicionary.lastUpdateResult}">
+                        <i class="fa #{customDicionary.lastUpdateResult eq UpdateResult.SUCCESSFULLY ? 'fa-check-circle success'
+                        : customDicionary.lastUpdateResult eq UpdateResult.ERROR ? 'fa-times-circle error' : 'fa-exclamation-circle alert'} fa-2x"
+                           aria-hidden="true"/>
+                    </ui:fragment>
+                </p:column>
+            </p:dataTable>
+            <ui:fragment rendered="#{not empty customDictionaryView.selected and not empty customDictionaryView.selected.lastUpdateResult and
+             customDictionaryView.selected.lastUpdateResult ne UpdateResult.SUCCESSFULLY}">
+                <hr/>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">Dictionary Name:</div>
+                    <div class="grid_cell w_80"><b>#{customDictionaryView.selected.name}</b></div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">Last Successful Update Date:</div>
+                    <div class="grid_cell w_80">
+                        <b><h:outputText value="#{customDictionaryView.selected.successUpdateDate}">
+                            <f:converter converterId="javax.faces.Instant"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                            <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                        </h:outputText></b>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">Last Result:</div>
+                    <div class="grid_cell w_80">
+                        <i class="fa #{customDictionaryView.selected.lastUpdateResult eq UpdateResult.SUCCESSFULLY ? 'fa-check-circle success'
+                        : customDictionaryView.selected.lastUpdateResult eq UpdateResult.ERROR ? 'fa-times-circle error'
+                        : 'fa-exclamation-circle alert'} fa-2x with_link-r" aria-hidden="true"/>
+                        <b>#{customDictionaryView.selected.lastUpdateResult.value}</b>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_100">
+                        #{customDictionaryView.selected.errorMessage}
+                    </div>
+                </div>
+            </ui:fragment>
+        </p:panel>
+    </ui:define>
+</ui:composition>

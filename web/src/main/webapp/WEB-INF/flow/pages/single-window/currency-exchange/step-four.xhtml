@@ -1,0 +1,78 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="growl"/>
+    <ui:define name="content-body">
+        <p:panel header="Currency Exchange Completion" styleClass="arm_page">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span class="current#{not empty stepFour.errorMessage ? 'error' : ''}">4</span>
+                </div>
+            </f:facet>
+            <div class="step_block">
+                <ui:fragment rendered="#{not empty stepFour.errorMessage}">
+                    <div class="message message-error">
+                        <i class="fa fa-times-circle-o" aria-hidden="true"/>
+                        <div>#{stepFour.errorMessage}</div>
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{empty stepFour.errorMessage}">
+                    <div class="message message-success">
+                        <i class="fa fa-check-circle-o" aria-hidden="true"/>
+                        <div>Operation completed successfully</div>
+                    </div>
+                </ui:fragment>
+                <div class="navigation_panel clearfix">
+                    <hr/>
+                    <p:commandButton value="CLOSE" action="#{stepFour.cancel()}" styleClass="r-float_elem big_btn blue-btn">
+                        <f:passThroughAttribute name="focus-priority" value="1"/>
+                    </p:commandButton>
+                    <p:commandButton value="PRINT" actionListener="#{stepFour.openReport()}" update="@form" process="@this"
+                                     rendered="#{empty stepFour.errorMessage}" styleClass="r-float_elem blue-btn big_btn"/>
+                </div>
+            </div>
+        </p:panel>
+        <p:dialog modal="true" closable="true" visible="true" rendered="#{stepFour.showReport}" resizable="false" draggable="false"
+                  closeOnEscape="true" appendTo="@(body)" positionType="absolute" position="top">
+            <p:ajax event="close" listener="#{stepFour.closeReport}" update="@form"/>
+            <p:tabView rendered="#{not empty stepFour.reportIdRequestConfirmationMoney
+            or not empty stepFour.reportIdConsentPersonalData or not empty stepFour.reportIdMessageFinancialMonitoring}">
+                <p:tab title="Certificate">
+                    <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="560">
+                        <f:param name="path" value="#{stepFour.reportId}"/>
+                    </p:media>
+                </p:tab>
+                <p:tab title="Personal Data Consent" rendered="#{not empty stepFour.reportIdConsentPersonalData}">
+                    <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="560">
+                        <f:param name="path" value="#{stepFour.reportIdConsentPersonalData}"/>
+                    </p:media>
+                </p:tab>
+                <p:tab title="Financial Monitoring Message" rendered="#{not empty stepFour.reportIdMessageFinancialMonitoring}">
+                    <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="560">
+                        <f:param name="path" value="#{stepFour.reportIdMessageFinancialMonitoring}"/>
+                    </p:media>
+                </p:tab>
+                <p:tab title="Certificate for 2.5M" rendered="#{not empty stepFour.reportIdRequestConfirmationMoney}">
+                    <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="560">
+                        <f:param name="path" value="#{stepFour.reportIdRequestConfirmationMoney}"/>
+                    </p:media>
+                </p:tab>
+            </p:tabView>
+            <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="600"
+                     rendered="#{empty stepFour.reportIdRequestConfirmationMoney and empty stepFour.reportIdConsentPersonalData
+                 and empty stepFour.reportIdMessageFinancialMonitoring}">
+                <f:param name="path" value="#{stepFour.reportId}"/>
+            </p:media>
+        </p:dialog>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

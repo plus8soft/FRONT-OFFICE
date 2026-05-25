@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/transition" start-state="start-task">
+    <subflow-state id="menu-administration-settings-module-user" subflow="pages/administration/settings/module-user" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-user-management" subflow="pages/administration/user/management" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-user-group" subflow="pages/administration/user/group" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-user-security-profile" subflow="pages/administration/user/security-profile"
+                   parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-user-security-certificate" subflow="pages/administration/user/security-certificate"
+                   parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-department-management" subflow="pages/administration/department/management"
+                   parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-department-group" subflow="pages/administration/department/group" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-permission-role" subflow="pages/administration/permission/role" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-permission-right" subflow="pages/administration/permission/right" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-dictionary-standard" subflow="pages/administration/dictionary/standard" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-dictionary-custom" subflow="pages/administration/dictionary/custom" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-audit-management" subflow="pages/administration/audit/management" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-auditlogs-io" subflow="pages/administration/auditlogs/io" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-auditlogs-system" subflow="pages/administration/auditlogs/event/system" parent="pages/transition#task"/>
+    <subflow-state id="menu-administration-auditlogs-user" subflow="pages/administration/auditlogs/event/user" parent="pages/transition#task"/>
+    <global-transitions>
+        <transition on="menu-administration-settings-module-user" to="menu-administration-settings-module-user"/>
+        <transition on="menu-administration-user-management" to="menu-administration-user-management"/>
+        <transition on="menu-administration-user-group" to="menu-administration-user-group"/>
+        <transition on="menu-administration-user-security-profile" to="menu-administration-user-security-profile"/>
+        <transition on="menu-administration-user-security-certificate" to="menu-administration-user-security-certificate"/>
+        <transition on="menu-administration-department-management" to="menu-administration-department-management"/>
+        <transition on="menu-administration-department-group" to="menu-administration-department-group"/>
+        <transition on="menu-administration-permission-role" to="menu-administration-permission-role"/>
+        <transition on="menu-administration-permission-right" to="menu-administration-permission-right"/>
+        <transition on="menu-administration-dictionary-standard" to="menu-administration-dictionary-standard"/>
+        <transition on="menu-administration-dictionary-custom" to="menu-administration-dictionary-custom"/>
+        <transition on="menu-administration-audit-management" to="menu-administration-audit-management"/>
+        <transition on="menu-administration-auditlogs-io" to="menu-administration-auditlogs-io"/>
+        <transition on="menu-administration-auditlogs-system" to="menu-administration-auditlogs-system"/>
+        <transition on="menu-administration-auditlogs-user" to="menu-administration-auditlogs-user"/>
+    </global-transitions>
+</flow>

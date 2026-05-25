@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <var name="FS_FILTER" class="web.view.administration.auditlogs.event.EventFilter"/>
+    <var name="FS_USERS" class="java.util.ArrayList"/>
+    <var name="FS_PROJECTS" class="java.util.ArrayList"/>
+    <var name="FS_TASKS" class="java.util.ArrayList"/>
+    <on-start>
+        <evaluate expression="FS_USERS = userRepository.findAll()"/>
+        <evaluate expression="FS_PROJECTS = projectRepository.findAll()"/>
+        <evaluate expression="FS_TASKS = taskRepository.findAll()"/>
+    </on-start>
+    <view-state id="user" view="../event.xhtml">
+        <var name="eventView" class="web.view.administration.auditlogs.event.user.UserEventView"/>
+        <var name="eventModel" class="web.view.administration.auditlogs.event.user.UserEventModel"/>
+        <on-entry>
+            <set name="eventView.filter" value="FS_FILTER"/>
+            <evaluate expression="eventView.init(eventModel)"/>
+        </on-entry>
+        <transition on="show" to="show">
+            <set name="flowScope.FS_EVENT_ITEM" value="eventModel.selected"/>
+        </transition>
+        <on-exit>
+            <set name="FS_FILTER" value="eventModel.filter"/>
+        </on-exit>
+    </view-state>
+    <view-state id="show" view="../show.xhtml">
+        <var name="eventDetails" class="web.view.administration.auditlogs.event.user.UserEventShowView"/>
+        <on-entry>
+            <evaluate expression="eventDetails.init(flowScope.FS_EVENT_ITEM)"/>
+        </on-entry>
+        <transition on="back" to="user"/>
+    </view-state>
+</flow>

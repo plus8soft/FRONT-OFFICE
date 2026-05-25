@@ -1,0 +1,425 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+                template="../ce-template.xhtml">
+    <ui:define name="content-body">
+        <p:importEnum type="web.entity.ce.Sign"/>
+        <p:importConstants type="java.math.BigDecimal"/>
+        <h1 class="title-page">Exchange Rates</h1>
+        <div class="flex_box">
+            <div class="flex_item w_1_3">
+                <p:panel header="Select Required Departments">
+                    <f:facet name="actions">
+                        <span class="icon-block icon_currency"/>
+                    </f:facet>
+                    <div class="tree_bg">
+                        <div class="header_tree">
+                            <div class="additional_col update_cell">Update Date</div>
+                            <div class="additional_col count_cell">Currencies</div>
+                            <div class="main_col">Departments</div>
+                        </div>
+                        <p:tree value="#{rateView.departmentTree}" var="item" selection="#{rateView.selectedDepartments}"
+                                selectionMode="checkbox" styleClass="w_100" animate="true" propagateSelectionUp="false"
+                                propagateSelectionDown="false">
+                            <p:ajax event="select" listener="#{rateView.select}" update="@form"/>
+                            <p:ajax event="unselect" listener="#{rateView.unselect}" update="@form"/>
+                            <p:treeNode type="empty">#{item}</p:treeNode>
+                            <p:treeNode>
+                                <span class="float_cell update_cell">
+                                    <h:outputText id="orderTime" value="#{rateView.getOrderUpdateTime(item.order)}"
+                                                  rendered="#{not empty item.order}"/>
+                                    <p:tooltip for="orderTime" value="#{item.order.date}" rendered="#{not empty item.order}" showDelay="1000">
+                                        <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm"/>
+                                    </p:tooltip>
+                                </span>
+                                <h:outputText styleClass="float_cell" value="#{rateView.departmentCurrencyIndex.get(item.department).size()}"
+                                              rendered="#{not empty rateView.departmentCurrencyIndex.get(item.department)}"/>
+                                <span class="main_cell name_cell">#{item.department.name}</span>
+                            </p:treeNode>
+                            <p:treeNode type="unselectable" styleClass="unselectable">
+                                <span class="float_cell update_cell">
+                                    <h:outputText id="orderTimeUns" value="#{rateView.getOrderUpdateTime(item.order)}"
+                                                  rendered="#{not empty item.order}"/>
+                                    <p:tooltip for="orderTimeUns" value="#{item.order.date}" rendered="#{not empty item.order}" showDelay="1000">
+                                        <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                                        <f:attribute name="pattern" value="dd.MM.yyyy HH:mm"/>
+                                    </p:tooltip>
+                                </span>
+                                <h:outputText styleClass="float_cell" value="#{rateView.departmentCurrencyIndex.get(item.department).size()}"
+                                              rendered="#{not empty rateView.departmentCurrencyIndex.get(item.department)}"/>
+                                <span class="main_cell name_cell">#{item.department.name}</span>
+                            </p:treeNode>
+                        </p:tree>
+                        <p:contextMenu for="@parent" widgetVar="contextMenu"
+                                       targetFilter=".ui-treenode:not([data-nodetype='empty']) > .ui-treenode-content,
+                                       .ui-treenode:not([data-nodetype='empty']) > .ui-treenode-content *"
+                                       beforeShow="this.rowKey = $(event.target).closest('.ui-treenode').attr('data-rowkey')">
+                            <p:menuitem value="Select Child Elements" immediate="true"
+                                        onclick="selectChilds([{name: 'rowKey', value: PF('contextMenu').rowKey}]);"/>
+                            <p:menuitem value="Deselect Child Elements" immediate="true"
+                                        onclick="deselectChilds([{name: 'rowKey', value: PF('contextMenu').rowKey}]);"/>
+                        </p:contextMenu>
+                        <p:remoteCommand name="selectChilds" actionListener="#{rateView.selectAllChilds}" update="@form"/>
+                        <p:remoteCommand name="deselectChilds" actionListener="#{rateView.deselectAllChilds}" update="@form"/>
+                    </div>
+                </p:panel>
+            </div>
+            <h:panelGroup id="rateBlock" layout="block" styleClass="flex_item w_2_3">
+                <ui:fragment rendered="#{not empty rateView.selectedDepartments}">
+                    <p:panel header="Set Exchange Rate Parameters for Selected Departments" toggleable="true">
+                        <f:facet name="actions">
+                            <span class="icon-block icon_currency"/>
+                        </f:facet>
+                        <p:tabView activeIndex="#{rateView.activeTabIndex}">
+                            <p:ajax event="tabChange" listener="#{rateView.changeTab}" update="@form:rateBlock" oncomplete="focusByPriority()"/>
+                            <p:tab title="General Rates">
+                                <div class="navigation_panel clearfix">
+                                    <p:selectOneButton value="#{rateView.selectedRule}" styleClass="dashed" onchange="groupChangeListener(this)">
+                                        <f:selectItems var="rule" value="#{rateView.rules}" itemLabel="#{rule.name}" itemValue="#{rule.id}"/>
+                                    </p:selectOneButton>
+                                    <script>
+                                        function groupChangeListener(button) {
+                                            var radioButton = button.inputs.filter(':checked'),
+                                                header = $('.ui-datatable').find('.ui-rowgroup-header');
+                                            if (radioButton.val() !== undefined) {
+                                                $('.ui-icon-circle-triangle-s', header).each(function () {
+                                                    $(this).parent().click();
+                                                });
+                                                var td = $('span:hidden', header).filter(function () {
+                                                    return parseInt($(this).text()) === parseInt(radioButton.val());
+                                                }).parent();
+                                                if ($('.ui-icon-circle-triangle-e', td).length) {
+                                                    td.children('a').click();
+                                                }
+                                            } else {
+                                                $('.ui-icon-circle-triangle-e', header).each(function () {
+                                                    $(this).parent().click();
+                                                });
+                                            }
+                                        }
+                                    </script>
+                                </div>
+                                <p:dataTable value="#{rateView.rateItems}" var="rateItem" expandableRowGroups="true"
+                                             sortBy="#{rateItem.ruleItem.rule.position}" emptyMessage="No data">
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column rowspan="2" headerText="Currency Type"/>
+                                            <p:column rowspan="2" headerText="Denomination"/>
+                                            <p:column rowspan="2" headerText="Buy"/>
+                                            <p:column rowspan="2" headerText="Sell"/>
+                                            <p:column colspan="2" headerText="Conversion Rules"/>
+                                            <p:column rowspan="2" headerText="External"/>
+                                            <p:column colspan="2" headerText="Market"/>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column headerText="buy"/>
+                                            <p:column headerText="sell"/>
+                                            <p:column headerText="buy"/>
+                                            <p:column headerText="sell"/>
+                                        </p:row>
+                                    </p:columnGroup>
+                                    <p:headerRow>
+                                        <p:column colspan="9">
+                                            #{rateItem.ruleItem.rule.name}
+                                            <span class="hidden">#{rateItem.ruleItem.rule.id}</span>
+                                        </p:column>
+                                    </p:headerRow>
+                                    <p:column sortBy="#{rateItem.currency.position}">
+                                        <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                                        styleClass="currency_img">
+                                            <f:param name="id" value="#{rateItem.currency.id}"/>
+                                        </p:graphicImage>
+                                        #{rateItem.currency.iso}
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        #{rateItem.currency.ratio}
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <p:commandLink value="?" rendered="#{rateItem.buyConflict}" update="@form:rateBlock">
+                                            <f:setPropertyActionListener value="#{false}" target="#{rateItem.buyConflict}"/>
+                                        </p:commandLink>
+                                        <p:inputNumber value="#{rateItem.rate.buyRate}" rendered="#{not rateItem.buyConflict}" minValue="0"
+                                                       styleClass="#{rateItem.rate.buyRate.compareTo(rateItem.externalRate.sellRate.setScale(2, BigDecimal.ROUND_HALF_EVEN)) ge 0
+                                                       ? 'rate-indication' : null}">
+                                            <p:ajax listener="#{rateView.setEdited(true)}" update="@(.ui-tabs-panel:first .orange-btn) @this"/>
+                                            <f:passThroughAttribute name="focus-priority" value="1"/>
+                                        </p:inputNumber>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <p:commandLink value="?" rendered="#{rateItem.sellConflict}" update="@form:rateBlock">
+                                            <f:setPropertyActionListener value="#{false}" target="#{rateItem.sellConflict}"/>
+                                        </p:commandLink>
+                                        <p:inputNumber value="#{rateItem.rate.sellRate}" rendered="#{not rateItem.sellConflict}" minValue="0"
+                                                       styleClass="#{rateItem.rate.sellRate.compareTo(rateItem.externalRate.sellRate.setScale(2, BigDecimal.ROUND_HALF_EVEN)) le 0
+                                                       ? 'rate-indication' : null}">
+                                            <p:ajax listener="#{rateView.setEdited(true)}" update="@(.ui-tabs-panel:first .orange-btn) @this"/>
+                                        </p:inputNumber>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <h:outputText value="?" rendered="#{rateItem.ruleItem.buyConflict}"/>
+                                        <ui:fragment rendered="#{not rateItem.ruleItem.buyConflict}">
+                                            <ui:fragment rendered="#{not empty rateItem.ruleItem.ruleParameter.buyPercent}">
+                                                #{Sign.PLUS eq rateItem.ruleItem.ruleParameter.buySign ? '+' : '-'}
+                                                <h:outputText value="#{rateItem.ruleItem.ruleParameter.buyPercent}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText>
+                                                %
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{not empty rateItem.ruleItem.ruleParameter.buyValue}">
+                                                #{Sign.PLUS eq rateItem.ruleItem.ruleParameter.buySign ? '+' : '-'}
+                                                <h:outputText value="#{rateItem.ruleItem.ruleParameter.buyValue}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText>
+                                                USD
+                                            </ui:fragment>
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <h:outputText value="?" rendered="#{rateItem.ruleItem.sellConflict}"/>
+                                        <ui:fragment rendered="#{not rateItem.ruleItem.sellConflict}">
+                                            <ui:fragment rendered="#{not empty rateItem.ruleItem.ruleParameter.sellPercent}">
+                                                #{Sign.PLUS eq rateItem.ruleItem.ruleParameter.sellSign ? '+' : '-'}
+                                                <h:outputText value="#{rateItem.ruleItem.ruleParameter.sellPercent}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText>
+                                                %
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{not empty rateItem.ruleItem.ruleParameter.sellValue}">
+                                                #{Sign.PLUS eq rateItem.ruleItem.ruleParameter.sellSign ? '+' : '-'}
+                                                <h:outputText value="#{rateItem.ruleItem.ruleParameter.sellValue}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText>
+                                                USD
+                                            </ui:fragment>
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <h:outputText value="?" rendered="#{rateItem.ratioConflict}"/>
+                                        <h:outputText value="#{rateItem.externalRate.sellRate}" rendered="#{not rateItem.ratioConflict}">
+                                            <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <h:outputText value="#{rateItem.marketRate.buyRate}">
+                                            <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <h:outputText value="#{rateItem.marketRate.sellRate}">
+                                            <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                                <ui:fragment rendered="#{not empty rateView.rateItems}">
+                                    <div class="table_control">
+                                        <div class="row">
+                                            <div class="btn_cell">
+                                                <p:commandButton value="Update" icon="fa fa-refresh" styleClass="green-btn"
+                                                                 action="#{rateView.updateExternalRates()}" update="@form:rateBlock" iconPos="right"/>
+                                                <p:commandButton value="Apply" styleClass="green-btn" action="#{rateView.applyExternalRate()}"
+                                                                 update="@form:rateBlock"/>
+                                            </div>
+                                            <div class="text_cell">
+                                                <div>
+                                                    <b>External Rate</b>
+                                                </div>
+                                                <div>
+                                                    <p:selectBooleanCheckbox itemLabel="Apply Rules" value="#{rateView.applyRuleExternal}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="btn_cell">
+                                                <p:commandButton value="Update" icon="fa fa-refresh" styleClass="green-btn"
+                                                                 action="#{rateView.updateMarketRates()}" update="@form:rateBlock" iconPos="right"/>
+                                                <p:commandButton value="Apply" styleClass="green-btn" action="#{rateView.applyMarketRate()}"
+                                                                 update="@form:rateBlock"/>
+                                            </div>
+                                            <div class="text_cell">
+                                                <div>
+                                                    <b>Market Rate</b>
+                                                </div>
+                                                <div>
+                                                    <p:selectBooleanCheckbox itemLabel="Apply Rules" value="#{rateView.applyRuleMarket}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="navigation_panel clearfix bottom">
+                                        <p:defaultCommand target="@next" scope="@parent:@parent"/>
+                                        <p:commandButton value="Generate" styleClass="blue-btn big_btn r-float_elem"
+                                                         action="#{rateView.saveView()}" update="@form"/>
+                                        <p:commandButton value="Cancel" styleClass="orange-btn big_btn" action="#{rateView.buildCommonRates()}"
+                                                         update="@form" disabled="#{not rateView.edited}"/>
+                                    </div>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Deal Rates" rendered="#{userSession.rights.contains('ce-setting-deal-courses') 
+                                and fn:length(rateView.selectedDepartments) eq 1}">
+                                <p:dataTable value="#{rateView.dealRateItems}" var="rateItem" emptyMessage="No data">
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column rowspan="2" headerText="Currency Type"/>
+                                            <p:column rowspan="2" headerText="Denomination"/>
+                                            <p:column rowspan="2" headerText="Buy"/>
+                                            <p:column rowspan="2" headerText="Sell"/>
+                                            <p:column rowspan="2" headerText="External"/>
+                                            <p:column colspan="2" headerText="Market"/>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column headerText="buy"/>
+                                            <p:column headerText="sell"/>
+                                        </p:row>
+                                    </p:columnGroup>
+                                    <p:column>
+                                        <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                                        styleClass="currency_img">
+                                            <f:param name="id" value="#{rateItem.currency.id}"/>
+                                        </p:graphicImage>
+                                        #{rateItem.currency.iso}
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        #{rateItem.currency.ratio}
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <p:inputNumber value="#{rateItem.rate.buyRate}" minValue="0" readonly="#{not empty rateView.dealOrder}"
+                                                       styleClass="#{rateItem.externalRate.sellRate.setScale(2, BigDecimal.ROUND_HALF_EVEN).compareTo(rateItem.rate.buyRate) lt 0
+                                                       ? 'rate-indication' : null}">
+                                            <p:ajax listener="#{rateView.setDealEdited(true)}" update="@(.ui-tabs-panel:last .orange-btn) @this"/>
+                                            <f:passThroughAttribute name="focus-priority" value="2"/>
+                                        </p:inputNumber>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <p:inputNumber value="#{rateItem.rate.sellRate}" minValue="0" readonly="#{not empty rateView.dealOrder}"
+                                                       styleClass="#{rateItem.externalRate.sellRate.setScale(2, BigDecimal.ROUND_HALF_EVEN).compareTo(rateItem.rate.sellRate) gt 0
+                                                       ? 'rate-indication' : null}">
+                                            <p:ajax listener="#{rateView.setDealEdited(true)}" update="@(.ui-tabs-panel:last .orange-btn) @this"/>
+                                        </p:inputNumber>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <h:outputText value="#{rateItem.externalRate.sellRate}">
+                                            <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <h:outputText value="#{rateItem.marketRate.buyRate}">
+                                            <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column styleClass="align-right">
+                                        <h:outputText value="#{rateItem.marketRate.sellRate}">
+                                            <f:convertNumber minFractionDigits="4" maxFractionDigits="4"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                                <ui:fragment rendered="#{not empty rateView.dealRateItems}">
+                                    <hr/>
+                                    <div class="grid_row">
+                                        <div class="grid_cell w_30">
+                                            <p:outputLabel value="Employee" for="@next"/>
+                                        </div>
+                                        <div class="grid_cell w_70">
+                                            <p:selectOneMenu value="#{rateView.dealUser}" styleClass="w_100" autoWidth="false"
+                                                             converter="omnifaces.SelectItemsConverter">
+                                                <p:ajax listener="#{rateView.changeDealUser}" update="@(.ui-tabs)"/>
+                                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                                <f:selectItems value="#{rateView.dealRateUsers}" var="user" itemValue="#{user}"
+                                                               itemLabel="#{user.lastname} #{user.firstname} #{user.patronymic}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                    <div class="grid_row">
+                                        <div class="grid_cell w_30">
+                                            <p:outputLabel value="Number of Operations" for="@next"/>
+                                        </div>
+                                        <div class="grid_cell w_10 align-right">
+                                            <div class="icon_box">
+                                                <p:inputText value="#{rateView.allowedOperationsCount}" required="#{rateView.dealRate}"
+                                                             disabled="#{not empty rateView.dealOrder}" styleClass="w_100">
+                                                    <p:keyFilter inputRegEx="/^[1-9]?$|^[1-9]\d*$/" preventPaste="false"/>
+                                                </p:inputText>
+                                                <p:message for="@previous" display="icon"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="navigation_panel clearfix bottom">
+                                        <p:defaultCommand target="@next" scope="@parent:@parent"/>
+                                        <p:commandButton value="Generate" styleClass="blue-btn big_btn r-float_elem"
+                                                         action="#{rateView.saveDealRates()}" update="@form" disabled="#{empty rateView.dealUser}"
+                                                         rendered="#{empty rateView.dealOrder}"/>
+                                        <p:commandButton value="Cancel" action="#{rateView.onCancel()}" disabled="#{not rateView.dealEdited}"
+                                                         rendered="#{empty rateView.dealOrder}" update="@form" process="@this"
+                                                         styleClass="orange-btn big_btn"/>
+                                        <p:commandButton value="Cancel" styleClass="orange-btn big_btn r-float_elem"
+                                                         action="#{rateView.cancelDealOrder()}" update="@form"
+                                                         rendered="#{not empty rateView.dealOrder}"/>
+                                    </div>
+                                </ui:fragment>
+                            </p:tab>
+                        </p:tabView>
+                    </p:panel>
+                    <p:panel header="Deal History" rendered="#{rateView.dealRate}">
+                        <p:importEnum type="web.entity.ce.DealStatus"/>
+                        <p:dataTable value="#{rateView.dealModel}" var="order" lazy="true" rows="100" scrollRows="50"
+                                     scrollable="#{rateView.dealModel.rowCount gt 10}" virtualScroll="true"
+                                     scrollHeight="#{rateView.dealModel.rowCount gt 10 ? 400 : null}" sortMode="multiple" emptyMessage="No data">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column rowspan="2" headerText="Deal Start Date and Time" width="90"/>
+                                    <p:column rowspan="2" headerText="Deal Can Be Performed By"/>
+                                    <p:column colspan="2" headerText="Allowed Number of Operations" width="230"/>
+                                    <p:column rowspan="2" headerText="Deal Completed" width="70"/>
+                                    <p:column rowspan="2" headerText="Status" width="70"/>
+                                </p:row>
+                                <p:row>
+                                    <p:column headerText="total"/>
+                                    <p:column headerText="available"/>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:column>
+                                <h:outputText value="#{order.date}">
+                                    <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                                    <f:attribute name="pattern" value="dd.MM.yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                #{utils.strings.capitalizeFio(order.dealUser.lastname, order.dealUser.firstname, order.dealUser.patronymic)}<br/>
+                                #{userJobPositionDictionary.findOne(order.dealUser.position).value}
+                            </p:column>
+                            <p:column>#{order.allowedOperationsCount}</p:column>
+                            <p:column>#{order.allowedOperationsCount - order.performedOperationsCount}</p:column>
+                            <p:column>
+                                <h:outputText value="#{order.dealStatusDate}">
+                                    <f:converter converterId="javax.faces.LocalDateTimeConverter"/>
+                                    <f:attribute name="pattern" value="dd.MM.yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column styleClass="#{DealStatus.DURING eq order.dealStatus ? 'blue-text'
+                                : DealStatus.COMPLETED eq order.dealStatus ? 'green-text' : 'red-text'}">
+                                #{order.dealStatus.value}
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </ui:fragment>
+            </h:panelGroup>
+        </div>
+        <p:dialog modal="true" closable="true" visible="true" resizable="false" draggable="false" rendered="#{not empty rateView.reportId}"
+                  closeOnEscape="true" appendTo="@(body)" positionType="absolute" position="top">
+            <p:ajax event="close" listener="#{rateView.closeReport}" update="@form"/>
+            <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="600">
+                <f:param name="path" value="#{rateView.reportId}"/>
+            </p:media>
+        </p:dialog>
+        <script>focusByPriority();</script>
+    </ui:define>
+</ui:composition>

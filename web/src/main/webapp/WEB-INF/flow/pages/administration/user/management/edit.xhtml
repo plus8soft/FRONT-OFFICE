@@ -1,0 +1,393 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <section class="edit_page">
+            <h1 class="title-page">
+                <h:outputText value="New User" rendered="#{empty editView.user.id}"/>
+                <h:outputText value="#{editView.user.lastname} #{editView.user.firstname} #{editView.user.patronymic}"
+                              rendered="#{not empty editView.user.id}"/>
+            </h1>
+            <p:panel header="Basic Parameters" toggleable="true">
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Last Name"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:inputText value="#{editView.user.lastname}" required="true" styleClass="w_100">
+                                <f:passThroughAttribute name="focus-priority" value="1"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                            <script>focusByPriority();</script>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="First Name"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:inputText value="#{editView.user.firstname}" required="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Middle Name"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{editView.user.patronymic}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Account</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Authorization Type"/>
+                    </div>
+                    <div class="grid_cell w_80">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{editView.user.authorizationType}" required="true" autoWidth="false" styleClass="w_100">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItem itemValue="LOGIN_PASS" itemLabel="LOGIN_PASS"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Security Profile"/>
+                    </div>
+                    <div class="grid_cell w_80">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{editView.user.securityProfile}" converter="omnifaces.SelectItemsConverter"
+                                             required="true" autoWidth="false" styleClass="w_100">
+                                <f:selectItems value="#{editView.securityProfiles}" var="securityProfile" itemValue="#{securityProfile}"
+                                               itemLabel="#{securityProfile.name}"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel value="Status"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:inputText value="#{userStatusDictionary.findOne(editView.user.status).value}" styleClass="w_100" disabled="true"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Account (Login)"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:inputText value="#{editView.user.login}" required="true" widgetVar="loginInput" styleClass="w_100">
+                                <p:keyFilter
+                                        regEx="/^[_A-Za-z0-9\\\/\|\-\~\,\.\!\;\%\:\?\*\(\)\[\]\{\}\`\+\=\@\#\$\^\-\&amp;\&quot;\&apos;\&lt;\&gt;]/"
+                                        preventPaste="false"/>
+                                <f:validator binding="#{userLoginValidator}"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_15 ml-w_5">
+                        <p:outputLabel for="@next" value="Valid Until Date"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <div class="icon_box">
+                            <p:calendar value="#{editView.user.accountExpirationDate}" required="true" converter="javax.faces.Instant"
+                                        timeZone="#{userSession.user.department.zoneId}" pattern="dd.MM.yyyy" mask="true" showOn="button"
+                                        placeholder="dd.mm.yyyy" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Password"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:password value="#{editView.password}" match="password" required="#{empty editView.user.id}" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell ml-w_5 w_20">
+                        <p:selectBooleanCheckbox value="#{editView.user.requireChangePassword}"/>
+                        <p:outputLabel for="@previous" value="change on login"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Confirm Password"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <div class="icon_box">
+                            <p:password id="password" value="#{editView.password}" required="#{empty editView.user.id}" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Time Zone</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Use Department Zone"/>
+                    </div>
+                    <div class="grid_cell w_20">
+                        <p:selectBooleanCheckbox value="#{editView.user.departmentZoneIdEnabled}" disabled="#{not empty editView.user.zoneId
+                            and not editView.user.departmentZoneIdEnabled}" widgetVar="departmentZoneCheckBox">
+                            <p:ajax update="@widgetVar(departmentSelectOneMenu)"/>
+                        </p:selectBooleanCheckbox>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Set"/>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{editView.user.zoneId}" converter="javax.faces.ZoneId"
+                                             disabled="#{editView.user.departmentZoneIdEnabled and empty editView.user.zoneId}"
+                                             required="#{empty editView.user.zoneId and not editView.user.departmentZoneIdEnabled}"
+                                             widgetVar="departmentSelectOneMenu" autoWidth="false" styleClass="w_100">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{timeZoneDictionary.findAll()}" var="zoneId" itemValue="#{zoneId.code}"
+                                               itemLabel="#{zoneId.value}" itemDisabled="#{zoneId.unused}"/>
+                                <p:ajax update="@widgetVar(departmentZoneCheckBox)"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <p class="strike_title"><span>Contact Information</span></p>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Department"/>
+                    </div>
+                    <div class="grid_cell w_80">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{editView.user.department}" styleClass="w_100" converter="omnifaces.SelectItemsConverter"
+                                             autoWidth="false" filter="true" filterMatchMode="contains" required="true"
+                                             requiredMessage="department is not active">
+                                <f:selectItems value="#{editView.departments}" var="department" itemValue="#{department}"
+                                               itemLabel="#{department.name}" itemDisabled="#{not department.enabled}"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Position Type"/>
+                    </div>
+                    <div class="grid_cell w_80">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{editView.user.position}" converter="javax.faces.Integer" required="true" autoWidth="false"
+                                             styleClass="w_100">
+                                <f:selectItem itemValue="#{null}" itemLabel=""/>
+                                <f:selectItems value="#{userJobPositionDictionary.findAll()}" var="position" itemValue="#{position.code}"
+                                               itemLabel="#{position.value}" itemDisabled="#{position.unused}"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Position"/>
+                    </div>
+                    <div class="grid_cell w_80">
+                        <div class="icon_box">
+                            <p:inputText value="#{editView.user.positionText}" required="true" styleClass="w_100"/>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Phone"/>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <p:inputText value="#{editView.user.workPhone}" placeholder="+79219812131" styleClass="w_100">
+                            <p:keyFilter inputRegEx="/^\+\d*$|^\+?$/" preventPaste="false"/>
+                        </p:inputText>
+                    </div>
+                    <div class="grid_cell ml-w_5 w_15">
+                        <p:outputLabel for="@next" value="Mobile Phone"/>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <p:inputText value="#{editView.user.mobilePhone}" placeholder="+79219812131" styleClass="w_100">
+                            <p:keyFilter inputRegEx="/^\+\d*$|^\+?$/" preventPaste="false"/>
+                        </p:inputText>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_20">
+                        <p:outputLabel for="@next" value="Email"/>
+                    </div>
+                    <div class="grid_cell w_80">
+                        <div class="icon_box">
+                            <p:inputText value="#{editView.user.email}" styleClass="w_100">
+                                <p:keyFilter regEx="/^[_A-Za-z0-9-@\\.]/" preventPaste="false"/>
+                                <f:validator binding="#{emailValidator}"/>
+                            </p:inputText>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+            <p:panel header="Certificates" toggleable="true">
+                <div class="navigation_panel clearfix">
+                    <p:fileUpload fileUploadListener="#{editView.uploadCertificate}" auto="true" allowTypes="/(\.|\/)cer$/"
+                                  update="certificates" styleClass="file-upload" style="display: none"/>
+                    <p:button value="Add" onclick="$('#content').find('.file-upload input').click(); return" styleClass="blue-btn"/>
+                    <p:commandButton value="Delete" disabled="#{empty editView.selectedCertificate}" action="#{editView.removeCertificate}"
+                                     update="certificates @(.action-button)" styleClass="orange-btn action-button"/>
+                    <p:commandButton value="Unblock"
+                                     disabled="#{empty editView.selectedCertificate or not editView.selectedCertificate.locked}"
+                                     update="certificates @(.action-button)" styleClass="btn_group blue-btn action-button">
+                        <f:setPropertyActionListener value="#{false}" target="#{editView.selectedCertificate.locked}"/>
+                    </p:commandButton>
+                    <p:commandButton value="Block" disabled="#{empty editView.selectedCertificate or editView.selectedCertificate.locked}"
+                                     update="certificates @(.action-button)" styleClass="orange-btn action-button">
+                        <f:setPropertyActionListener value="#{true}" target="#{editView.selectedCertificate.locked}"/>
+                    </p:commandButton>
+                </div>
+                <p:dataTable id="certificates" emptyMessage="No data" value="#{editView.certificates}" var="certificate" selectionMode="single"
+                             selection="#{editView.selectedCertificate}" rowKey="#{certificate.serialNumber}">
+                    <p:ajax event="rowSelect" update="@(.action-button)"/>
+                    <p:ajax event="rowUnselect" update="@(.action-button)"/>
+                    <p:column headerText="Serial Number">
+                        #{certificate.serialNumber}
+                    </p:column>
+                    <p:column headerText="Owner">
+                        #{certificate.owner}
+                    </p:column>
+                    <p:column headerText="Valid From">
+                        <h:outputText value="#{certificate.startDate}">
+                            <f:converter converterId="javax.faces.Instant"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                            <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Valid Until">
+                        <h:outputText value="#{certificate.endDate}">
+                            <f:converter converterId="javax.faces.Instant"/>
+                            <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                            <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Status">
+                        #{certificate.locked ? "Blocked" : "Active"}
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            <p:panel header="Groups, Roles and Permissions" toggleable="true">
+                <p:tabView>
+                    <p:tab title="Groups">
+                        <p:tree value="#{editView.groupTree}" var="item" selection="#{editView.selectedGroups}" selectionMode="checkbox"
+                                animate="true" propagateSelectionDown="false" propagateSelectionUp="false" styleClass="w_50">
+                            <p:treeNode type="empty">#{item}</p:treeNode>
+                            <p:treeNode>
+                                #{item.name}
+                            </p:treeNode>
+                        </p:tree>
+                    </p:tab>
+                    <p:tab title="Department Groups">
+                        <p:tree value="#{editView.departmentGroupTree}" var="item" selection="#{editView.selectedDepartmentGroups}" animate="true"
+                                selectionMode="checkbox" propagateSelectionDown="false" propagateSelectionUp="false" styleClass="w_50">
+                            <p:treeNode type="empty">#{item}</p:treeNode>
+                            <p:treeNode>
+                                #{item.name}
+                            </p:treeNode>
+                        </p:tree>
+                    </p:tab>
+                    <p:tab title="Roles">
+                        <p:tree value="#{editView.roleTree}" var="item" selection="#{editView.selectedRoles}" selectionMode="checkbox" animate="true"
+                                styleClass="w_50">
+                            <p:treeNode type="empty">#{item}</p:treeNode>
+                            <p:treeNode type="group">
+                                #{item}
+                            </p:treeNode>
+                            <p:treeNode>
+                                #{item.name}
+                            </p:treeNode>
+                        </p:tree>
+                    </p:tab>
+                    <p:tab title="Permissions">
+                        <p:tree value="#{editView.rightTree}" var="item" selection="#{editView.selectedRights}" selectionMode="checkbox"
+                                animate="true" styleClass="w_50">
+                            <p:treeNode type="empty">#{item}</p:treeNode>
+                            <p:treeNode type="group">
+                                #{item}
+                            </p:treeNode>
+                            <p:treeNode>
+                                #{item.name}
+                            </p:treeNode>
+                        </p:tree>
+                    </p:tab>
+                    <p:tab title="Modules and Tasks">
+                        <p:tree value="#{editView.taskTree}" var="node" animate="true" selectionMode="checkbox" selection="#{editView.selectedTasks}"
+                                styleClass="w_50">
+                            <p:treeNode type="empty">#{node}</p:treeNode>
+                            <p:treeNode type="group">#{node.name}</p:treeNode>
+                            <p:treeNode>#{node.name}</p:treeNode>
+                        </p:tree>
+                    </p:tab>
+                </p:tabView>
+            </p:panel>
+            <p:panel header="Trusted Hosts" toggleable="true">
+                <div class="navigation_panel clearfix">
+                    <p:commandButton value="Add" actionListener="#{editView.addTrustedHost}" immediate="true" update="@next"
+                                     styleClass="blue-btn"/>
+                </div>
+                <p:dataTable value="#{editView.trustedHosts}" var="host" emptyMessage="No data" editMode="cell" editable="true"
+                             rowIndexVar="row">
+                    <p:column headerText="Host IP Address">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{host.ip}
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{host.ip}" placeholder=". . ." maxlength="39">
+                                    <p:keyFilter regEx="/[a-fA-F0-9\.:]/" preventPaste="false"/>
+                                </p:inputText>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Description">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                #{host.description}
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{host.description}"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column>
+                        <p:commandLink value="delete" actionListener="#{editView.removeTrustedHost(row)}" update="@parent:@parent" immediate="true"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            <div class="navigation_panel bottom clearfix">
+                <p:defaultCommand target="@next"/>
+                <p:commandButton value="Save" styleClass="r-float_elem big_btn blue-btn" action="#{editView.save()}"
+                                 update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"/>
+                <p:commandButton value="Cancel" styleClass="big_btn orange-btn" action="cancel" immediate="true" process="@this"/>
+            </div>
+        </section>
+    </ui:define>
+</ui:composition>

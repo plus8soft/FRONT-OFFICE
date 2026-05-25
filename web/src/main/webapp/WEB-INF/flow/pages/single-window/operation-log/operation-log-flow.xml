@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow-2.4.xsd"
+      parent="pages/single-window/transition">
+    <var name="FS_FILTER" class="web.view.log.operation.OperationFilter"/>
+    <view-state id="operation-log">
+        <var name="operationView" class="web.view.log.operation.OperationView"/>
+        <var name="operationModel" class="web.view.log.operation.OperationModel"/>
+        <on-entry>
+            <set name="operationView.filter" value="FS_FILTER"/>
+            <evaluate expression="operationView.init(operationModel)"/>
+        </on-entry>
+        <transition on="show" to="type">
+            <set name="flowScope.FS_OPERATION" value="operationModel.selected"/>
+        </transition>
+        <on-exit>
+            <set name="FS_FILTER" value="operationModel.filter"/>
+        </on-exit>
+    </view-state>
+    <action-state id="type">
+        <evaluate expression="flowScope.FS_OPERATION.type"/>
+        <transition on="CE" to="show"/>
+        <transition on="PS" to="show-transfer"/>
+        <transition on="PAY" to="show-payment"/>
+    </action-state>
+    <view-state id="show">
+        <var name="operationShowView" class="web.view.log.operation.OperationShowView"/>
+        <on-entry>
+            <evaluate expression="operationShowView.init(flowScope.FS_OPERATION)"/>
+        </on-entry>
+    </view-state>
+    <view-state id="show-transfer">
+        <var name="operationShowView" class="web.view.log.operation.OperationTransferShowView"/>
+        <on-entry>
+            <evaluate expression="operationShowView.init(flowScope.FS_OPERATION)"/>
+        </on-entry>
+    </view-state>
+    <view-state id="show-payment">
+        <var name="operationShowView" class="web.view.log.operation.OperationPaymentShowView"/>
+        <on-entry>
+            <evaluate expression="operationShowView.init(flowScope.FS_OPERATION)"/>
+        </on-entry>
+    </view-state>
+    <global-transitions>
+        <transition on="cancel" to="operation-log"/>
+    </global-transitions>
+</flow>

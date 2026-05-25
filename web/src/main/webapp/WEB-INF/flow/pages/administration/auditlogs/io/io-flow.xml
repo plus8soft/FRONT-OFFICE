@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <var name="FS_FILTER" class="web.view.administration.auditlogs.io.ConnectionEventFilter"/>
+    <view-state id="io">
+        <var name="ioView" class="web.view.administration.auditlogs.io.IoView"/>
+        <var name="connectionEventModel" class="web.view.administration.auditlogs.io.ConnectionEventModel"/>
+        <on-entry>
+            <set name="ioView.filter" value="FS_FILTER"/>
+            <evaluate expression="ioView.init(connectionEventModel)"/>
+        </on-entry>
+        <transition on="show" to="show">
+            <set name="flowScope.FS_CONNECTION_EVENT" value="connectionEventModel.selected"/>
+        </transition>
+        <on-exit>
+            <set name="FS_FILTER" value="connectionEventModel.filter"/>
+        </on-exit>
+    </view-state>
+    <view-state id="show">
+        <var name="connectEventDetails" class="web.view.administration.auditlogs.io.ConnectionEventShowView"/>
+        <on-entry>
+            <evaluate expression="connectEventDetails.init(flowScope.FS_CONNECTION_EVENT)"/>
+        </on-entry>
+        <transition on="back" to="io"/>
+    </view-state>
+</flow>

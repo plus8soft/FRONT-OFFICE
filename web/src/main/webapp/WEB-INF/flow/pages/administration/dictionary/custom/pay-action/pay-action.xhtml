@@ -1,0 +1,107 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{payActionView.dictionary.group} > #{payActionView.dictionary.name}">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel box_big_subpanel clearfix">
+                <div class="search_box">
+                    <p:outputLabel value="Search:" for="@next"/>
+                    <p:inputText value="#{payActionView.filter.name}" placeholder="Search by name"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}">
+                        <f:passThroughAttribute name="focus-priority" value="1"/>
+                    </p:inputText>
+                    <p:remoteCommand name="updateTable" action="#{payActionView.fastSearch()}" update="@form"/>
+                    <script>focusByPriority();</script>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                </div>
+            </div>
+            <p:panel toggleable="true" collapsed="#{not payActionView.filter.extendedSearch}" header="Extended Search" styleClass="subpanel">
+                <div class="grid_row">
+                    <p:importEnum type="web.entity.dict.PayActionType"/>
+                    <div class="grid_cell w_5">
+                        <p:outputLabel value="Type" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <p:selectOneMenu value="#{payActionView.filter.type}" autoWidth="false" styleClass="w_100">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItem itemValue="#{PayActionType.PUBLIC_SECTOR}" itemLabel="Budget"/>
+                            <f:selectItem itemValue="#{PayActionType.TAX}" itemLabel="Tax"/>
+                            <f:selectItem itemValue="#{PayActionType.COMPANY}" itemLabel="Legal Entity"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="grid_cell w_10 ml-w_5">
+                        <p:outputLabel value="Cash Symbol" for="@next"/>
+                    </div>
+                    <div class="grid_cell w_65">
+                        <p:selectOneMenu value="#{payActionView.filter.cashSymbol}" filter="true" filterMatchMode="contains" autoWidth="false"
+                                         styleClass="w_100" panelStyle="width: 50%;">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItems value="#{cashSymbolDictionary.findAll()}" var="unit" itemLabel="#{unit.code} #{unit.value}"
+                                           itemValue="#{unit.code}" itemDisabled="#{unit.unused}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_5">
+                        <p:outputLabel for="@next" value="Status"/>
+                    </div>
+                    <div class="grid_cell w_15">
+                        <p:selectOneMenu value="#{payActionView.filter.disabled}" autoWidth="false" styleClass="w_100">
+                            <f:selectItem itemValue="#{null}" itemLabel=""/>
+                            <f:selectItem itemValue="#{false}" itemLabel="Active"/>
+                            <f:selectItem itemValue="#{true}" itemLabel="Not used"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <div class="btn_box clearfix">
+                    <p:commandButton value="Search" update="@form" action="#{payActionView.extendedSearch()}" styleClass="blue-btn r-float_elem"/>
+                </div>
+            </p:panel>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" action="add" styleClass="blue-btn"/>
+                <p:commandButton value="Edit" disabled="#{empty payActionModel.selected}" action="edit" styleClass="blue-btn"/>
+                <p:commandButton value="Delete" disabled="#{empty payActionModel.selected}" onclick="PF('confirm').show()" styleClass="orange-btn"/>
+            </div>
+            <p:dataTable id="pay-actions" value="#{payActionModel}" var="action" lazy="true" rows="100" scrollRows="50"
+                         selection="#{payActionModel.selected}" scrollHeight="#{payActionModel.rowCount gt 10 ? 400 : null}" virtualScroll="true"
+                         scrollable="#{payActionModel.rowCount gt 10}" selectionMode="single" sortMode="multiple" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@previous @previous:@previous"/>
+                <p:ajax event="rowUnselect" update="@previous @previous:@previous"/>
+                <p:ajax event="page" update="@previous @previous:@previous" listener="#{payActionModel.setSelected(null)}"/>
+                <p:column headerText="Operation Type">
+                    <h:outputText value="Budget" rendered="#{action.type eq PayActionType.PUBLIC_SECTOR}"/>
+                    <h:outputText value="Tax" rendered="#{action.type eq PayActionType.TAX}"/>
+                    <h:outputText value="Legal Entity" rendered="#{action.type eq PayActionType.COMPANY}"/>
+                </p:column>
+                <p:column headerText="Operation Name">
+                    #{action.name}
+                </p:column>
+                <p:column headerText="Cash Symbol">
+                    #{action.cashSymbol}
+                </p:column>
+                <p:column headerText="Status">
+                    #{action.disabled ? "Not used" : "Active"}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{payActionView.delete()}" onclick="PF('confirm').hide()" update="@form"
+                             styleClass="blue-btn r-float_elem"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

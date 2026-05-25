@@ -1,0 +1,68 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Classifiers</h1>
+        <p:panel header="#{dictionaryValueView.filter.dictionary.id} (#{dictionaryValueView.filter.dictionary.group})">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <div class="search_box r-float_elem">
+                    <p:inputText value="#{dictionaryValueView.filter.textFilter}" placeholder="Search"
+                                 onkeypress="if(event.keyCode === 13) { updateTable(); return false;}"/>
+                    <p:remoteCommand name="updateTable" action="#{dictionaryValueView.updateFilter()}" update="@form"/>
+                    <i class="fa fa-search fa-flip-horizontal" aria-hidden="true"/>
+                </div>
+                <p:commandButton value="Add" action="addDictionaryValue" disabled="#{dictionaryValueView.filter.dictionary.system}"
+                                 styleClass="blue-btn"/>
+                <p:commandButton value="Edit" action="editDictionaryValue" disabled="#{empty dictionaryValueModel.selected}"
+                                 styleClass="blue-btn action-button"/>
+                <p:commandButton value="Delete" disabled="#{empty dictionaryValueModel.selected or dictionaryValueView.filter.dictionary.system or
+                 dictionaryValueModel.selected.system}" styleClass="orange-btn action-button" onclick="PF('confirm').show()"/>
+            </div>
+            <p:dataTable id="items" value="#{dictionaryValueModel}" var="dictionaryValueItem" lazy="true" rows="100" scrollRows="50"
+                         scrollable="#{dictionaryValueModel.rowCount gt 10}" scrollHeight="#{dictionaryValueModel.rowCount gt 10 ? 400 : null}"
+                         virtualScroll="true" selection="#{dictionaryValueModel.selected}" selectionMode="single" sortMode="multiple"
+                         emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.action-button)"/>
+                <p:ajax event="rowUnselect" update="@(.action-button)"/>
+                <p:ajax event="page" update="@(.action-button)" listener="#{dictionaryValueModel.setSelected(null)}"/>
+                <p:column headerText="Code">
+                    #{dictionaryValueItem.code}
+                </p:column>
+                <p:column headerText="Short Value">
+                    #{dictionaryValueItem.shortValue}
+                </p:column>
+                <p:column headerText="Extended Value">
+                    #{dictionaryValueItem.value}
+                </p:column>
+                <p:column headerText="System">
+                    <ui:fragment rendered="#{dictionaryValueItem.system}">
+                        <i class="fa fa-check success" aria-hidden="true"/>
+                    </ui:fragment>
+                </p:column>
+                <p:column headerText="Not Used">
+                    <ui:fragment rendered="#{dictionaryValueItem.unused}">
+                        <i class="fa fa-check success" aria-hidden="true"/>
+                    </ui:fragment>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" header="Question" severity="help"
+                         message="Do you really want to delete the selected record?" closable="false">
+            <p:commandButton value="Yes" actionListener="#{dictionaryValueView.delete()}" onclick="PF('confirm').hide()"
+                             styleClass="blue-btn r-float_elem" update="@form"/>
+            <p:button value="No" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

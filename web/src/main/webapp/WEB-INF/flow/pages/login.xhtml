@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template/template.xhtml">
+    <ui:define name="body">
+        <h:form styleClass="login_form">
+            <div class="logo_box align-center">
+                <img src="#{resource['img/logo-login.png']}" alt="Bank"/>
+                <ui:fragment rendered="#{not settings.production}">
+                    <div>Test Environment</div>
+                </ui:fragment>
+                <div>#{servletContext.getAttribute("version")}</div>
+            </div>
+            <div class="form_box">
+                <h1>Login</h1>
+                <p class="text">To log in, enter your username and password</p>
+                <div class="form_elem">
+                    <div class="message_box w_100">
+                        <p:messages autoUpdate="true"/>
+                    </div>
+                    <p:outputLabel value="User" for="@next" styleClass="w_100"/>
+                    <p:inputText value="#{authorizationView.login}" placeholder="Login" required="true" requiredMessage="Enter login"
+                                 styleClass="w_100">
+                        <f:passThroughAttribute name="focus-priority" value="1"/>
+                    </p:inputText>
+                    <script>focusByPriority();</script>
+                    <p:outputLabel value="Password" for="@next" styleClass="w_100"/>
+                    <p:password value="#{authorizationView.password}" placeholder="Password" required="true" requiredMessage="Enter password"
+                                styleClass="w_100"/>
+                    <p class="hint">If you do not know your username or password, contact the system administrator</p>
+                    <div class="btn_box align-right">
+                        <p:commandButton value="Login" styleClass="blue-btn" action="#{authorizationView.authorize()}"/>
+                    </div>
+                </div>
+            </div>
+        </h:form>
+        <!-- JC-WebClient installation dialog removed: token-based login via external crypto client is not used in this build -->
+    </ui:define>
+</ui:composition>

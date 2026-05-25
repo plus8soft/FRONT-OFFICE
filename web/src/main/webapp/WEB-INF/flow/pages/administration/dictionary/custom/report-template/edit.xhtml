@@ -1,0 +1,114 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="#{reportTemplateEditView.dictionary.group} > #{reportTemplateEditView.dictionary.name}">
+            <div class="grid_row">
+                <div class="grid_cell w_20 mr-w_5">Group</div>
+                <div class="grid_cell w_75">
+                    <p:inputText value="#{reportTemplateEditView.template.group}" disabled="#{not empty reportTemplateEditView.template.systemName}"
+                                 styleClass="w_100"/>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20 mr-w_5">
+                    <p:outputLabel value="Name" for="@next"/>
+                </div>
+                <div class="grid_cell w_75">
+                    <div class="icon_box">
+                        <p:inputText value="#{reportTemplateEditView.template.name}" required="true"
+                                     disabled="#{not empty reportTemplateEditView.template.systemName}" styleClass="w_100"/>
+                        <p:message for="@previous" display="icon"/>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_20 mr-w_5">Description</div>
+                <div class="grid_cell w_75">
+                    <p:inputTextarea value="#{reportTemplateEditView.template.description}" styleClass="w_100"/>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_5 mr-w_5">
+                    <h:graphicImage url="#{reportTemplateEditView.templateImage}"/>
+                </div>
+                <div class="grid_cell w_30 mr-w_5">
+                    <div class="grid_row">
+                        <div class="grid_cell w_45 mr-w_5">Update Date</div>
+                        <div class="grid_cell w_50">
+                            <b>
+                                <h:outputText value="#{reportTemplateEditView.template.date}">
+                                    <f:converter converterId="javax.faces.Instant"/>
+                                    <f:attribute name="pattern" value="dd.MM.yyyy HH:mm:ss"/>
+                                    <f:attribute name="timeZone" value="#{userSession.user.department.zoneId}"/>
+                                </h:outputText>
+                            </b>
+                        </div>
+                    </div>
+                    <div class="grid_row">
+                        <div class="grid_cell w_45 mr-w_5">Size</div>
+                        <div class="grid_cell w_50">
+                            <b>#{reportTemplateEditView.template.size} bytes</b>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_cell w_20">
+                    <div class="navigation_panel bottom clearfix body_block">
+                        <div class="message_box">
+                            <p:fileUpload fileUploadListener="#{reportTemplateEditView.uploadTemplate}" styleClass="file-upload" accept=".docx"
+                                          invalidFileMessage="Invalid file format. Required format: \&quot;docx\&quot;"
+                                          allowTypes="/(\.|\/)(docx)$/" auto="true" update="@form"/>
+                            <div class="icon_box">
+                                <p:commandButton value="Download" actionListener="#{reportTemplateEditView.downloadTemplate}"
+                                                 disabled="#{empty reportTemplateEditView.template.file}" ajax="false" styleClass="blue-btn">
+                                    <p:fileDownload value="#{reportTemplateEditView.downloadedTemplate}"/>
+                                </p:commandButton>
+                                <h:inputHidden id="hinput" value="#{reportTemplateEditView.template.size}" required="true"/>
+                                <p:message for="hinput" display="icon"/>
+                                <p:commandButton value="Upload" onclick="$('#content').find('.file-upload input').click()"
+                                                 styleClass="blue-btn ml-w_5"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_5 mr-w_5">
+                    <h:graphicImage url="#{reportTemplateEditView.dataContextImage}"/>
+                </div>
+                <div class="grid_cell w_30 mr-w_5">Data Context</div>
+            </div>
+            <div class="grid_row">
+                <div class="grid_cell w_100">
+                    <p:tree value="#{reportTemplateEditView.contextTree}" var="node" emptyMessage="No data" styleClass="w_50">
+                        <p:treeNode>
+                            <h:outputText value="#{node.type.simpleName}" rendered="#{empty node.iterableType}"/>
+                            <h:outputText value="#{node.iterableType.simpleName}&lt;#{node.type.simpleName}&gt;"
+                                          rendered="#{not empty node.iterableType}"/>
+                            #{node.name}
+                        </p:treeNode>
+                    </p:tree>
+                </div>
+            </div>
+            <p:outputLabel value="List of data contexts used in the report" rendered="#{empty reportTemplateEditView.template.systemName}"/>
+            <p:selectManyCheckbox value="#{reportTemplateEditView.selectedContextTypes}" converter="ReportTemplateContextConverter"
+                                  layout="pageDirection" rendered="#{empty reportTemplateEditView.template.systemName}">
+                <p:ajax update="@previous:@previous" listener="#{reportTemplateEditView.rebuildContextTree}"/>
+                <f:selectItems value="#{reportTemplateEditView.contextTypes}" var="context" itemLabel="#{context.description}"
+                               itemValue="#{context}"/>
+            </p:selectManyCheckbox>
+        </p:panel>
+        <div class="navigation_panel clearfix bottom">
+            <p:commandButton value="Cancel" action="cancel" immediate="true" styleClass="big_btn orange-btn"/>
+            <p:commandButton value="Save" action="#{reportTemplateEditView.save()}" update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"
+                             styleClass="big_btn blue-btn r-float_elem"/>
+        </div>
+    </ui:define>
+</ui:composition>

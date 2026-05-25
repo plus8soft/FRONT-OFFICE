@@ -1,0 +1,219 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:o="http://omnifaces.org/ui"
+                template="../../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Transfer Completion" styleClass="transaction_page check_form">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5</span>
+                    <span class="current">6</span>
+                    <span>7</span>
+                </div>
+            </f:facet>
+            <p class="sub_title"><span>6.1</span>Check transfer parameters</p>
+            <div class="title_block">
+                <p class="type_text">Operation Type</p>
+                <p class="name_text">Transfer of funds to an individual (sending)</p>
+                <p class="type_text">Payment System</p>
+                <p:importEnum type="web.entity.dict.PaymentSystemName"/>
+                <p class="name_text">
+                    #{stepSixView.paymentTransfer.paymentSystem.name}
+                    <ui:insert name="icon-block"/>
+                </p>
+                <p class="type_text">Transfer Amount and Currency</p>
+                <p class="name_text currency_row">
+                    <h:outputText value="#{stepSixView.transferData.amount}">
+                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                    </h:outputText> #{stepSixView.transferData.transferCurrency.name}
+                    <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                    styleClass="currency_img r-float_elem">
+                        <f:param name="id" value="#{stepSixView.transferData.transferCurrency.id}"/>
+                    </p:graphicImage>
+                </p>
+                <p class="type_text">Destination Country</p>
+                <p class="name_text">
+                    #{stepSixView.transferData.destinationCountry.name}, #{stepSixView.transferData.destinationRegion.name}
+                </p>
+                <p class="type_text">Pickup Location</p>
+                <ui:insert name="point-block">
+                    <ui:fragment rendered="#{empty stepSixView.transferData.paymentPoint}">
+                        <p class="name_text">Transfer can be received at any service point within the destination city</p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{not empty stepSixView.transferData.paymentPoint}">
+                        <p class="name_text">
+                            #{stepSixView.transferData.paymentPoint.name}, #{stepSixView.transferData.paymentPoint.address}
+                        </p>
+                    </ui:fragment>
+                </ui:insert>
+            </div>
+            <p class="sub_title"><span>6.2</span>Verify sender and recipient data</p>
+            <div class="title_block">
+                <div class="grid_row">
+                    <div class="grid_cell w_45">
+                        <div class="name_text class_sender">Sender Information</div>
+                        <p class="type_text">Last Name, First Name, Middle Name, Birth Date</p>
+                        <p class="name_text">
+                            #{stepSixView.transferData.sender.lastname} #{stepSixView.transferData.sender.firstname}
+                            #{stepSixView.transferData.sender.patronymic}
+                            <h:outputText value="#{stepSixView.transferData.sender.birthDate}">
+                                <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            </h:outputText>
+                        </p>
+                        <p class="type_text">Staying Address</p>
+                        <p class="name_text">#{utils.addresses.formatTransferAddress(stepSixView.transferData.sender.address)}</p>
+                        <p class="type_text">Identity Document (type, series and number)</p>
+                        <p class="name_text">
+                            #{stepSixView.transferData.sender.document.type} #{stepSixView.transferData.sender.document.series}
+                            #{stepSixView.transferData.sender.document.number}
+                        </p>
+                        <p class="type_text">Identity Document (issued by and date)</p>
+                        <p class="name_text">
+                            #{stepSixView.transferData.sender.document.issuanceUnit}
+                            <h:outputText value="#{stepSixView.transferData.sender.document.issuanceDate}">
+                                <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            </h:outputText>
+                        </p>
+                        <ui:fragment rendered="#{not empty stepSixView.transferData.sender.mobilePhone}">
+                            <p class="type_text">Contact Details</p>
+                            <p class="name_text">#{stepSixView.transferData.sender.mobilePhone}</p>
+                        </ui:fragment>
+                    </div>
+                    <div class="grid_cell w_45 ml-w_10">
+                        <div class="name_text class_recipient">Recipient Information</div>
+                        <p class="type_text">Last Name, First Name, Middle Name, Birth Date</p>
+                        <p class="name_text">
+                            #{stepSixView.transferData.receiver.lastname} #{stepSixView.transferData.receiver.firstname}
+                            #{stepSixView.transferData.receiver.patronymic}
+                            <h:outputText value="#{stepSixView.transferData.receiver.birthDate}">
+                                <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                            </h:outputText>
+                        </p>
+                        <p class="type_text">Staying Address</p>
+                        <p class="name_text">#{utils.addresses.formatTransferAddress(stepSixView.transferData.receiver.address)}</p>
+                        <ui:fragment rendered="#{not empty stepSixView.transferData.receiver.document}">
+                            <p class="type_text">Identity Document (type, series and number)</p>
+                            <p class="name_text">
+                                #{stepSixView.transferData.receiver.document.type} #{stepSixView.transferData.receiver.document.series}
+                                #{stepSixView.transferData.receiver.document.number}
+                            </p>
+                            <p class="type_text">Identity Document (issued by and date)</p>
+                            <p class="name_text">
+                                #{stepSixView.transferData.receiver.document.issuanceUnit}
+                                <h:outputText value="#{stepSixView.transferData.receiver.document.issuanceDate}">
+                                    <f:converter converterId="javax.faces.LocalDateConverter"/>
+                                    <f:attribute name="pattern" value="dd.MM.yyyy"/>
+                                </h:outputText>
+                            </p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{not empty stepSixView.transferData.receiver.mobilePhone}">
+                            <p class="type_text">Contact Details</p>
+                            <p class="name_text">#{stepSixView.transferData.receiver.mobilePhone}</p>
+                        </ui:fragment>
+                    </div>
+                </div>
+            </div>
+            <ui:fragment rendered="true">
+                <p class="sub_title"><span>6.3</span>Receive the required amount from the client and complete the transfer</p>
+                <div class="list_enabled_sys">
+                    <div class="grid_row">
+                        <div class="grid_cell w_30">Transfer Amount:</div>
+                        <div class="grid_cell w_70">
+                            <h:outputText value="#{stepSixView.transferData.amount}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="4"/>
+                            </h:outputText> #{stepSixView.transferData.transferCurrency.iso}
+                        </div>
+                    </div>
+                    <ui:fragment rendered="#{not empty stepSixView.paymentSystemFee.conversion}">
+                        <div class="grid_row">
+                            <div class="grid_cell w_30">Conversion Rate:</div>
+                            <div class="grid_cell w_70">
+                                <h:outputText value="#{stepSixView.paymentSystemFee.conversion}">
+                                    <o:converter converterId="javax.faces.BigDecimal" minFractionDigits="2"
+                                                 maxFractionDigits="#{stepSixView.paymentSystemFee.conversion.scale()}"/>
+                                </h:outputText> #{stepSixView.transferData.acceptedCurrency.iso} = 1
+                                #{stepSixView.transferData.transferCurrency.iso}
+                            </div>
+                        </div>
+                    </ui:fragment>
+                    <div class="grid_row">
+                        <div class="grid_cell w_30">Payment System Commission:</div>
+                        <div class="grid_cell w_70">
+                            <h:outputText value="#{stepSixView.paymentSystemFee.paymentSystemCommission}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </h:outputText> #{stepSixView.transferData.acceptedCurrency.iso}
+                        </div>
+                    </div>
+                    <div class="grid_row">
+                        <div class="grid_cell w_30">Bank Commission:</div>
+                        <div class="grid_cell w_70">
+                            <h:outputText value="#{stepSixView.paymentSystemFee.bankCommission}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </h:outputText> #{stepSixView.transferData.acceptedCurrency.iso}
+                        </div>
+                    </div>
+                    <div class="grid_row">
+                        <div class="grid_cell w_30">Total Commission:</div>
+                        <div class="grid_cell w_70">
+                            <h:outputText
+                                    value="#{stepSixView.paymentSystemFee.paymentSystemCommission.add(stepSixView.paymentSystemFee.bankCommission)}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </h:outputText> #{stepSixView.transferData.acceptedCurrency.iso}
+                        </div>
+                    </div>
+                    <div class="grid_row total_row">
+                        <div class="grid_cell w_30">Total to Pay:</div>
+                        <div class="grid_cell w_70">
+                            <h:outputText value="#{stepSixView.paymentSystemFee.sum}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </h:outputText> <span class="cur">#{stepSixView.transferData.acceptedCurrency.iso}</span>
+                            <div class="hint">
+                                (including commission
+                                <h:outputText value="#{stepSixView.paymentSystemFee.commission}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText> #{stepSixView.transferData.acceptedCurrency.iso})
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ui:fragment>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Transfer" action="#{stepSixView.next()}" styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Print" actionListener="#{stepSixView.setShowReport(true)}" update="@form"
+                             styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Back" action="#{stepSixView.back()}" styleClass="big_btn orange-btn"/>
+            <p:commandButton value="Cancel" onclick="PF('confirm').show()" styleClass="big_btn orange-btn"/>
+        </div>
+        <p:confirmDialog widgetVar="confirm" showEffect="fade" hideEffect="fade" closable="false" header="Confirmation" severity="info"
+                         message="Transfer has been created in the core banking system and in the front-office system. Do you really want to cancel the transfer?">
+            <p:commandButton value="Confirm" action="#{stepSixView.cancel()}" onclick="PF('confirm').hide()" styleClass="blue-btn r-float_elem"/>
+            <p:button value="Cancel" onclick="PF('confirm').hide(); return" styleClass="orange-btn"/>
+        </p:confirmDialog>
+        <p:dialog modal="true" closable="true" visible="true" rendered="#{stepSixView.showReport}" resizable="false" draggable="false"
+                  closeOnEscape="true" appendTo="@(body)" positionType="absolute" position="top">
+            <p:ajax event="close" listener="#{stepSixView.closeReport}" update="@form"/>
+            <p:tabView value="#{stepSixView.reports}" var="document">
+                <p:tab title="#{document.first}">
+                    <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="560">
+                        <f:param name="path" value="#{document.second}"/>
+                    </p:media>
+                </p:tab>
+            </p:tabView>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

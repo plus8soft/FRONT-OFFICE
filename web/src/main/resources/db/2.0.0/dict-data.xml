@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="2.0.0" failOnError="true">
+        <!-- Insert countries: USA, Canada, and one more (Mexico) -->
+        <insert schemaName="DICT" tableName="COUNTRIES">
+            <column name="COUNTRIES_ISO" value="US"/>
+            <column name="NAME" value="United States"/>
+            <column name="ALPHA2" value="US"/>
+            <column name="ALPHA3" value="USA"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+        <insert schemaName="DICT" tableName="COUNTRIES">
+            <column name="COUNTRIES_ISO" value="CA"/>
+            <column name="NAME" value="Canada"/>
+            <column name="ALPHA2" value="CA"/>
+            <column name="ALPHA3" value="CAN"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+        <insert schemaName="DICT" tableName="COUNTRIES">
+            <column name="COUNTRIES_ISO" value="MX"/>
+            <column name="NAME" value="Mexico"/>
+            <column name="ALPHA2" value="MX"/>
+            <column name="ALPHA3" value="MEX"/>
+            <column name="ENABLE" valueBoolean="true"/>
+        </insert>
+        
+        <!-- Insert currencies: EUR, USD, and cents -->
+        <insert schemaName="DICT" tableName="CURRENCIES">
+            <column name="CURRENCIES_KD" value="EUR"/>
+            <column name="ISO" value="EUR"/>
+            <column name="NAME" value="Euro"/>
+            <column name="RATIO" valueNumeric="100"/>
+            <column name="GENDER" valueBoolean="true"/>
+            <column name="INTEGRAL_VAL1" value="euro"/>
+            <column name="INTEGRAL_VAL2" value="euro"/>
+            <column name="INTEGRAL_VAL3" value="euros"/>
+            <column name="FRACTIONAL_VAL1" value="cent"/>
+            <column name="FRACTIONAL_VAL2" value="cent"/>
+            <column name="FRACTIONAL_VAL3" value="cents"/>
+            <column name="ENABLE" valueBoolean="true"/>
+            <column name="POSITION" valueNumeric="1"/>
+            <column name="ALTERNATIVE_KD" value="EUR"/>
+        </insert>
+        <insert schemaName="DICT" tableName="CURRENCIES">
+            <column name="CURRENCIES_KD" value="USD"/>
+            <column name="ISO" value="USD"/>
+            <column name="NAME" value="US Dollar"/>
+            <column name="RATIO" valueNumeric="100"/>
+            <column name="GENDER" valueBoolean="true"/>
+            <column name="INTEGRAL_VAL1" value="dollar"/>
+            <column name="INTEGRAL_VAL2" value="dollar"/>
+            <column name="INTEGRAL_VAL3" value="dollars"/>
+            <column name="FRACTIONAL_VAL1" value="cent"/>
+            <column name="FRACTIONAL_VAL2" value="cent"/>
+            <column name="FRACTIONAL_VAL3" value="cents"/>
+            <column name="ENABLE" valueBoolean="true"/>
+            <column name="POSITION" valueNumeric="2"/>
+            <column name="ALTERNATIVE_KD" value="USD"/>
+        </insert>
+        <insert schemaName="DICT" tableName="CURRENCIES">
+            <column name="CURRENCIES_KD" value="001"/>
+            <column name="ISO" value="CENTS"/>
+            <column name="NAME" value="Cents"/>
+            <column name="RATIO" valueNumeric="1"/>
+            <column name="GENDER" valueBoolean="true"/>
+            <column name="INTEGRAL_VAL1" value="cent"/>
+            <column name="INTEGRAL_VAL2" value="cent"/>
+            <column name="INTEGRAL_VAL3" value="cents"/>
+            <column name="FRACTIONAL_VAL1" value=""/>
+            <column name="FRACTIONAL_VAL2" value=""/>
+            <column name="FRACTIONAL_VAL3" value=""/>
+            <column name="ENABLE" valueBoolean="true"/>
+            <column name="POSITION" valueNumeric="3"/>
+            <column name="ALTERNATIVE_KD" value="001"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:o="http://omnifaces.org/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">
+            <h:outputText value="New Document Scan" rendered="#{empty editDocumentCopyView.documentCopy.id}"/>
+            <h:outputText value="#{editDocumentCopyView.documentCopy.name}" rendered="#{not empty editDocumentCopyView.documentCopy.id}"/>
+        </h1>
+        <p:panel header="Document Scan Data">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="grid_row">
+                <div class="grid_cell w_10"><p:outputLabel value="Document Type" for="@next"/></div>
+                <div class="grid_cell w_40">
+                    <p:selectOneMenu value="#{editDocumentCopyView.documentCopy.external}" disabled="#{editDocumentCopyView.readOnly}"
+                                     autoWidth="false" styleClass="w_100">
+                        <f:selectItem itemLabel="Bank Documents" itemValue="#{false}"/>
+                        <f:selectItem itemLabel="Client Documents" itemValue="#{true}"/>
+                        <p:ajax listener="#{editDocumentCopyView.onExternalChange()}" process="@this" resetValues="true" update="document-data"/>
+                    </p:selectOneMenu>
+                </div>
+            </div>
+            <div jsf:id="document-data">
+                <div class="grid_row">
+                    <div class="grid_cell w_10"><p:outputLabel value="Name" for="@next"/></div>
+                    <div class="grid_cell w_40">
+                        <div class="icon_box">
+                            <p:selectOneMenu value="#{editDocumentCopyView.selectedType}"
+                                             rendered="#{not editDocumentCopyView.documentCopy.external}"
+                                             required="true" disabled="#{editDocumentCopyView.readOnly}" autoWidth="false" styleClass="w_100">
+                                <f:selectItem itemLabel="" itemValue="#{null}" itemDisabled="true"/>
+                                <f:selectItems value="#{editDocumentCopyView.bankDocumentTypes}" var="type" itemLabel="#{type.name}"
+                                               itemValue="#{type.id}" itemDisabled="#{type.disabled}"/>
+                                <p:ajax listener="#{editDocumentCopyView.onDocumentTypeChange()}" resetValues="true" update="@(.term-type)"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon" rendered="#{not editDocumentCopyView.documentCopy.external}"/>
+                            <p:selectOneMenu value="#{editDocumentCopyView.documentCopy.clientDocumentType}"
+                                             rendered="#{editDocumentCopyView.documentCopy.external}" filter="true" filterMatchMode="startsWith"
+                                             required="true" disabled="#{editDocumentCopyView.readOnly}" autoWidth="false" styleClass="w_100">
+                                <f:selectItem itemLabel="" itemValue="#{null}"/>
+                                <f:selectItems value="#{editDocumentCopyView.clientDocumentTypes}" var="basicType" itemLabel="#{basicType.value}"
+                                               itemValue="#{basicType.code}" itemDisabled="#{basicType.unused}"/>
+                                <p:ajax listener="#{editDocumentCopyView.onDocumentTypeChange()}" resetValues="true" update="doc-type-name"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon" rendered="#{editDocumentCopyView.documentCopy.external}"/>
+                        </div>
+                    </div>
+                    <div jsf:id="doc-type-name" class="grid_cell w_20">
+                        <div class="icon_box">
+                            <o:importConstants type="web.view.ce.clientedit.EditDocumentCopyView"/>
+                            <p:inputText value="#{editDocumentCopyView.documentCopy.name}" required="true"
+                                         rendered="#{editDocumentCopyView.documentCopy.external and EditDocumentCopyView.OTHER_DOCUMENT_TYPE eq
+                                         editDocumentCopyView.documentCopy.clientDocumentType}" styleClass="ml-w_5"/>
+                            <p:message for="@previous" display="icon" rendered="#{editDocumentCopyView.documentCopy.external and
+                                EditDocumentCopyView.OTHER_DOCUMENT_TYPE eq editDocumentCopyView.documentCopy.clientDocumentType}"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_10"><p:outputLabel value="Series" for="@next"/></div>
+                    <div class="grid_cell w_15">
+                        <p:inputText value="#{editDocumentCopyView.documentCopy.series}" styleClass="w_100"/>
+                    </div>
+                    <div class="grid_cell w_5 ml-w_5"><p:outputLabel value="Number" for="@next"/></div>
+                    <div class="grid_cell w_15">
+                        <p:inputText value="#{editDocumentCopyView.documentCopy.number}" styleClass="w_100"/>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_10"><p:outputLabel value="Document Date" for="@next"/></div>
+                    <div class="grid_cell w_15">
+                        <div class="icon_box">
+                            <p:calendar value="#{editDocumentCopyView.documentCopy.issuanceDate}" pattern="dd.MM.yyyy" placeholder="dd.mm.yyyy"
+                                        showOn="button" mask="true" converter="javax.faces.LocalDateConverter" required="true" styleClass="w_100">
+                                <p:ajax event="dateSelect" listener="#{editDocumentCopyView.calculateValidDate()}" resetValues="true" process="@this"
+                                        update="@(.term-type)"/>
+                                <p:ajax listener="#{editDocumentCopyView.calculateValidDate()}" resetValues="true" process="@this"
+                                        update="@(.term-type)"/>
+                            </p:calendar>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_10 r-label"><p:outputLabel value="Valid Until" for="@next"/></div>
+                    <div class="grid_cell w_15">
+                        <div class="icon_box">
+                            <p:importEnum type="java.time.temporal.ChronoUnit"/>
+                            <p:selectOneMenu value="#{editDocumentCopyView.documentType.termType}"
+                                             disabled="#{not editDocumentCopyView.documentCopy.external or editDocumentCopyView.documentType.termless}"
+                                             styleClass="term-type w_100" autoWidth="false">
+                                <f:selectItem itemLabel="" itemValue="#{null}"/>
+                                <f:selectItem itemLabel="Minutes" itemValue="#{ChronoUnit.MINUTES}"/>
+                                <f:selectItem itemLabel="Hours" itemValue="#{ChronoUnit.HOURS}"/>
+                                <f:selectItem itemLabel="Days" itemValue="#{ChronoUnit.DAYS}"/>
+                                <f:selectItem itemLabel="Months" itemValue="#{ChronoUnit.MONTHS}"/>
+                                <p:ajax listener="#{editDocumentCopyView.calculateValidDate()}" resetValues="true" process="@this"
+                                        update="@(.term-type)"/>
+                            </p:selectOneMenu>
+                            <p:message for="@previous" display="icon"/>
+                        </div>
+                    </div>
+                    <div class="grid_cell w_30">
+                        <div class="grid_cell w_25 r-label">
+                            <div class="icon_box">
+                                <p:inputNumber value="#{editDocumentCopyView.documentType.term}" decimalPlaces="0"
+                                               disabled="#{not editDocumentCopyView.documentCopy.external or editDocumentCopyView.documentType.termless}"
+                                               styleClass="term-type w_100">
+                                    <p:ajax event="keyup" listener="#{editDocumentCopyView.calculateValidDate()}" resetValues="true" delay="1500"
+                                            process="@this" update="@(.term-type)"/>
+                                </p:inputNumber>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                        <div class="grid_cell w_15 r-label"><p:outputLabel value=", until" for="@next"/></div>
+                        <div class="grid_cell w_40">
+                            <div class="icon_box">
+                                <p:calendar value="#{editDocumentCopyView.documentCopy.validUntilDate}" pattern="dd.MM.yyyy"
+                                            placeholder="dd.mm.yyyy" showOn="button" mask="true" converter="javax.faces.LocalDateConverter"
+                                            required="#{not editDocumentCopyView.documentType.termless}"
+                                            disabled="#{not editDocumentCopyView.documentCopy.external or editDocumentCopyView.documentType.termless}"
+                                            styleClass="term-type w_100">
+                                    <p:ajax event="change" listener="#{editDocumentCopyView.onValidUntilDateChange}" resetValues="true"
+                                            process="@this" update="@(.term-type)"/>
+                                    <p:ajax event="dateSelect" listener="#{editDocumentCopyView.onValidUntilDateChange}" resetValues="true"
+                                            process="@this" update="@(.term-type)"/>
+                                </p:calendar>
+                                <p:message for="@previous" display="icon"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_row">
+                    <div class="grid_cell w_10"><p:outputLabel value="Unlimited" for="@next"/></div>
+                    <div class="grid_cell">
+                        <p:selectBooleanCheckbox value="#{editDocumentCopyView.documentType.termless}"
+                                                 disabled="#{not editDocumentCopyView.documentCopy.external}" styleClass="term-type">
+                            <p:ajax listener="#{editDocumentCopyView.onTermlessChange()}" resetValues="true" process="@this" update="@(.term-type)"/>
+                        </p:selectBooleanCheckbox>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation_panel bottom clearfix body_block">
+                <div class="message_box">
+                    <p:fileUpload fileUploadListener="#{editDocumentCopyView.uploadCopy}" update="@form" styleClass="file-upload" accept=".pdf"
+                                  invalidFileMessage="Invalid file format. Required format \&quot;pdf\&quot;"
+                                  allowTypes="/(\.|\/pdf)$/" auto="true"/>
+                    <div class="icon_box">
+                        <h:inputHidden id="hinput" value="#{editDocumentCopyView.fileExistence}" required="true"/>
+                        <p:message for="hinput" display="icon"/>
+                        <p:commandButton value="Browse" onclick="$('#content').find('.file-upload input').click()" styleClass="green-btn"/>
+                        <p:commandButton value="Delete" action="#{editDocumentCopyView.removeFile}" update="@form" process="@this" immediate="true"
+                                         disabled="#{empty editDocumentCopyView.documentCopy.file}" styleClass="orange-btn"/>
+                    </div>
+                </div>
+            </div>
+            <ui:fragment rendered="#{not empty editDocumentCopyView.documentCopy.file}">
+                <div class="body_block">
+                    <p:media value="#{reportRequest.report}" player="pdf" width="1150" height="500">
+                        <f:param name="path" value="#{editDocumentCopyView.documentCopy.fileName}"/>
+                    </p:media>
+                </div>
+            </ui:fragment>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Save" action="#{editDocumentCopyView.save()}" update="@(.icon_box .ui-widget) @(.icon_box > .ui-message)"
+                             styleClass="big_btn blue-btn r-float_elem"/>
+            <p:commandButton value="Cancel" immediate="true" action="#{editDocumentCopyView.back}" styleClass="big_btn orange-btn"/>
+        </div>
+    </ui:define>
+</ui:composition>

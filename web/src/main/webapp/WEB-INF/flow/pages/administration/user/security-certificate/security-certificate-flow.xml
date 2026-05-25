@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <var name="FS_FILTER" class="web.view.administration.user.security.certificate.SecurityCertificateFilter"/>
+    <view-state id="security-certificate">
+        <var name="securityCertificateView" class="web.view.administration.user.security.certificate.SecurityCertificateView"/>
+        <var name="securityCertificateModel" class="web.view.administration.user.security.certificate.SecurityCertificateModel"/>
+        <on-entry>
+            <set name="securityCertificateView.filter" value="FS_FILTER"/>
+            <evaluate expression="securityCertificateView.init(securityCertificateModel)"/>
+        </on-entry>
+    </view-state>
+</flow>

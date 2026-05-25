@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel styleClass=" arm_page" header="Enter Payer Data">
+            <f:facet name="actions">
+                <div class="step_indicator">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span class="current#{stepFour.error ? ' error' : ''}">4</span>
+                </div>
+            </f:facet>
+            <ui:fragment rendered="#{stepFour.error}">
+                <div class="message message-error">
+                    <i class="fa fa-times-circle-o" aria-hidden="true"/>
+                    <div>#{stepFour.result}</div>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{not stepFour.error}">
+                <div class="message message-success">
+                    <i class="fa fa-check-circle-o" aria-hidden="true"/>
+                    <div>#{stepFour.result}</div>
+                </div>
+            </ui:fragment>
+        </p:panel>
+        <div class="navigation_panel bottom clearfix">
+            <p:commandButton value="Print" actionListener="#{stepFour.printReport}" update="@form" styleClass="r-float_elem big_btn blue-btn"/>
+            <p:commandButton value="Close" action="#{stepFour.onClose}" styleClass="orange-btn big_btn"/>
+        </div>
+        <p:dialog modal="true" closable="true" visible="true" rendered="#{stepFour.showReport}" resizable="false" draggable="false"
+                  closeOnEscape="true" appendTo="@(body)" positionType="absolute" position="top">
+            <p:ajax event="close" listener="#{stepFour.closeReport}" update="@form"/>
+            <p:media value="#{reportRequest.report}" player="pdf" width="1224" height="560">
+                <f:param name="path" value="#{stepFour.reportId}"/>
+            </p:media>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

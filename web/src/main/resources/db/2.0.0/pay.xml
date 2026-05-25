@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="2.0.0" failOnError="true">
+        <sql>CREATE SCHEMA PAY</sql>
+        
+        <!-- PAYMENT_OPERATIONS table based on Payment entity -->
+        <createTable schemaName="PAY" tableName="PAYMENT_OPERATIONS" remarks="Payment Log">
+            <column name="PAYMENT_OPERATIONS_ID" type="INT" remarks="ID">
+                <constraints nullable="false" primaryKey="true" foreignKeyName="OPERATIONS_OPERATIONS_ID_FK"
+                             references="LOG.OPERATIONS(OPERATIONS_ID)"/>
+            </column>
+            <column name="PAY_ACTION_NAME" type="VARCHAR(500)" remarks="Payment category">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CASH_SYMBOL" type="VARCHAR(3)" remarks="Cash symbol">
+                <constraints nullable="false"/>
+            </column>
+            <column name="AMOUNT" type="DECIMAL(14, 2)" remarks="Payment amount">
+                <constraints nullable="false"/>
+            </column>
+            <column name="COMMISSION_AMOUNT" type="DECIMAL(14, 2)" remarks="Commission amount"/>
+            <column name="PAYEE_ACCOUNT" type="VARCHAR(20)" remarks="Account (17)"/>
+            <column name="PAYEE_EIN" type="VARCHAR(12)" remarks="Payee EIN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PAYEE_NAME" type="VARCHAR(150)" remarks="Payee name"/>
+            <column name="PAYEE_ADDRESS" type="VARCHAR(200)" remarks="Payee address"/>
+            <column name="PAYEE_BANK_ROUTING_NUMBER" type="VARCHAR(9)" remarks="Payee bank Routing Number">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PAYEE_BANK_NAME" type="VARCHAR(200)" remarks="Payee bank name"/>
+            <column name="PAYEE_BANK_ACCOUNT" type="VARCHAR(20)" remarks="Payee bank correspondent account"/>
+            <column name="PURPOSE" type="VARCHAR(200)" remarks="Payment purpose">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PAYER_EIN" type="VARCHAR(12)" remarks="Payer EIN"/>
+            <column name="VAT" type="INT" remarks="VAT"/>
+            <column name="PAYER" type="VARCHAR(500)" remarks="Payer name"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/administration/transition">
+    <view-state id="role">
+        <var name="roleView" class="web.view.administration.permission.role.RoleView"/>
+        <var name="roleModel" class="web.view.administration.permission.role.RoleModel"/>
+        <on-entry>
+            <evaluate expression="roleView.init(roleModel)"/>
+        </on-entry>
+        <transition on="edit" to="edit">
+            <set name="flowScope.FS_ROLE" value="roleView.roleItem.role"/>
+        </transition>
+        <transition on="add" to="edit">
+            <set name="flowScope.FS_ROLE" value="new web.entity.core.Role()"/>
+        </transition>
+    </view-state>
+    <view-state id="edit">
+        <var name="roleEditView" class="web.view.administration.permission.role.edit.RoleEditView"/>
+        <var name="userModel" class="web.view.administration.model.UserModel"/>
+        <on-entry>
+            <set name="roleEditView.role" value="FS_ROLE"/>
+            <evaluate expression="roleEditView.init(userModel)"/>
+        </on-entry>
+        <transition on="to-role" to="role"/>
+    </view-state>
+</flow>

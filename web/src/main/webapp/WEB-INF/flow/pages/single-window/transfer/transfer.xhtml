@@ -1,0 +1,25 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="../single-window-template.xhtml">
+    <ui:define name="content-body">
+        <p:panel header="Select Operation Type">
+            <ul class="toggle_operation justify">
+                <li>
+                    <p:commandLink action="#{transferView.send()}" disabled="#{not transferView.send}">
+                        <div><span>Send</span>Transfer funds to individual</div>
+                    </p:commandLink>
+                </li>
+                <li>
+                    <p:commandLink action="#{transferView.get()}" disabled="#{not transferView.payout}">
+                        <div><span>Payout</span>Receiving funds by individual</div>
+                    </p:commandLink>
+                </li>
+            </ul>
+        </p:panel>
+    </ui:define>
+</ui:composition>

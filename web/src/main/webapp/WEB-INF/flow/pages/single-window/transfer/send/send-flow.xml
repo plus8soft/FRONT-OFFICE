@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/single-window/transition">
+    <var name="FS_PAYMENT_TRANSFER" class="web.view.transfer.send.PaymentTransfer"/>
+    <view-state id="step-one">
+        <var name="stepOneView" class="web.view.transfer.send.StepOneView"/>
+        <on-entry>
+            <evaluate expression="stepOneView.init(FS_PAYMENT_TRANSFER, conversationScope.CS_CLIENT_ID)"/>
+        </on-entry>
+        <transition on="next" to="step-two">
+            <set name="flowScope.FS_PAYMENT_SYSTEM_ITEMS" value="stepOneView.paymentSystemItems"/>
+        </transition>
+    </view-state>
+    <view-state id="step-two">
+        <var name="stepTwoView" class="web.view.transfer.send.StepTwoView"/>
+        <on-entry>
+            <evaluate expression="stepTwoView.init(FS_PAYMENT_TRANSFER, flowScope.FS_PAYMENT_SYSTEM_ITEMS)"/>
+        </on-entry>
+        <transition on="next" to="step-three"/>
+        <transition on="back" to="step-one"/>
+    </view-state>
+    <view-state id="step-three">
+        <var name="stepThreeView" class="web.view.transfer.send.StepThreeView"/>
+        <var name="paymentPointModel" class="web.view.transfer.send.PaymentPointModel"/>
+        <on-entry>
+            <set name="stepThreeView.filter" value="flowScope.FS_FILTER?:new web.view.transfer.send.PaymentPointFilter()"/>
+            <evaluate expression="stepThreeView.init(paymentPointModel, FS_PAYMENT_TRANSFER)"/>
+        </on-entry>
+        <transition on="next" to="step-four">
+            <set name="flowScope.FS_FILTER" value="paymentPointModel.filter"/>
+        </transition>
+        <transition on="back" to="step-two">
+            <set name="FS_PAYMENT_TRANSFER.paymentPoint" value="null"/>
+        </transition>
+    </view-state>
+    <subflow-state id="step-four" subflow="pages/single-window/client-search">
+        <input name="stepNumber" value="4"/>
+        <input name="stepsCount" value="7"/>
+        <input name="headerLabel" value="'Enter Sender Data'"/>
+        <input name="personId" value="flowScope.FS_PERSON_ID"/>
+        <input name="validators" value="T(java.util.Collections).singletonList(new web.service.crm.validator.MobilePhoneValidator())"/>
+        <output name="personIdOut" value="flowScope.FS_PERSON_ID"/>
+        <transition on="back" to="step-three"/>
+        <transition on="next" to="step-five-action"/>
+    </subflow-state>
+    <action-state id="step-five-action">
+        <evaluate expression="FS_PAYMENT_TRANSFER.paymentSystem.id"/>
+        <transition on="MONEY_TRANSFER" to="step-five-transfer"/>
+    </action-state>
+    <view-state id="step-five" view="step-five.xhtml">
+        <transition on="next" to="step-six-action"/>
+        <transition on="back" to="step-four"/>
+    </view-state>
+    <view-state id="step-five-transfer" parent="#step-five">
+        <var name="stepFiveView" class="web.view.transfer.send.StepFiveTransferView"/>
+        <on-entry>
+            <evaluate expression="stepFiveView.init(FS_PAYMENT_TRANSFER, flowScope.FS_PERSON_ID)"/>
+        </on-entry>
+    </view-state>
+    <action-state id="step-six-action">
+        <evaluate expression="FS_PAYMENT_TRANSFER.paymentSystem.id"/>
+        <transition on="MONEY_TRANSFER" to="step-six-transfer"/>
+    </action-state>
+    <view-state id="step-six">
+        <transition on="next" to="step-seven"/>
+        <transition on="back" to="step-five-action"/>
+    </view-state>
+    <view-state id="step-six-transfer" view="step-six/step-six-transfer.xhtml" parent="#step-six">
+        <var name="stepSixView" class="web.view.transfer.send.StepSixTransferView"/>
+        <on-entry>
+            <evaluate expression="stepSixView.init(FS_PAYMENT_TRANSFER)"/>
+        </on-entry>
+    </view-state>
+    <view-state id="step-seven">
+        <var name="stepSevenView" class="web.view.transfer.send.StepSevenView"/>
+        <on-entry>
+            <evaluate expression="stepSevenView.init(FS_PAYMENT_TRANSFER)"/>
+        </on-entry>
+    </view-state>
+    <end-state id="cancel"/>
+    <global-transitions>
+        <transition on="cancel" to="cancel"/>
+    </global-transitions>
+</flow>

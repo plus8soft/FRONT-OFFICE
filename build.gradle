@@ -1,0 +1,34 @@
+/*
+ * Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+ */
+
+group 'com.plus8soft.front-office'
+version '1.0.0'
+subprojects {
+    apply plugin: 'java'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    tasks.named('compileJava') {
+        options.encoding = 'UTF-8'
+        if (JavaVersion.current().isJava11Compatible()) {
+            options.compilerArgs += ['--release', '8']
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://repo1.maven.org/maven2/")
+        }
+        maven {
+            url = uri("https://jcenter.bintray.com/")
+        }
+        mavenCentral()
+    }
+    configure(allprojects) {
+        apply plugin: 'checkstyle'
+        checkstyle {
+            configFile = rootProject.file('checkstyle/checkstyle.xml')
+            configProperties = ['java.header': rootProject.file('checkstyle/java.header')]
+            toolVersion = '7.3'
+        }
+    }
+}

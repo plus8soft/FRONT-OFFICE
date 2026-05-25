@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+<flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.springframework.org/schema/webflow"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+      parent="pages/single-window/transition">
+    <var name="FS_PAYMENT" class="web.view.woa.payment.WoaPayment"/>
+    <view-state id="step-one">
+        <var name="stepOne" class="web.view.woa.payment.StepOneView"/>
+        <on-entry>
+            <evaluate expression="stepOne.init(FS_PAYMENT)"/>
+        </on-entry>
+        <transition on="next-simple" to="step-two"/>
+        <transition on="next" to="search"/>
+        <on-exit>
+            <set name="FS_PAYMENT" value="stepOne.payment"/>
+        </on-exit>
+    </view-state>
+    <view-state id="step-two">
+        <var name="stepTwo" class="web.view.woa.payment.StepTwoView"/>
+        <on-entry>
+            <evaluate expression="stepTwo.init(FS_PAYMENT)"/>
+        </on-entry>
+        <transition on="back" to="step-one"/>
+        <transition on="next" to="step-three"/>
+        <transition on="cancel" to="step-one">
+            <set name="FS_PAYMENT" value="new web.view.woa.payment.WoaPayment()"/>
+        </transition>
+    </view-state>
+    <subflow-state id="search" subflow="pages/single-window/client-search">
+        <input name="stepNumber" value="2"/>
+        <input name="stepsCount" value="4"/>
+        <input name="headerLabel" value="'Enter Payer Data'"/>
+        <input name="personId" value="flowScope.FS_PERSON_ID"/>
+        <output name="personIdOut" value="flowScope.FS_PERSON_ID"/>
+        <transition on="next" to="step-three"/>
+        <transition on="back" to="step-one"/>
+        <transition on="cancel" to="step-one">
+            <set name="FS_PAYMENT" value="new web.view.woa.payment.WoaPayment()"/>
+        </transition>
+    </subflow-state>
+    <view-state id="step-three">
+        <var name="stepThree" class="web.view.woa.payment.StepThreeView"/>
+        <on-entry>
+            <evaluate expression="stepThree.init(FS_PAYMENT, flowScope.FS_PERSON_ID)"/>
+        </on-entry>
+        <transition on="next" to="step-four"/>
+        <transition on="back" to="step-two"/>
+        <transition on="back-search" to="search"/>
+        <transition on="close" to="step-one"/>
+        <transition on="cancel" to="step-one">
+            <set name="FS_PAYMENT" value="new web.view.woa.payment.WoaPayment()"/>
+        </transition>
+    </view-state>
+    <view-state id="step-four">
+        <var name="stepFour" class="web.view.woa.payment.StepFourView"/>
+        <on-entry>
+            <evaluate expression="stepFour.init(FS_PAYMENT)"/>
+        </on-entry>
+        <transition on="close" to="step-one"/>
+    </view-state>
+</flow>

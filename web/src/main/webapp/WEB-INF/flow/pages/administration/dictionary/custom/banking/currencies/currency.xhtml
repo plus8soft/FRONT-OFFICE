@@ -1,0 +1,52 @@
+<!--
+  ~ Copyright AxiomaSoft LLC (d/b/a Plus8Soft)
+  -->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="../../../../administration-template.xhtml">
+    <ui:define name="content-body">
+        <h1 class="title-page">Currency List</h1>
+        <p:panel header="Set Currency List Parameters">
+            <f:facet name="actions">
+                <span class="icon-block icon_currency"/>
+            </f:facet>
+            <div class="navigation_panel clearfix">
+                <p:commandButton value="Add" styleClass="blue-btn" action="add"/>
+                <p:commandButton value="Edit" styleClass="blue-btn" action="edit" disabled="#{empty currencyView.selectedCurrency}"/>
+                <p:commandButton value="Delete" styleClass="orange-btn" action="#{currencyView.delete()}" update="@form"
+                                 disabled="#{empty currencyView.selectedCurrency}"/>
+            </div>
+            <p:dataTable value="#{currencyView.currencies}" var="currency" rowKey="#{currency.id}" selectionMode="single"
+                         selection="#{currencyView.selectedCurrency}" draggableRows="true" emptyMessage="No data">
+                <p:ajax event="rowSelect" update="@(.ui-button)"/>
+                <p:ajax event="rowUnselect" update="@(.ui-button)"/>
+                <p:ajax event="rowReorder" listener="#{currencyView.onRowReorder}"/>
+                <p:column headerText="">
+                    <p:graphicImage value="#{currencyImageRequest.image}" cache="false" width="25px" height="25px"
+                                    onclick="$(this).parent().click();" styleClass="currency_img">
+                        <f:param name="id" value="#{currency.id}"/>
+                    </p:graphicImage>
+                </p:column>
+                <p:column headerText="Code">
+                    #{currency.id} <b><h:outputText value="(#{currency.alternativeCode})" rendered="#{currency.alternativeCode ne currency.id}"/></b>
+                </p:column>
+                <p:column headerText="ISO">
+                    #{currency.iso}
+                </p:column>
+                <p:column headerText="Denomination">
+                    #{currency.ratio}
+                </p:column>
+                <p:column headerText="Name" width="300">
+                    #{currency.name}
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <div class="navigation_panel bottom">
+            <p:commandButton value="Back" action="back" styleClass="orange-btn big_btn" process="@this"/>
+        </div>
+    </ui:define>
+</ui:composition>
