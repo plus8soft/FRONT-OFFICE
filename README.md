@@ -2,6 +2,8 @@
 
 # Plus8Soft Front Office (Community Edition)
 
+![Plus8Soft Front Office](docs/Banner%20%20Front%20Office%20P8S.png)
+
 **Open-source web-based front-office platform for banks, MFOs, insurance companies, and in-person service points.**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
